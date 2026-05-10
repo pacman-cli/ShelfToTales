@@ -17,7 +17,7 @@ export default function SearchBar({
   debounceMs = 400,
 }: SearchBarProps) {
   const [value, setValue] = useState(defaultValue);
-  const timerRef = useRef<ReturnType<typeof setTimeout>>();
+  const timerRef = useRef<ReturnType<typeof setTimeout>>(undefined);
 
   useEffect(() => {
     timerRef.current = setTimeout(() => {
