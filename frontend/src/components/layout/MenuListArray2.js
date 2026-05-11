@@ -63,6 +63,18 @@ export const MenuListArray2 = [
                 title: 'Error 404',
                 to: '/error-404',
             },
+            {
+                title: 'Reader Network',
+                to: '/reader-network',
+            },
+            {
+                title: 'Reading Dashboard',
+                to: '/reading-dashboard',
+            },
+            {
+                title: 'Reading Room',
+                to: '/reading-room',
+            },
         ],
     },
     

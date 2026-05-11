@@ -42,6 +42,9 @@ import Dashboard from '../pages/Dashboard/Dashboard';
 import PurchaseHistory from '../pages/Order/PurchaseHistory';
 import VirtualBookshelf from '../pages/Bookshelf/VirtualBookshelf';
 import FlipbookReader from '../pages/Bookshelf/FlipbookReader';
+import ReaderNetwork from '../pages/ReaderNetwork/ReaderNetwork';
+import ReadingDashboard from '../pages/ReaderNetwork/ReadingDashboard';
+import ReadingRoom from '../pages/ReaderNetwork/ReadingRoom';
 
 
 //images
@@ -88,6 +91,9 @@ function AppRoutes(props){
 					<Route path='/order-detail/:id' exact element={<OrderDetail/>} />
 					<Route path='/blog-management' exact element={<BlogManagement/>} />
 					<Route path='/contact-us' exact element={<ContactUs/>} />
+					<Route path='/reader-network' exact element={<ReaderNetwork/>} />
+					<Route path='/reading-dashboard' exact element={<ReadingDashboard/>} />
+					<Route path='/reading-room' exact element={<ReadingRoom/>} />
 				</Route> 
 			</Routes>									
 			<ScrollToTop />
