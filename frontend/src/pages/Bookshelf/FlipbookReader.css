@@ -1,0 +1,357 @@
+.flipbook-reader {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.flipbook-reader.loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.loading-spinner {
+    text-align: center;
+    color: white;
+}
+
+.spinner {
+    width: 50px;
+    height: 50px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-top: 3px solid white;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.flipbook-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    padding: 15px 25px;
+    border-radius: 15px;
+    margin-bottom: 30px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+}
+
+.back-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+}
+
+.back-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: translateY(-2px);
+}
+
+.book-title {
+    color: white;
+    font-size: 24px;
+    font-weight: 600;
+    margin: 0;
+}
+
+.page-info {
+    color: white;
+    font-size: 14px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 20px;
+}
+
+.flipbook-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    position: relative;
+}
+
+.flipbook-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    padding: 0 20px;
+}
+
+.nav-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+}
+
+.nav-btn:hover:not(:disabled) {
+    background: rgba(255, 255, 255, 0.3);
+    transform: scale(1.1);
+}
+
+.nav-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.flipbook-pages {
+    perspective: 2000px;
+    min-height: 600px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.flipbook-spread {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    transform-style: preserve-3d;
+    transition: transform 0.6s ease;
+}
+
+.page {
+    width: 400px;
+    height: 550px;
+    background: white;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+    position: relative;
+    border-radius: 5px;
+    overflow: hidden;
+    transform-style: preserve-3d;
+    transition: all 0.6s ease;
+}
+
+.left-page {
+    transform-origin: right center;
+    border-radius: 5px 0 0 5px;
+}
+
+.right-page {
+    transform-origin: left center;
+    border-radius: 0 5px 5px 0;
+}
+
+.page-spine {
+    width: 40px;
+    height: 550px;
+    background: linear-gradient(90deg, #8B4513, #A0522D, #8B4513);
+    box-shadow: inset 0 0 20px rgba(0, 0, 0, 0.3);
+    position: relative;
+    z-index: 10;
+}
+
+.page-spine::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 2px;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.2);
+}
+
+.page-image {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    background: white;
+}
+
+.page-number {
+    position: absolute;
+    bottom: 10px;
+    right: 10px;
+    background: rgba(0, 0, 0, 0.7);
+    color: white;
+    padding: 5px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.left-page .page-number {
+    left: 10px;
+    right: auto;
+}
+
+.page.flipping {
+    animation: pageFlip 0.6s ease-in-out;
+}
+
+@keyframes pageFlip {
+    0% {
+        transform: rotateY(0deg);
+        opacity: 1;
+    }
+    50% {
+        transform: rotateY(-90deg);
+        opacity: 0.8;
+    }
+    100% {
+        transform: rotateY(0deg);
+        opacity: 1;
+    }
+}
+
+.page-navigation {
+    margin-top: 40px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 20px;
+}
+
+.page-thumbnails {
+    display: flex;
+    gap: 15px;
+    overflow-x: auto;
+    padding: 10px;
+    max-width: 100%;
+}
+
+.thumbnail {
+    background: white;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    padding: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 80px;
+    text-align: center;
+}
+
+.thumbnail:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+}
+
+.thumbnail.active {
+    border-color: #667eea;
+    box-shadow: 0 0 20px rgba(102, 126, 234, 0.5);
+}
+
+.thumbnail img {
+    width: 60px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 4px;
+    margin-bottom: 5px;
+}
+
+.thumbnail span {
+    font-size: 10px;
+    color: #333;
+    font-weight: 600;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .flipbook-reader {
+        padding: 10px;
+    }
+    
+    .flipbook-header {
+        flex-direction: column;
+        gap: 15px;
+        text-align: center;
+    }
+    
+    .page {
+        width: 300px;
+        height: 420px;
+    }
+    
+    .page-spine {
+        width: 30px;
+        height: 420px;
+    }
+    
+    .flipbook-controls {
+        padding: 0 10px;
+    }
+    
+    .nav-btn {
+        width: 40px;
+        height: 40px;
+        font-size: 14px;
+    }
+    
+    .page-thumbnails {
+        gap: 10px;
+    }
+    
+    .thumbnail {
+        min-width: 60px;
+    }
+    
+    .thumbnail img {
+        width: 45px;
+        height: 60px;
+    }
+}
+
+@media (max-width: 480px) {
+    .page {
+        width: 250px;
+        height: 350px;
+    }
+    
+    .page-spine {
+        width: 25px;
+        height: 350px;
+    }
+    
+    .flipbook-header {
+        padding: 10px 15px;
+    }
+    
+    .book-title {
+        font-size: 18px;
+    }
+    
+    .page-info {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+}
+
+/* Theme variations */
+.flipbook-reader.theme-wood {
+    background: linear-gradient(135deg, #8B4513 0%, #A0522D 100%);
+}
+
+.flipbook-reader.theme-carbon {
+    background: linear-gradient(135deg, #2C3E50 0%, #34495E 100%);
+}
+
+.flipbook-reader.theme-glass {
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+    backdrop-filter: blur(20px);
+}
