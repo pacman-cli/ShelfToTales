@@ -1,0 +1,125 @@
+.bookshelf-container {
+    background-color: #0b092a;
+    min-height: 100vh;
+    color: #fff;
+    display: flex;
+    font-family: 'Poppins', sans-serif;
+}
+
+.bookshelf-sidebar {
+    width: 280px;
+    background-color: #1e252d;
+    padding: 1rem 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.sidebar-header-new { padding: 0 1.5rem 1.5rem; text-align: center; }
+
+/* Custom Orange Selectors & Switches */
+.form-check-input:checked { background-color: #EAA451 !important; border-color: #EAA451 !important; }
+.form-check-input { cursor: pointer; border-radius: 4px !important; }
+.form-switch .form-check-input:checked { 
+    background-color: #EAA451 !important; 
+    border-color: #EAA451 !important;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e") !important;
+}
+.orange-text { color: #EAA451 !important; }
+
+.bookshelf-item-active {
+    background-color: #2c343c;
+    margin: 0 0.5rem;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1rem;
+}
+
+.bookshelf-item-active.active-shelf { border: 1px solid #EAA451; }
+
+.accordion-header-custom {
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    cursor: pointer;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.bookshelf-main {
+    flex: 1;
+    padding: 1.5rem 2rem;
+    overflow-y: auto;
+    transition: background 0.5s ease;
+}
+
+/* Theme-Specific Backgrounds */
+.theme-glass .bookshelf-main { background: radial-gradient(circle at center, #ffffff 0%, #e3f2fd 100%); color: #2c3e50; }
+.theme-wood .bookshelf-main { background: radial-gradient(circle at center, #fdfbf7 0%, #efebe9 100%); color: #3e2723; }
+.theme-carbon .bookshelf-main { background: radial-gradient(circle at center, #2c3e50 0%, #1a1a1a 100%); color: #00ffcc; }
+
+.shelf-group { margin-bottom: 80px; position: relative; }
+.hero-shelf-group { margin-top: 40px; margin-bottom: 100px; }
+
+.hero-shelf-container {
+    position: absolute;
+    bottom: 22px;
+    left: 0; right: 0;
+    z-index: 5;
+}
+
+.hero-book-title { font-size: 1.8rem; margin-top: 10px; color: #1a1668; }
+.theme-carbon .hero-book-title { color: #00ffcc; }
+
+/* UNIFIED BOOK SIZES */
+.hero-book-main { width: 95px; height: 140px; }
+.bookshelf-book { width: 95px; height: 140px; transition: 0.3s; position: relative; }
+.bookshelf-book img { width: 100%; height: 100%; object-fit: cover; border-radius: 2px; box-shadow: 5px 5px 15px rgba(0,0,0,0.3); transition: 0.3s; }
+.bookshelf-book:hover img { transform: translateY(-8px); }
+
+.shelf {
+    height: 15px;
+    position: relative;
+    margin-top: 180px;
+    border-radius: 0 0 5px 5px;
+}
+
+/* 3D Perspective Shelves */
+.shelf::before {
+    content: '';
+    position: absolute;
+    top: -25px;
+    left: 0;
+    right: 0;
+    height: 25px;
+    clip-path: polygon(9% 0, 91% 0, 100% 100%, 0 100%);
+}
+
+.shelf.glass { background: linear-gradient(to bottom, rgba(0, 174, 255, 0.4), rgba(0, 100, 200, 0.6)); }
+.shelf.wood { background: linear-gradient(to bottom, #8d6e63, #3e2723); }
+.shelf.carbon { background: linear-gradient(to bottom, #333, #000); }
+
+.shelf.glass::before { background: linear-gradient(to bottom, rgba(255,255,255,0.2), rgba(0, 174, 255, 0.3)); }
+.shelf.wood::before { background: #a1887f; }
+.shelf.carbon::before { background: #111; border-top: 1px solid #00ffcc; }
+
+.book-row {
+    display: flex;
+    gap: 30px;
+    position: absolute;
+    bottom: 22px;
+    left: 60px;
+    right: 60px;
+    justify-content: center;
+    align-items: flex-end;
+    z-index: 5;
+}
+
+.book-top-info { background: rgba(255,255,255,0.9); border: 1px solid rgba(0,0,0,0.08); border-radius: 4px; color: #1a1668; }
+
+.accordion-body-custom { background: rgba(0,0,0,0.2); border-radius: 0 0 8px 8px; }
+.theme-thumbs-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 5px; padding: 5px; }
+.theme-thumb { height: 40px; border-radius: 4px; cursor: pointer; overflow: hidden; border: 2px solid transparent; }
+.theme-thumb.active { border-color: #EAA451; }
+.glass-preview { background: #00aeff; width: 100%; height: 100%; }
+.wood-preview { background: #3e2723; width: 100%; height: 100%; }
+.carbon-preview { background: #111; width: 100%; height: 100%; }
