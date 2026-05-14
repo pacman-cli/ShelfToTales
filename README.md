@@ -1,8 +1,110 @@
 # ShelfToTales
 
-ShelfToTales is a full-stack bookstore app for browsing books, managing categories, signing in with JWT auth, and saving books to a personal wishlist. The repository contains a Spring Boot REST API and a Create React App frontend.
+ShelfToTales is a full-stack bookstore and reader-community platform. It starts with a practical e-commerce base for browsing books, authentication, wishlists, categories, admin management, and checkout-oriented UI flows. The broader product vision is a digital home for readers where book discovery, community, sustainability, and reading progress work together.
 
-## Stack
+## Project Vision
+
+ShelfToTales is designed to go beyond a normal online bookstore.
+
+- Build a digital home where commerce meets community.
+- Help readers discover books through smarter signals such as mood, images, and emotions.
+- Support a sustainable reading culture through book exchanges and donations.
+- Turn personal reading goals into shared achievements through gamified engagement.
+- Keep the community safe with moderation, secure user management, and monitoring.
+
+## Problem Statement
+
+Modern readers can buy books easily, but they still face several problems:
+
+| Problem | Why it matters |
+| --- | --- |
+| Lonely reader experience | Finding a real-time community to discuss books is difficult. |
+| Information overload | Genre and price filters do not always match a reader's mood or current interest. |
+| Spoiler anxiety | Online reviews and feeds can reveal major plot twists before readers are ready. |
+| Wasted books | Many books stay unused after one read, with no simple way to trade or donate them locally. |
+
+## Current Application
+
+The current codebase implements the foundation for the ShelfToTales platform:
+
+- Public book catalog with category filtering and keyword search.
+- JWT-based user registration and login.
+- Authenticated wishlist management.
+- React pages for book lists, details, cart, checkout, product comparison, blog, dashboard, profile, purchase history, and virtual bookshelf.
+- Admin-only backend APIs for managing books and categories.
+- H2 local database with Flyway migrations and starter seed data.
+- PostgreSQL-backed Docker setup for backend runtime.
+- Swagger/OpenAPI documentation for backend APIs.
+
+## Feature Pillars
+
+### E-Commerce Core
+
+- Product catalog for books.
+- Shopping cart and checkout-oriented frontend flows.
+- Book detail pages.
+- Order and purchase-history UI structure.
+- Admin book management.
+
+### User Engagement
+
+- User accounts and JWT authentication.
+- Wishlist and favorites.
+- Product comparison.
+- Quick-view style book browsing.
+- Dashboard and profile pages.
+
+### Content and Navigation
+
+- Books organized by category.
+- Search by query string.
+- Category-based filtering.
+- Blog and content pages.
+- Blog management UI structure.
+
+### Smart Marketplace Vision
+
+These are planned product directions from the project concept:
+
+- AI image search: users can identify a book by uploading or taking a photo of its cover.
+- Mood-based suggestions: users can discover books based on how they want to feel.
+- Full checkout and order management as a complete commerce workflow.
+
+### Social Library Vision
+
+The long-term community layer includes:
+
+- Virtual bookshelves to track books read, owned, and wanted next.
+- Spoiler-free zones where AI filters hide spoilers from reviews and feeds.
+- Virtual reading rooms for shared reading, chat, and background Lo-fi music.
+
+### Giving Economy Vision
+
+ShelfToTales also aims to reduce unused books through:
+
+- Peer-to-peer physical book exchange.
+- Donation workflows so books can get a second life.
+- Local community circulation instead of one-time ownership only.
+
+### Engagement Tools Vision
+
+Planned reader-growth features include:
+
+- Reading challenges for annual goals and progress tracking.
+- Smart PDF annotations.
+- Sharing highlighted quotes or favorite passages to a social feed.
+
+### Admin, Trust, and Safety
+
+The platform is designed around a safe and manageable community:
+
+- Moderation tools for reports and community safety.
+- Analytics dashboard for trending books and platform activity.
+- Real-time monitoring.
+- Secure user management.
+- Role-based admin endpoints.
+
+## Tech Stack
 
 ### Backend
 
@@ -11,7 +113,7 @@ ShelfToTales is a full-stack bookstore app for browsing books, managing categori
 - Spring Web, Security, Validation, Data JPA, Hibernate
 - JWT auth with `io.jsonwebtoken`
 - Flyway-managed schema and seed data
-- H2 for local development by default
+- H2 for local development
 - PostgreSQL support for Docker and deployed environments
 - Springdoc OpenAPI / Swagger UI
 - Lombok
@@ -197,6 +299,16 @@ cd frontend
 npm test
 npm run build
 ```
+
+## Team
+
+| Name | ID |
+| --- | --- |
+| Rushdania Bushra | 0112230039 |
+| Habiba Khatun | 011221085 |
+| Fayjullah Haque | 011221072 |
+| Ashikur Rahman Puspo | 0112310304 |
+| Mst. Sumia Khatun | 011221563 |
 
 ## Notes for Development
 
