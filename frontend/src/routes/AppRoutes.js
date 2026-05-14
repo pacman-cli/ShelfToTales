@@ -17,6 +17,7 @@ import HelpDesk from '../pages/Company/HelpDesk';
 import Pricing from '../pages/Company/Pricing';
 import PrivacyPolicy from '../pages/Company/PrivacyPolicy';
 import BooksGridView from '../pages/Books/BooksGridView';
+import BookListPage from '../pages/Books/BookListPage';
 import ShopList from '../pages/Shop/ShopList';
 import BooksGridViewSidebar from '../pages/Books/BooksGridViewSidebar';
 import BooksListViewSidebar from '../pages/Books/BooksListViewSidebar';
@@ -42,6 +43,9 @@ import Dashboard from '../pages/Dashboard/Dashboard';
 import PurchaseHistory from '../pages/Order/PurchaseHistory';
 import VirtualBookshelf from '../pages/Bookshelf/VirtualBookshelf';
 import FlipbookReader from '../pages/Bookshelf/FlipbookReader';
+import ReaderNetwork from '../pages/ReaderNetwork/ReaderNetwork';
+import ReadingDashboard from '../pages/ReaderNetwork/ReadingDashboard';
+import ReadingRoom from '../pages/ReaderNetwork/ReadingRoom';
 
 
 //images
@@ -66,6 +70,7 @@ function AppRoutes(props){
 					<Route path='/privacy-policy' exact element={<PrivacyPolicy/>} />
 					<Route path='/books-grid-view' exact element={<BooksGridView/>} />
 					<Route path='/books-list' exact element={<ShopList/>} />
+					<Route path='/book-list' exact element={<BookListPage/>} />
 					<Route path='/shop-list' exact element={<ShopList/>} />
 					<Route path='/books-grid-view-sidebar' exact element={<BooksGridViewSidebar/>} />
 					<Route path='/books-list-view-sidebar' exact element={<BooksListViewSidebar/>} />
@@ -88,6 +93,9 @@ function AppRoutes(props){
 					<Route path='/order-detail/:id' exact element={<OrderDetail/>} />
 					<Route path='/blog-management' exact element={<BlogManagement/>} />
 					<Route path='/contact-us' exact element={<ContactUs/>} />
+					<Route path='/reader-network' exact element={<ReaderNetwork/>} />
+					<Route path='/reading-dashboard' exact element={<ReadingDashboard/>} />
+					<Route path='/reading-room' exact element={<ReadingRoom/>} />
 				</Route> 
 			</Routes>									
 			<ScrollToTop />

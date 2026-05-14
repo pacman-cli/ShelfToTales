@@ -3,19 +3,28 @@ import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../api/api';
 import Swal from 'sweetalert2';
 
-//Components 
-import PageTitle from '../../components/layout/PageTitle';
+// Styles & Images
+import './AuthLayout.css';
+import loginImage from '../../assets/images/login-signup.jpg';
 
 function Registration(){
-    const [username, setUsername] = useState('');
+    const [fullName, setFullName] = useState('');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [termsAccepted, setTermsAccepted] = useState(false);
     const navigate = useNavigate();
 
     const handleRegister = async (e) => {
         e.preventDefault();
+        
+        if (!termsAccepted) {
+            Swal.fire('Notice', 'Please agree to the Terms & Conditions', 'warning');
+            return;
+        }
+
         try {
-            await authService.register({ username, email, password });
+            // Note: Sending fullName instead of username to match the updated backend
+            await authService.register({ fullName, email, password });
             Swal.fire('Success', 'Account created successfully! Please login.', 'success');
             navigate('/shop-login');
         } catch (error) {
@@ -24,69 +33,67 @@ function Registration(){
     };
 
     return(
-        <>
-            <div className="page-content">
-                <PageTitle  parentPage="Shop" childPage="Registration" />               
-                <section className="content-inner shop-account">
-				
-                    <div className="container">
-                        <div className="row justify-content-center">
-                            <div className="col-lg-6 col-md-6 mb-4">
-                                <div className="login-area">
-                                    <form onSubmit={handleRegister}> 
-                                        <h4 className="text-secondary">Registration</h4>
-                                        <p className="font-weight-600">If you don't have an account with us, please Registration.</p>
-                                        <div className="mb-4">
-                                            <label className="label-title">Username *</label>
-                                            <input 
-                                                name="dzName" 
-                                                required="" 
-                                                className="form-control" 
-                                                placeholder="Your Username" 
-                                                type="text" 
-                                                value={username}
-                                                onChange={(e) => setUsername(e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="mb-4">
-                                            <label className="label-title">Email address *</label>
-                                            <input 
-                                                name="dzName" 
-                                                required="" 
-                                                className="form-control" 
-                                                placeholder="Your Email address" 
-                                                type="email" 
-                                                value={email}
-                                                onChange={(e) => setEmail(e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="mb-4">
-                                            <label className="label-title">Password *</label>
-                                            <input 
-                                                name="dzName" 
-                                                required="" 
-                                                className="form-control " 
-                                                placeholder="Type Password" 
-                                                type="password" 
-                                                value={password}
-                                                onChange={(e) => setPassword(e.target.value)}
-                                            />
-                                        </div>
-                                        <div className="mb-5">
-                                            <small>Your personal data will be used to support your experience throughout this website, to manage access to your account, and for other purposes described in our <Link to={"/privacy-policy"}>privacy policy</Link>.</small>
-                                        </div>
-                                        <div className="text-left">
-                                            <button type="submit" className="btn btn-primary btnhover w-100 me-2">Register</button>
-                                        </div>
-                                    </form>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </section>
+        <div className="auth-split-container">
+            <div className="auth-form-side">
+                <h1 className="auth-heading">Ready to start your<br />success story?</h1>
+                <p className="auth-subheading">Signup to our website and start leafing<br />through your favorite literature today!</p>
                 
+                <form onSubmit={handleRegister}>
+                    <div className="auth-input-group">
+                        <label className="auth-input-label">Full name</label>
+                        <input 
+                            className="auth-input" 
+                            type="text" 
+                            value={fullName}
+                            onChange={(e) => setFullName(e.target.value)}
+                            required
+                        />
+                    </div>
+                    
+                    <div className="auth-input-group">
+                        <label className="auth-input-label">Email</label>
+                        <input 
+                            className="auth-input" 
+                            type="email" 
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            required
+                        />
+                    </div>
+                    
+                    <div className="auth-input-group">
+                        <label className="auth-input-label">Password</label>
+                        <input 
+                            className="auth-input" 
+                            type="password" 
+                            value={password}
+                            onChange={(e) => setPassword(e.target.value)}
+                            required
+                        />
+                    </div>
+                    
+                    <div className="auth-checkbox-group">
+                        <input 
+                            type="checkbox" 
+                            id="terms" 
+                            checked={termsAccepted}
+                            onChange={(e) => setTermsAccepted(e.target.checked)}
+                        />
+                        <label htmlFor="terms">I agree to the <Link to="/privacy-policy">Terms & Conditions</Link></label>
+                    </div>
+                    
+                    <button type="submit" className="auth-submit-btn">Sign up</button>
+                    
+                    <div className="auth-switch-link">
+                        Already have an account? <Link to="/shop-login">Login here</Link>
+                    </div>
+                </form>
             </div>
-        </>
+            
+            <div className="auth-image-side">
+                <img src={loginImage} alt="Girl reading a book with a cat" />
+            </div>
+        </div>
     )
 }
 export default Registration;

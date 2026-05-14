@@ -80,7 +80,7 @@ function ProductComparison() {
                                                 >
                                                     <i className="fa-solid fa-xmark"></i>
                                                 </button>
-                                                <img src={book.imageUrl} alt={book.title} className="img-fluid mb-3 rounded" style={{ height: '150px' }} />
+                                                <img src={book.coverUrl} alt={book.title} className="img-fluid mb-3 rounded" style={{ height: '150px' }} />
                                                 <h6 className="mb-0">{book.title}</h6>
                                                 <span className="text-primary font-weight-bold">${book.price}</span>
                                             </div>
@@ -95,7 +95,7 @@ function ProductComparison() {
                                 </tr>
                                 <tr>
                                     <td className="bg-light font-weight-bold">Category</td>
-                                    {comparisonList.map(book => <td key={book.id} className="text-center">{book.category}</td>)}
+                                    {comparisonList.map(book => <td key={book.id} className="text-center">{book.category?.name}</td>)}
                                 </tr>
                                 <tr>
                                     <td className="bg-light font-weight-bold">Description</td>
@@ -125,7 +125,7 @@ function ProductComparison() {
                         {availableBooks.slice(0, 4).map(book => (
                             <div className="col-lg-3 col-md-6 mb-4" key={book.id}>
                                 <div className="card h-100 shadow-sm border-0 p-3 text-center">
-                                    <img src={book.imageUrl} alt={book.title} className="rounded mb-2" style={{ height: '120px', objectFit: 'contain' }} />
+                                    <img src={book.coverUrl} alt={book.title} className="rounded mb-2" style={{ height: '120px', objectFit: 'contain' }} />
                                     <h6 className="small">{book.title}</h6>
                                     <button 
                                         className="btn btn-outline-primary btn-sm mt-2"

@@ -1,6 +1,7 @@
 .bookshelf-container {
     background-color: #0b092a;
-    min-height: 100vh;
+    height: 100vh;
+    overflow: hidden;
     color: #fff;
     display: flex;
     font-family: 'Poppins', sans-serif;
@@ -12,6 +13,8 @@
     padding: 1rem 0;
     display: flex;
     flex-direction: column;
+    overflow-y: auto;
+    flex-shrink: 0;
 }
 
 .sidebar-header-new { padding: 0 1.5rem 1.5rem; text-align: center; }

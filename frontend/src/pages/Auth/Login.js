@@ -1,13 +1,14 @@
-import React,{useState} from 'react';
-import {Link, useNavigate} from 'react-router-dom';
+import React, { useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../api/api';
 import Swal from 'sweetalert2';
 
-//Components 
-import PageTitle from '../../components/layout/PageTitle';
+// Styles & Images
+import './AuthLayout.css';
+import loginImage from '../../assets/images/login-signup.jpg';
 
 function Login(){
-    const [forgotPass, setForgotPass] = useState();
+    const [forgotPass, setForgotPass] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
@@ -15,7 +16,7 @@ function Login(){
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await authService.login({ username: email, password: password });
+            const response = await authService.login({ email, password });
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('user', JSON.stringify(response.data));
             Swal.fire('Success', 'Logged in successfully', 'success');
@@ -26,82 +27,79 @@ function Login(){
     };
 
     return(
-        <>
-            <div className="page-content">
-                <PageTitle  parentPage="Shop" childPage="Login" />               
-                <section className="content-inner shop-account">                    
-                    <div className="container">
-                        <div className="row">
-                            <div className="col-lg-6 col-md-6 mb-4">
-                                <div className="login-area">
-                                    <div className="tab-content">
-                                        <h4>NEW CUSTOMER</h4>
-                                        <p>By creating an account with our store, you will be able to move through the checkout process faster, store multiple shipping addresses, view and track your orders in your account and more.</p>
-                                        <Link to={"/shop-registration"} className="btn btn-primary btnhover m-r5 button-lg radius-no">CREATE AN ACCOUNT</Link>
-                                    </div>
-                                </div>
+        <div className="auth-split-container">
+            <div className="auth-form-side">
+                {!forgotPass ? (
+                    <>
+                        <h1 className="auth-heading">Welcome Back!</h1>
+                        <p className="auth-subheading">Sign in to continue leafing through<br />your favorite literature today.</p>
+                        
+                        <form onSubmit={handleLogin}>
+                            <div className="auth-input-group">
+                                <label className="auth-input-label">Email</label>
+                                <input 
+                                    className="auth-input" 
+                                    type="email" 
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
                             </div>
-                            <div className="col-lg-6 col-md-6 mb-4">
-                                <div className="login-area">
-                                    <div className="tab-content nav">
-                                        <form onSubmit={handleLogin} className={` col-12 ${forgotPass ? 'd-none' : ''}`}>
-                                            <h4 className="text-secondary">LOGIN</h4>
-                                            <p className="font-weight-600">If you have an account with us, please log in.</p>
-                                            <div className="mb-4">
-                                                <label className="label-title">E-MAIL *</label>
-                                                <input 
-                                                    name="dzName" 
-                                                    required="" 
-                                                    className="form-control" 
-                                                    placeholder="Your Email Id" 
-                                                    type="email" 
-                                                    value={email}
-                                                    onChange={(e) => setEmail(e.target.value)}
-                                                />
-                                            </div>
-                                            <div className="mb-4">
-                                                <label className="label-title">PASSWORD *</label>
-                                                <input 
-                                                    name="dzName" 
-                                                    required="" 
-                                                    className="form-control " 
-                                                    placeholder="Type Password" 
-                                                    type="password" 
-                                                    value={password}
-                                                    onChange={(e) => setPassword(e.target.value)}
-                                                />
-                                            </div>
-                                            <div className="text-left">
-                                                <button type="submit" className="btn btn-primary btnhover me-2">login</button>
-                                                <Link to={"#"}  className="m-l5"
-                                                    onClick={()=>setForgotPass(!forgotPass)}
-                                                >
-                                                    <i className="fas fa-unlock-alt"></i> Forgot Password
-                                                </Link> 
-                                            </div>
-                                        </form>
-                                        <form  onSubmit={(e) => e.preventDefault()} className={`  col-12 ${forgotPass ? '' : 'd-none'}`} >
-                                            <h4 className="text-secondary">FORGET PASSWORD ?</h4>
-                                            <p className="font-weight-600">We will send you an email to reset your password. </p>
-                                            <div className="mb-3">
-                                                <label className="label-title">E-MAIL *</label>
-                                                <input name="dzName" required="" className="form-control" placeholder="Your Email Id" type="email" />
-                                            </div>
-                                            <div className="text-left"> 
-                                                <Link to={"#"} className="btn btn-outline-secondary btnhover m-r10 active"
-                                                    onClick={()=>setForgotPass(!forgotPass)}
-                                                >Back</Link>
-                                                <button type="submit" className="btn btn-primary btnhover">Submit</button>
-                                            </div>
-                                        </form>
-                                    </div>
-                                </div>
+                            
+                            <div className="auth-input-group">
+                                <label className="auth-input-label">Password</label>
+                                <input 
+                                    className="auth-input" 
+                                    type="password" 
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
                             </div>
-                        </div>
-                    </div>                    
-                </section>
+                            
+                            <div className="auth-checkbox-group" style={{ justifyContent: 'space-between' }}>
+                                <div style={{ display: 'flex', alignItems: 'center' }}>
+                                    <input type="checkbox" id="remember" />
+                                    <label htmlFor="remember">Remember me</label>
+                                </div>
+                                <Link to="#" onClick={(e) => { e.preventDefault(); setForgotPass(true); }}>Forgot Password?</Link>
+                            </div>
+                            
+                            <button type="submit" className="auth-submit-btn">Login</button>
+                            
+                            <div className="auth-switch-link">
+                                Don't have an account? <Link to="/shop-registration">Sign up here</Link>
+                            </div>
+                        </form>
+                    </>
+                ) : (
+                    <>
+                        <h1 className="auth-heading">Forgot Password?</h1>
+                        <p className="auth-subheading">We will send you an email to reset your password.</p>
+                        
+                        <form onSubmit={(e) => e.preventDefault()}>
+                            <div className="auth-input-group">
+                                <label className="auth-input-label">Email</label>
+                                <input 
+                                    className="auth-input" 
+                                    type="email" 
+                                    required
+                                />
+                            </div>
+                            
+                            <div style={{ display: 'flex', gap: '10px', marginTop: '1rem' }}>
+                                <button type="button" className="auth-submit-btn" style={{ backgroundColor: '#ccc', color: '#333' }} onClick={() => setForgotPass(false)}>Back</button>
+                                <button type="submit" className="auth-submit-btn">Submit</button>
+                            </div>
+                        </form>
+                    </>
+                )}
             </div>
-        </>
+            
+            <div className="auth-image-side">
+                <img src={loginImage} alt="Girl reading a book with a cat" />
+            </div>
+        </div>
     )
 }
 export default Login;

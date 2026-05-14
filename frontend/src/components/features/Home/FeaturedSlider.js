@@ -51,14 +51,14 @@ function FeaturedSlider() {
                     <SwiperSlide key={ind}>                       
                         <div className="books-card style-2">
                             <div className="dz-media">
-                                <img src={item.imageUrl} alt="book" style={{width: '250px'}} />									
+                                <img src={item.coverUrl} alt="book" style={{width: '250px'}} />									
                             </div>
                             <div className="dz-content">
                                 <h6 className="sub-title">BEST SELLER</h6>
                                 <h2 className="title">{item.title}</h2>
                                 <ul className="dz-tags">
                                     <li>{item.author}</li>
-                                    <li>{item.category}</li>
+                                    <li>{item.category?.name}</li>
                                 </ul>
                                 <p className="text">{item.description}</p>
                                 <div className="price">

@@ -61,7 +61,7 @@ function OrderDetail() {
                                                             <img src={item.bookImageUrl} alt={item.bookTitle} style={{ width: '50px', height: '70px', objectFit: 'cover' }} className="rounded me-3" />
                                                             <div>
                                                                 <h6 className="mb-0">{item.bookTitle}</h6>
-                                                                <small className="text-muted">{item.category}</small>
+                                                                <small className="text-muted">{item.category?.name}</small>
                                                             </div>
                                                         </div>
                                                     </td>
