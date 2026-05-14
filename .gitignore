@@ -1,0 +1,25 @@
+# Agent / IDE configs
+.claude/
+.codex/
+.idea/
+graphify-out/
+CLAUDE.md
+CLAUDE*.md
+AGENTS.md
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Build
+node_modules/
+dist/
+build/
+target/
+*.jar
+*.war
+
+# Env
+.env
+.env.local
+.env.*.local
