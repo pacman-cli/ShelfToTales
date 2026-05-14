@@ -27,37 +27,39 @@ public class DataSeeder implements CommandLineRunner {
 
             categoryRepository.saveAll(List.of(fiction, fantasy, science));
 
-            Book book1 = Book.builder()
-                    .title("The Great Gatsby")
-                    .author("F. Scott Fitzgerald")
-                    .isbn("9780743273565")
-                    .description("A story of wealth and love in the 1920s.")
-                    .coverUrl("https://covers.openlibrary.org/b/id/7222246-L.jpg")
-                    .publishedDate(LocalDate.of(1925, 4, 10))
-                    .category(fiction)
-                    .build();
+            if (bookRepository.count() == 0) {
+                Book book1 = Book.builder()
+                        .title("The Great Gatsby")
+                        .author("F. Scott Fitzgerald")
+                        .isbn("9780743273565")
+                        .description("A story of wealth and love in the 1920s.")
+                        .coverUrl("https://covers.openlibrary.org/b/id/7222246-L.jpg")
+                        .publishedDate(LocalDate.of(1925, 4, 10))
+                        .category(fiction)
+                        .build();
 
-            Book book2 = Book.builder()
-                    .title("The Hobbit")
-                    .author("J.R.R. Tolkien")
-                    .isbn("9780547928227")
-                    .description("A hobbit's journey to reclaim a treasure.")
-                    .coverUrl("https://covers.openlibrary.org/b/id/6979861-L.jpg")
-                    .publishedDate(LocalDate.of(1937, 9, 21))
-                    .category(fantasy)
-                    .build();
+                Book book2 = Book.builder()
+                        .title("The Hobbit")
+                        .author("J.R.R. Tolkien")
+                        .isbn("9780547928227")
+                        .description("A hobbit's journey to reclaim a treasure.")
+                        .coverUrl("https://covers.openlibrary.org/b/id/6979861-L.jpg")
+                        .publishedDate(LocalDate.of(1937, 9, 21))
+                        .category(fantasy)
+                        .build();
 
-            Book book3 = Book.builder()
-                    .title("A Brief History of Time")
-                    .author("Stephen Hawking")
-                    .isbn("9780553380163")
-                    .description("Explaining cosmology to the general public.")
-                    .coverUrl("https://covers.openlibrary.org/b/id/6520353-L.jpg")
-                    .publishedDate(LocalDate.of(1988, 4, 1))
-                    .category(science)
-                    .build();
+                Book book3 = Book.builder()
+                        .title("A Brief History of Time")
+                        .author("Stephen Hawking")
+                        .isbn("9780553380163")
+                        .description("Explaining cosmology to the general public.")
+                        .coverUrl("https://covers.openlibrary.org/b/id/6520353-L.jpg")
+                        .publishedDate(LocalDate.of(1988, 4, 1))
+                        .category(science)
+                        .build();
 
-            bookRepository.saveAll(List.of(book1, book2, book3));
+                bookRepository.saveAll(List.of(book1, book2, book3));
+            }
         }
     }
 }

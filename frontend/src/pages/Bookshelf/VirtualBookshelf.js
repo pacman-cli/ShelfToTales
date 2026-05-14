@@ -70,7 +70,8 @@ function VirtualBookshelf() {
     };
 
     const handleReadBook = (book) => {
-        navigate(`/read-book/${book.id}`, { state: { theme: activeShelf.theme } });
+        setCurrentBook(book);
+        setView('reader');
     };
 
     const handleSearch = (query) => { setSearchQuery(query); applyFilters(query, isSortedNewest); };
@@ -251,14 +252,68 @@ function VirtualBookshelf() {
                     </div>
                 </header>
                 {view === 'library' ? renderLibrary() : (
-                    <div className="reader-view-container animate__animated animate__fadeIn">
-                        <div className="reader-toolbar mb-4 d-flex justify-content-between align-items-center p-3 bg-dark rounded shadow">
-                            <button className="btn btn-link text-white text-decoration-none" onClick={() => setView('library')}><i className="fa-solid fa-arrow-left me-2"></i> Back to Library</button>
-                            <h4 className="mb-0 text-white">{currentBook?.title}</h4>
+                    <div className="reader-view-layout-wrapper animate__animated animate__fadeIn">
+                        {/* Middle Part: Reader Content */}
+                        <div className="reader-content-area" style={{ background: '#ffffff', color: '#000000', minHeight: '100%' }}>
+                            <div className="d-flex align-items-center mb-5">
+                                <button className="btn btn-link text-dark text-decoration-none p-0 me-4" onClick={() => setView('library')}>
+                                    <i className="fa-solid fa-arrow-left"></i>
+                                </button>
+                                <div>
+                                    <h4 className="fw-bold mb-0" style={{ color: '#000000' }}>{currentBook?.title}</h4>
+                                    <span className="small text-muted text-uppercase">By {currentBook?.author}</span>
+                                </div>
+                                <div className="ms-auto d-flex gap-4 align-items-center text-muted">
+                                    <i className="fa-solid fa-font cursor-pointer"></i>
+                                    <i className="fa-solid fa-book-open cursor-pointer"></i>
+                                    <i className="fa-solid fa-ellipsis-vertical cursor-pointer"></i>
+                                </div>
+                            </div>
+
+                            <div className="text-center mb-5">
+                                <img src={currentBook?.imageUrl} alt="" className="img-fluid rounded shadow-lg mb-5" style={{ maxWidth: '300px' }} />
+                            </div>
+
+                            <div className="reader-text mx-auto" style={{ maxWidth: '700px', fontSize: '1.2rem', lineHeight: '1.8', color: '#000000' }}>
+                                <p><span className="display-4 fw-bold float-start me-3" style={{ lineHeight: '0.8', color: '#000000' }}>T</span>he air in the Silent Library did not just carry silence; it carried the weight of a thousand unspoken thoughts. {currentBook?.author} moved his candle along the shelf, the flickering flame dancing across the spines of books that had not been opened in centuries. These were the Whispering Manuscripts—rare volumes rumored to contain the very echoes of their authors' final moments.</p>
+                                <p>He stopped at a shelf made of dark, petrified oak. There, bound in silver-threaded silk, lay the journal of the last Archivist. As Elias reached out, a soft murmur seemed to fill the room, like the distant sound of waves crashing against a shore of glass. It wasn't sound, precisely, but a vibration in his marrow.</p>
+                                <p>"Do you hear them too?" a voice asked from the shadows. Elias didn't startle; he had expected company. In the Silent Library, one was never truly alone.</p>
+                            </div>
+
+                            <div className="d-flex justify-content-between align-items-center mt-5 pt-5 pb-5 mb-5">
+                                <button className="btn btn-link text-dark text-decoration-none fw-bold" style={{ color: '#000000' }}><i className="fa-solid fa-chevron-left me-2"></i> Previous</button>
+                                <div className="d-flex flex-column align-items-center gap-2">
+                                    <span className="small text-muted">Page 114 of 342</span>
+                                    <div className="progress" style={{ width: '200px', height: '4px' }}>
+                                        <div className="progress-bar bg-dark" style={{ width: '33%' }}></div>
+                                    </div>
+                                </div>
+                                <button className="btn btn-link text-dark text-decoration-none fw-bold" style={{ color: '#000000' }}>Next <i className="fa-solid fa-chevron-right ms-2"></i></button>
+                            </div>
                         </div>
-                        <div className="reader-spread">
-                            <div className="reader-page left p-5"><h1 className="fw-bold mb-4">{currentBook?.title}</h1><p className="lead">{currentBook?.description || 'Interactive digital reading experience.'}</p></div>
-                            <div className="reader-page right p-5 text-center"><img src={currentBook?.imageUrl || 'https://via.placeholder.com/250x350'} alt="" className="img-fluid rounded shadow-lg" style={{maxHeight: '350px'}} /></div>
+
+                        {/* Bottom Controls */}
+                        <div className="reader-bottom-controls" style={{ position: 'sticky', bottom: 0, zIndex: 100, background: '#f8f9fa', borderTop: '1px solid #dee2e6' }}>
+                            <div className="d-flex align-items-center gap-3">
+                                <div className="bg-warning rounded-circle p-2 text-white">
+                                    <i className="fa-solid fa-music"></i>
+                                </div>
+                                <div>
+                                    <span className="small text-muted text-uppercase fw-bold" style={{ fontSize: '0.6rem' }}>Lofi Study Session</span>
+                                    <h6 className="mb-0 fw-bold" style={{ color: '#000000' }}>Coffee Shop Ambience - 2:45</h6>
+                                </div>
+                            </div>
+                            <div className="d-flex align-items-center gap-4 text-dark fs-5">
+                                <i className="fa-solid fa-backward-step cursor-pointer"></i>
+                                <i className="fa-solid fa-pause cursor-pointer fs-3"></i>
+                                <i className="fa-solid fa-forward-step cursor-pointer"></i>
+                            </div>
+                            <div className="d-flex align-items-center gap-3">
+                                <i className="fa-solid fa-volume-high text-muted"></i>
+                                <div className="progress" style={{ width: '100px', height: '4px' }}>
+                                    <div className="progress-bar bg-dark" style={{ width: '60%' }}></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 )}

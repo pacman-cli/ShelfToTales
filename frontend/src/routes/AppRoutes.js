@@ -17,6 +17,7 @@ import HelpDesk from '../pages/Company/HelpDesk';
 import Pricing from '../pages/Company/Pricing';
 import PrivacyPolicy from '../pages/Company/PrivacyPolicy';
 import BooksGridView from '../pages/Books/BooksGridView';
+import BookListPage from '../pages/Books/BookListPage';
 import ShopList from '../pages/Shop/ShopList';
 import BooksGridViewSidebar from '../pages/Books/BooksGridViewSidebar';
 import BooksListViewSidebar from '../pages/Books/BooksListViewSidebar';
@@ -69,6 +70,7 @@ function AppRoutes(props){
 					<Route path='/privacy-policy' exact element={<PrivacyPolicy/>} />
 					<Route path='/books-grid-view' exact element={<BooksGridView/>} />
 					<Route path='/books-list' exact element={<ShopList/>} />
+					<Route path='/book-list' exact element={<BookListPage/>} />
 					<Route path='/shop-list' exact element={<ShopList/>} />
 					<Route path='/books-grid-view-sidebar' exact element={<BooksGridViewSidebar/>} />
 					<Route path='/books-list-view-sidebar' exact element={<BooksListViewSidebar/>} />

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Collapse, Dropdown } from 'react-bootstrap';
-import { bookService, orderService } from '../../api/api';
+import { bookService, wishlistService } from '../../api/api';
 import Swal from 'sweetalert2';
 
 //Component
@@ -29,12 +29,12 @@ function BooksGridView() {
         fetchBooks();
     }, []);
 
-    const handleAddToCart = async (bookId) => {
+    const handleAddToWishlist = async (bookId) => {
         try {
-            await orderService.addToCart(bookId, 1);
-            Swal.fire('Success', 'Added to cart', 'success');
+            await wishlistService.addToWishlist(bookId);
+            Swal.fire('Success', 'Added to wishlist', 'success');
         } catch (error) {
-            Swal.fire('Error', 'Please login to add to cart', 'error');
+            Swal.fire('Error', 'Please login to add to wishlist', 'error');
         }
     };
 
@@ -89,8 +89,8 @@ function BooksGridView() {
                                                     <span className="price-num">${data.discountPrice || data.price}</span>
                                                     {data.discountPrice && <del>${data.price}</del>}
                                                 </div>
-                                                <button onClick={() => handleAddToCart(data.id)} className="btn btn-secondary box-btn btnhover btnhover2">
-                                                    <i className="flaticon-shopping-cart-1 m-r10"></i> Add to cart
+                                                <button onClick={() => handleAddToWishlist(data.id)} className="btn btn-secondary box-btn btnhover btnhover2">
+                                                    <i className="flaticon-heart m-r10"></i> Add to wishlist
                                                 </button>
                                             </div>
                                         </div>

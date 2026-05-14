@@ -28,6 +28,10 @@ export const MenuListArray2 = [
                 to: '/virtual-bookshelf',
             },
             {
+                title: 'Book List',
+                to: '/book-list',
+            },
+            {
                 title: 'My Profile',
                 to: '/my-profile',
             },

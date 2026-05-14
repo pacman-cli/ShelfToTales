@@ -1,0 +1,51 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: postgres:16-alpine
+    container_name: shelftotales-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: shelftotalesdb
+      POSTGRES_USER: shelftotales
+      POSTGRES_PASSWORD: shelftotales_password
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U shelftotales"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # Spring Boot Application
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: shelftotales-backend
+    restart: unless-stopped
+    ports:
+      - "8080:8080"
+    environment:
+      DB_URL: jdbc:postgresql://postgres:5432/shelftotalesdb
+      DB_DRIVER: org.postgresql.Driver
+      DB_USERNAME: shelftotales
+      DB_PASSWORD: shelftotales_password
+      DB_DIALECT: org.hibernate.dialect.PostgreSQLDialect
+      H2_CONSOLE_ENABLED: false
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - shelftotales-network
+
+volumes:
+  postgres_data:
+    driver: local
+
+networks:
+  shelftotales-network:
+    driver: bridge

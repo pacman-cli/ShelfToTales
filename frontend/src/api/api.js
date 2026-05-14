@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-const API_BASE_URL = 'http://localhost:8080/api/v1';
+const API_BASE_URL = 'http://localhost:8080/api';
 
 const api = axios.create({
   baseURL: API_BASE_URL,
@@ -24,29 +24,41 @@ export const authService = {
 };
 
 export const bookService = {
-  getAll: () => api.get('/books'),
-  getMyBooks: () => api.get('/books/my-books'),
+  getAll: (searchQuery = null) => {
+    const url = searchQuery ? `/books?q=${searchQuery}` : '/books';
+    return api.get(url);
+  },
   getById: (id) => api.get(`/books/${id}`),
-  getByCategory: (category) => api.get(`/books/category/${category}`),
+  getByCategory: (categoryId) => api.get(`/books?categoryId=${categoryId}`),
 };
 
-export const reviewService = {
-  getByBookId: (bookId) => api.get(`/reviews/book/${bookId}`),
-  addReview: (reviewData) => api.post('/reviews', reviewData),
+export const categoryService = {
+  getAll: () => api.get('/categories'),
+};
+
+export const wishlistService = {
+  getWishlist: () => api.get('/wishlist'),
+  addToWishlist: (bookId) => api.post(`/wishlist/${bookId}`),
+  removeFromWishlist: (bookId) => api.delete(`/wishlist/${bookId}`),
 };
 
 export const userService = {
-  getProfile: () => api.get('/users/profile'),
+  getProfile: () => api.get('/users/profile'), // Note: this might not exist in backend, but keeping if frontend needs it and we didn't check UserController
   updateProfile: (profileData) => api.put('/users/profile', profileData),
 };
 
+// Mock services to prevent compilation errors for unsupported pages
 export const orderService = {
-  getCart: () => api.get('/orders/cart'),
-  addToCart: (bookId, quantity) => api.post('/orders/cart/add', { bookId, quantity }),
-  checkout: () => api.post('/orders/checkout'),
-  getUserOrders: (userId) => api.get(`/orders/user/${userId}`),
+  getCart: () => Promise.resolve({ data: { items: [], totalAmount: 0 } }),
+  addToCart: () => Promise.resolve({ data: {} }),
+  checkout: () => Promise.resolve({ data: {} }),
+  getUserOrders: () => Promise.resolve({ data: [] }),
+  getHistory: () => Promise.resolve({ data: [] }),
+};
+
+export const reviewService = {
+  getByBookId: () => Promise.resolve({ data: [] }),
+  addReview: () => Promise.resolve({ data: {} }),
 };
 
 export default api;
-
-

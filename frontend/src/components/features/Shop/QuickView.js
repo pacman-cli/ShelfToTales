@@ -11,11 +11,11 @@ function QuickView({ show, onHide, book }) {
             <Modal.Body className="p-4 pt-0">
                 <div className="row">
                     <div className="col-md-5 mb-4 mb-md-0">
-                        <img src={book.imageUrl} alt={book.title} className="img-fluid rounded shadow" style={{ width: '100%', height: '400px', objectFit: 'cover' }} />
+                        <img src={book.coverUrl} alt={book.title} className="img-fluid rounded shadow" style={{ width: '100%', height: '400px', objectFit: 'cover' }} />
                     </div>
                     <div className="col-md-7">
                         <div className="dz-content">
-                            <span className="badge bg-primary mb-2">{book.category}</span>
+                            <span className="badge bg-primary mb-2">{book.category?.name}</span>
                             <h2 className="title mb-2">{book.title}</h2>
                             <div className="d-flex align-items-center mb-3">
                                 <ul className="dz-rating d-flex text-warning list-unstyled mb-0 me-3">

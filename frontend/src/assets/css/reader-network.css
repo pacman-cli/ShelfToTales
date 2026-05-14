@@ -223,6 +223,12 @@
 }
 
 /* Reader View */
+.reader-view-layout-wrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+}
+
 .reader-view-layout {
     display: flex;
     height: calc(100vh - 100px);

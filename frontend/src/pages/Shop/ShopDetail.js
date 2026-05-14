@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Nav, Tab } from 'react-bootstrap';
-import { bookService, reviewService, orderService } from '../../api/api';
+import { bookService, wishlistService } from '../../api/api';
 import Swal from 'sweetalert2';
 
 //Component
@@ -50,8 +50,8 @@ function ShopDetail(){
             try {
                 const bookRes = await bookService.getById(id);
                 setBook(bookRes.data);
-                const reviewRes = await reviewService.getByBookId(id);
-                setReviews(reviewRes.data);
+                // Reviews are currently not supported by the backend, using empty array
+                setReviews([]);
             } catch (error) {
                 console.error('Error fetching book data:', error);
             }
@@ -59,27 +59,18 @@ function ShopDetail(){
         fetchData();
     }, [id]);
 
-    const handleAddToCart = async () => {
+    const handleAddToWishlist = async () => {
         try {
-            await orderService.addToCart(id, count);
-            Swal.fire('Success', 'Added to cart', 'success');
+            await wishlistService.addToWishlist(id);
+            Swal.fire('Success', 'Added to wishlist', 'success');
         } catch (error) {
-            Swal.fire('Error', 'Please login to add to cart', 'error');
+            Swal.fire('Error', 'Please login to add to wishlist', 'error');
         }
     };
 
     const handleReviewSubmit = async (e) => {
         e.preventDefault();
-        try {
-            await reviewService.addReview({ bookId: id, rating, comment });
-            Swal.fire('Success', 'Review submitted', 'success');
-            setComment('');
-            // Refresh reviews
-            const reviewRes = await reviewService.getByBookId(id);
-            setReviews(reviewRes.data);
-        } catch (error) {
-            Swal.fire('Error', 'Failed to submit review. Please login.', 'error');
-        }
+        Swal.fire('Info', 'Reviews are currently disabled', 'info');
     };
 
     if (!book) return <div>Loading...</div>;
@@ -87,7 +78,7 @@ function ShopDetail(){
     const tableDetail = [
         {tablehead:'Book Title', tabledata: book.title},
         {tablehead:'Author', tabledata: book.author},
-        {tablehead:'Category', tabledata: book.category},
+        {tablehead:'Category', tabledata: book.category?.name},
         {tablehead:'Stock', tabledata: book.stock},
     ];
 
@@ -100,7 +91,7 @@ function ShopDetail(){
                             <div className="col">
                                 <div className="dz-box">
                                     <div className="dz-media">
-                                        <img src={book.imageUrl} alt="book" style={{maxWidth: '300px'}} />
+                                        <img src={book.coverUrl} alt="book" style={{maxWidth: '300px'}} />
                                     </div>
                                     <div className="dz-content">
                                         <div className="dz-header">
@@ -150,9 +141,8 @@ function ShopDetail(){
                                                             >
                                                                 <i className="ti-minus"></i>
                                                             </button> 
-                                                        
-                                                    </div>
-                                                    <button onClick={handleAddToCart} className="btn btn-primary btnhover btnhover2"><i className="flaticon-shopping-cart-1"></i> <span>Add to cart</span></button>
+                                                        </div>
+                                                    <button onClick={handleAddToWishlist} className="btn btn-primary btnhover btnhover2"><i className="flaticon-heart"></i> <span>Add to wishlist</span></button>
                                                 </div>
                                             </div>
                                         </div>
