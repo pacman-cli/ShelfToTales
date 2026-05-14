@@ -8,10 +8,41 @@ import ClientsSlider from '../../components/features/Home/ClientsSlider';
 import CounterSection from '../../components/common/CounterSection';
 import NewsLetter from '../../components/features/NewsLetter';
 import PageTitle from '../../components/layout/PageTitle';
+import { Collapse, Dropdown } from 'react-bootstrap';
+
+const lableBlogData = [
+    {name:'Architecture'},
+    {name:'Art'},
+    {name:'Action'},
+    {name:'Biography & Autobiography'},
+    {name:'Body, Mind & Spirit'},
+    {name:'Business & Economics'},    
+    {name:'Children Fiction'},
+    {name:'Children Non-Fiction'},
+    {name:'Comics & Graphic Novels'},
+    {name:'Cooking'},
+    {name:'Crafts & Hobbies'},
+    {name:'Design'},
+    {name:'Drama'},
+    {name:'Education'},
+    {name:'Family & Relationships'},
+    {name:'Fiction'},
+    {name:'Foreign Language Study'},
+    {name:'Games'},
+    {name:'Gardening'},
+    {name:'Health & Fitness'},
+    {name:'History'},
+    {name:'House & Home'},
+    {name:'Humor'},
+    {name:'Literary Collections'},
+    {name:'Mathematics'}
+];
 
 function BookListPage() {
     const [books, setBooks] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [accordBtn, setAccordBtn] = useState();
+    const [selectBtn, setSelectBtn] = useState('Newest');
 
     useEffect(() => {
         const fetchBooks = async () => {
@@ -59,74 +90,114 @@ function BookListPage() {
             
             <section className="content-inner-1 border-bottom">
                 <div className="container">
-                    {/* Title */}
-                    <div className="d-flex justify-content-between align-items-center m-b20">
-                        <h4 className="title mb-0 fw-bold" style={{ color: '#1A162E' }}>Books</h4>
+                    <div className="d-flex justify-content-between align-items-center">
+                        <h4 className="title">Books</h4>
+                        <Link to={"#"} className="btn btn-primary panel-btn">Filter</Link>
                     </div>
 
-                    {/* Toolbar */}
-                    <div className="filter-area m-b30 p-3 bg-white rounded-3 border d-flex justify-content-between align-items-center shadow-sm">
-                        <div className="d-flex align-items-center gap-4 ps-2">
-                            <Link to="/book-list" className="text-decoration-none" style={{ color: '#1A162E' }}>
-                                <i className="fa-solid fa-bars fa-lg"></i>
-                            </Link>
-                            <Link to="/book-list" className="text-decoration-none" style={{ color: '#1A162E' }}>
-                                <i className="fa-solid fa-table-cells fa-lg"></i>
-                            </Link>
-                            <Link to="/book-list" className="text-decoration-none" style={{ color: '#1A162E' }}>
-                                <i className="fa-solid fa-table-list fa-lg"></i>
-                            </Link>
-                        </div>
-                        <div className="d-flex align-items-center gap-4 pe-2">
-                            <div className="dropdown">
-                                <button className="btn btn-link fw-bold text-decoration-none d-flex align-items-center gap-2 p-0" type="button" style={{ color: '#1A162E' }}>
-                                    <i className="fa-solid fa-list-ul"></i> Categories
-                                </button>
+                    <div className="filter-area m-b30">
+                        <div className="grid-area">
+                            <div className="shop-tab">
+                                <ul className="nav text-center product-filter justify-content-end" role="tablist">
+                                    <li className="nav-item">
+                                        <Link to={"/shop-list"} className="nav-link active">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M3 5H21C21.2652 5 21.5196 4.89464 21.7071 4.7071C21.8946 4.51957 22 4.26521 22 4C22 3.73478 21.8946 3.48043 21.7071 3.29289C21.5196 3.10536 21.2652 3 21 3H3C2.73478 3 2.48043 3.10536 2.29289 3.29289C2.10536 3.48043 2 3.73478 2 4C2 4.26521 2.10536 4.51957 2.29289 4.7071C2.48043 4.89464 2.73478 5 3 5Z" fill="#AAAAAA"></path>
+                                            <path d="M3 13H21C21.2652 13 21.5196 12.8947 21.7071 12.7071C21.8946 12.5196 22 12.2652 22 12C22 11.7348 21.8946 11.4804 21.7071 11.2929C21.5196 11.1054 21.2652 11 21 11H3C2.73478 11 2.48043 11.1054 2.29289 11.2929C2.10536 11.4804 2 11.7348 2 12C2 12.2652 2.10536 12.5196 2.29289 12.7071C2.48043 12.8947 2.73478 13 3 13Z" fill="#AAAAAA"></path>
+                                            <path d="M3 21H21C21.2652 21 21.5196 20.8947 21.7071 20.7071C21.8946 20.5196 22 20.2652 22 20C22 19.7348 21.8946 19.4804 21.7071 19.2929C21.5196 19.1054 21.2652 19 21 19H3C2.73478 19 2.48043 19.1054 2.29289 19.2929C2.10536 19.4804 2 19.7348 2 20C2 20.2652 2.10536 20.5196 2.29289 20.7071C2.48043 20.8947 2.73478 21 3 21Z" fill="#AAAAAA"></path>
+                                            </svg>
+                                        </Link>
+                                    </li>
+                                    <li className="nav-item">
+                                        <Link to={"/books-grid-view"} className="nav-link">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M3 11H10C10.2652 11 10.5196 10.8946 10.7071 10.7071C10.8946 10.5196 11 10.2652 11 10V3C11 2.73478 10.8946 2.48043 10.7071 2.29289C10.5196 2.10536 10.2652 2 10 2H3C2.73478 2 2.48043 2.10536 2.29289 2.29289C2.10536 2.48043 2 2.73478 2 3V10C2 10.2652 2.10536 10.5196 2.29289 10.7071C2.48043 10.8946 2.73478 11 3 11ZM4 4H9V9H4V4Z" fill="#AAAAAA"></path>
+                                            <path d="M14 11H21C21.2652 11 21.5196 10.8946 21.7071 10.7071C21.8946 10.5196 22 10.2652 22 10V3C22 2.73478 21.8946 2.48043 21.7071 2.29289C21.5196 2.10536 21.2652 2 21 2H14C13.7348 2 13.4804 2.10536 13.2929 2.29289C13.1054 2.48043 13 2.73478 13 3V10C13 10.2652 13.1054 10.5196 13.2929 10.7071C13.4804 10.8946 13.7348 11 14 11ZM15 4H20V9H15V4Z" fill="#AAAAAA"></path>
+                                            <path d="M3 22H10C10.2652 22 10.5196 21.8946 10.7071 21.7071C10.8946 21.5196 11 21.2652 11 21V14C11 13.7348 10.8946 13.4804 10.7071 13.2929C10.5196 13.1054 10.2652 13 10 13H3C2.73478 13 2.48043 13.1054 2.29289 13.2929C2.10536 13.4804 2 13.7348 2 14V21C2 21.2652 2.10536 21.5196 2.29289 21.7071C2.48043 21.8946 2.73478 22 3 22ZM4 15H9V20H4V15Z" fill="#AAAAAA"></path>
+                                            <path d="M14 22H21C21.2652 22 21.5196 21.8946 21.7071 21.7071C21.8946 21.5196 22 21.2652 22 21V14C22 13.7348 21.8946 13.4804 21.7071 13.2929C21.5196 13.1054 21.2652 13 21 13H14C13.7348 13 13.4804 13.1054 13.2929 13.2929C13.1054 13.4804 13 13.7348 13 14V21C13 21.2652 13.1054 21.5196 13.2929 21.7071C13.4804 21.8946 13.7348 22 14 22ZM15 15H20V20H15V15Z" fill="#AAAAAA"></path>
+                                            </svg>
+                                        </Link>
+                                    </li>
+                                    <li className="nav-item">
+                                        <Link to={"/books-grid-view-sidebar"} className="nav-link">
+                                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                            <path d="M3 22H21C21.2652 22 21.5196 21.8946 21.7071 21.7071C21.8946 21.5196 22 21.2652 22 21V3C22 2.73478 21.8946 2.48043 21.7071 2.29289C21.5196 2.10536 21.2652 2 21 2H3C2.73478 2 2.48043 2.10536 2.29289 2.29289C2.10536 2.48043 2 2.73478 2 3V21C2 21.2652 2.10536 21.5196 2.29289 21.7071C2.48043 21.8946 2.73478 22 3 22ZM13 4H20V11H13V4ZM13 13H20V20H13V13ZM4 4H11V20H4V4Z" fill="#AAAAAA"></path>
+                                            </svg>
+                                        </Link>
+                                    </li>
+                                </ul>
                             </div>
-                            <div className="dropdown">
-                                <button className="btn btn-link fw-bold text-decoration-none d-flex align-items-center gap-2 p-0" type="button" style={{ color: '#1A162E' }}>
-                                    <i className="fa-solid fa-arrow-down-wide-short"></i> Newest <i className="fa-solid fa-caret-down small ms-1"></i>
-                                </button>
+                        </div>
+                        <div className="category">
+                            <div className="filter-category">
+                                <Link to={"#"} data-bs-toggle="collapse"  
+                                    onClick={() => setAccordBtn(!accordBtn)}
+                                >
+                                    <i className="fas fa-list me-2"></i>
+                                    Categories
+                                </Link>
+                            </div>
+                            <div className="form-group">
+                                <i className="fas fa-sort-amount-down me-2 text-secondary"></i>                                   
+                                <Dropdown>
+                                    <Dropdown.Toggle  className="i-false">{selectBtn} <i className="ms-4 font-14 fa-solid fa-caret-down" /></Dropdown.Toggle>
+                                    <Dropdown.Menu>
+                                        <Dropdown.Item onClick={()=>setSelectBtn('Newest')}>Newest</Dropdown.Item>
+                                        <Dropdown.Item onClick={()=>setSelectBtn('1 Days')}>1 Days</Dropdown.Item>
+                                        <Dropdown.Item onClick={()=>setSelectBtn('2 Week')}>2 Week</Dropdown.Item>
+                                        <Dropdown.Item onClick={()=>setSelectBtn('3 Week')}>3 Weeks</Dropdown.Item>
+                                        <Dropdown.Item onClick={()=>setSelectBtn('1 Month')}>1 Month</Dropdown.Item>
+                                    </Dropdown.Menu>
+                                </Dropdown>
                             </div>
                         </div>
                     </div>
+                    <Collapse in={accordBtn} className="acod-content">
+                        <div>
+                            <div className="widget widget_services style-2">
+                                {lableBlogData.map((item, ind)=>(
+                                    <div className="form-check search-content" key={ind}>
+                                        <input className="form-check-input" type="checkbox" value="" id={`productCheckBox${ind+1}`} /> 
+                                        <label className="form-check-label" htmlFor={`productCheckBox${ind+1}`}>
+                                            {item.name}
+                                        </label>
+                                    </div>
+                                ))}
+                            </div>   
+                        </div>
+                    </Collapse>
 
                     <div className="row book-grid-row">
-                        {books.map((book, index) => (
-                            <div className="col-xl-3 col-lg-4 col-md-6 col-sm-6 m-b30" key={index}>
-                                <div className="dz-shop-card style-1 bg-white p-3 rounded shadow-sm h-100 d-flex flex-column">
-                                    <div className="dz-media position-relative mb-3 overflow-hidden rounded">
-                                        <img src={book.coverUrl} alt={book.title} style={{ height: '300px', width: '100%', objectFit: 'cover' }} />
-                                        <div className="bookmark-btn position-absolute top-0 end-0 m-3">
-                                            <button className="btn btn-white btn-sm rounded-circle shadow-sm" style={{ width: '35px', height: '35px', padding: '0' }}>
-                                                <i className="fa-regular fa-heart text-muted"></i>
-                                            </button>
-                                        </div>
-                                        <div className="shop-card-btn position-absolute bottom-0 start-0 w-100 p-2 opacity-0 transition-3s">
-                                            <button onClick={() => handleAddToWishlist(book.id)} className="btn btn-primary w-100 btn-sm">
-                                                <i className="fa-solid fa-heart me-2"></i> Add To Wishlist
-                                            </button>
-                                        </div>
+                        {books.map((data, i) => (
+                            <div className="col-book style-2" key={i}>
+                                <div className="dz-shop-card style-1">
+                                    <div className="dz-media">
+                                        <img src={data.coverUrl || data.imageUrl} alt="book" />									
                                     </div>
-                                    <div className="dz-content text-center flex-grow-1">
-                                        <h5 className="title mb-2">
-                                            <Link to={`/books-detail/${book.id}`} className="text-dark fw-bold">{book.title}</Link>
-                                        </h5>
-                                        <div className="text-uppercase small fw-bold mb-2" style={{ color: '#E9AD28' }}>
-                                            {book.category?.name || 'ADVENTURE'}
-                                        </div>
-                                        <div className="dz-rating mb-2">
-                                            <ul className="d-flex justify-content-center list-unstyled mb-0 text-yellow">
-                                                <li><i className="fa-solid fa-star"></i></li>
-                                                <li><i className="fa-solid fa-star"></i></li>
-                                                <li><i className="fa-solid fa-star"></i></li>
-                                                <li><i className="fa-solid fa-star"></i></li>
-                                                <li><i className="fa-solid fa-star"></i></li>
-                                            </ul>
-                                        </div>
-                                        <div className="price mb-0">
-                                            <span className="h5 fw-bold" style={{ color: '#E9AD28' }}>${book.discountPrice || book.price}</span>
-                                            {book.discountPrice && <del className="ms-2 text-muted small">${book.price}</del>}
+                                    <div className="bookmark-btn style-2">
+                                        <input className="form-check-input" type="checkbox" id={`flexCheckDefault${i+21}`} />
+                                        <label className="form-check-label" htmlFor={`flexCheckDefault${i+21}`}>
+                                            <i className="flaticon-heart"></i>
+                                        </label>
+                                    </div> 
+                                    <div className="dz-content">
+                                        <h5 className="title"><Link to={`/books-detail/${data.id}`}>{data.title}</Link></h5>
+                                        <ul className="dz-tags">
+                                            <li><Link to={"#"}>{data.category?.name || 'ADVENTURE'}</Link></li>
+                                        </ul>
+                                        <ul className="dz-rating">
+                                            <li><i className="flaticon-star text-yellow"></i></li>	
+                                            <li><i className="flaticon-star text-yellow"></i></li>	
+                                            <li><i className="flaticon-star text-yellow"></i></li>	
+                                            <li><i className="flaticon-star text-yellow"></i></li>		
+                                            <li><i className="flaticon-star text-muted"></i></li>		
+                                        </ul>
+                                        <div className="book-footer">
+                                            <div className="price">
+                                                <span className="price-num">${data.discountPrice || data.price}</span>
+                                                {data.discountPrice && <del>${data.price}</del>}
+                                            </div>
+                                            <Link to={"/shop-cart"} className="btn btn-secondary box-btn btnhover btnhover2"><i className="flaticon-shopping-cart-1 m-r10"></i> Add to cart</Link>
                                         </div>
                                     </div>
                                 </div>
@@ -134,19 +205,18 @@ function BookListPage() {
                         ))}
                     </div>
 
-                    {/* Pagination Section */}
-                    <div className="row align-items-center mt-5">
+                    <div className="row mt-0">
                         <div className="col-md-6">
-                            <p className="mb-0 text-muted fw-bold">Showing {books.length} from 50 data</p>
+                            <p className="page-text">Showing {books.length} from 50 data</p>
                         </div>
                         <div className="col-md-6">
-                            <nav aria-label="Page navigation">
-                                <ul className="pagination justify-content-end mb-0 gap-2 border-0">
-                                    <li className="page-item"><Link className="page-link border-0 bg-light rounded text-dark px-3 py-2" to="#">Prev</Link></li>
-                                    <li className="page-item active"><Link className="page-link border-0 rounded text-white px-3 py-2" style={{ backgroundColor: '#1A162E' }} to="#">1</Link></li>
-                                    <li className="page-item"><Link className="page-link border-0 bg-light rounded text-dark px-3 py-2" to="#">2</Link></li>
-                                    <li className="page-item"><Link className="page-link border-0 bg-light rounded text-dark px-3 py-2" to="#">3</Link></li>
-                                    <li className="page-item"><Link className="page-link border-0 bg-light rounded text-dark px-3 py-2" to="#">Next</Link></li>
+                            <nav aria-label="Blog Pagination">
+                                <ul className="pagination style-1 p-t20">
+                                    <li className="page-item"><Link className="page-link prev" to={"#"}>Prev</Link></li>
+                                    <li className="page-item"><Link className="page-link active" to={"#"}>1</Link></li>
+                                    <li className="page-item"><Link className="page-link" to={"#"}>2</Link></li>
+                                    <li className="page-item"><Link className="page-link" to={"#"}>3</Link></li>
+                                    <li className="page-item"><Link className="page-link next" to={"#"}>Next</Link></li>
                                 </ul>
                             </nav>
                         </div>
@@ -170,21 +240,7 @@ function BookListPage() {
 
             <NewsLetter />
             
-            <style dangerouslySetInnerHTML={{ __html: `
-                .text-yellow {
-                    color: #FFC107;
-                }
-                .dz-shop-card.style-1 .dz-media:hover .shop-card-btn {
-                    opacity: 1 !important;
-                }
-                .transition-3s {
-                    transition: all 0.3s ease;
-                }
-                .pagination .page-link:hover {
-                    background-color: #1A162E !important;
-                    color: white !important;
-                }
-            ` }} />
+
         </div>
     );
 }
