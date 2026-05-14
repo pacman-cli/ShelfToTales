@@ -26,7 +26,7 @@ function Faq(){
                             <div className="col-lg-6 align-self-center mb-4">
                                 <div className="faq-content-box">
                                     <div className="section-head">
-                                        <h2 className="title">What Is Bookland?</h2>
+                                        <h2 className="title">What Is Shelf To Tales?</h2>
                                         <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation</p>
                                     </div>
                                     <div className="faq-accordion">

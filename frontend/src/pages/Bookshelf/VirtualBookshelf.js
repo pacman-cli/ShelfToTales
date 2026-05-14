@@ -3,6 +3,7 @@ import { bookService } from '../../api/api';
 import { useNavigate } from 'react-router-dom';
 import './VirtualBookshelf.css';
 import Swal from 'sweetalert2';
+import logoImage from '../../assets/images/logo.png';
 
 // Professional Demo Books
 const demoBooksList = [
@@ -29,7 +30,7 @@ function VirtualBookshelf() {
     ]);
     const [activeBookshelfId, setActiveBookshelfId] = useState(1);
     
-    const [logoUrl, setLogoUrl] = useState('https://bookland.dexignzone.com/react/demo/static/media/logo.64188701.png');
+    const [logoUrl, setLogoUrl] = useState(logoImage);
     const [menuVisibility, setMenuVisibility] = useState({ logo: true, title: true, search: true, share: true });
     const [activeSection, setActiveSection] = useState('info');
 

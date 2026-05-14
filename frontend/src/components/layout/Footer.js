@@ -61,7 +61,7 @@ function Footer({footerChange, logoImage}){
 									<div className="footer-logo logo-white">
 										<Link to={"/"}><img src={logoImage} alt="" /></Link> 
 									</div>
-									<p className="text">Bookland is a Book Store Ecommerce Website Template by DexignZone lorem ipsum dolor sit</p>
+									<p className="text">Shelf To Tales is a Book Store Ecommerce Website Template by DexignZone lorem ipsum dolor sit</p>
 									<div className="dz-social-icon style-1">
 										<ul>
 											<li><a href="https://www.facebook.com/dexignzone" target="_blank" rel="noreferrer"><i className="fa-brands fa-facebook-f"></i></a></li>
@@ -86,9 +86,9 @@ function Footer({footerChange, logoImage}){
 							</div>
 							<div className="col-xl-2 col-lg-3 col-sm-4 col-4 wow fadeInUp" data-wow-delay="0.3s">
 								<div className="widget widget_services">
-									<h5 className="footer-title">Bookland ?</h5>
+									<h5 className="footer-title">Shelf To Tales ?</h5>
 									<ul>
-										<li><Link to={"/"}>Bookland</Link></li>
+										<li><Link to={"/"}>Shelf To Tales</Link></li>
 										<li><Link to={"/books-detail"}>Book Details</Link></li>
 										<li><Link to={"/blog-detail"}>Blog Details</Link></li>
 										<li><Link to={"/books-grid-view"}>Shop</Link></li>
@@ -122,8 +122,8 @@ function Footer({footerChange, logoImage}){
 										</li>
 										<li>
 											<i className="flaticon-email"></i> 
-											<span>support@bookland.id<br/>
-											info@bookland.id</span>
+											<span>support@Shelf To Tales.id<br/>
+											info@Shelf To Tales.id</span>
 										</li>
 									</ul>
 								</div>
@@ -135,7 +135,7 @@ function Footer({footerChange, logoImage}){
 					<div className="container">
 						<div className="row fb-inner">
 							<div className="col-lg-6 col-md-12 text-start"> 
-								<p className="copyright-text">Bookland Book Store Ecommerce Website - © {d.getFullYear()} All Rights Reserved</p>
+								<p className="copyright-text">Shelf To Tales Book Store Ecommerce Website - © {d.getFullYear()} All Rights Reserved</p>
 							</div>
 							<div className="col-lg-6 col-md-12 text-end"> 
 								<p>Made with <span className="heart"
