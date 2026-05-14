@@ -1,43 +1,67 @@
 export const MenuListArray2 = [
     {
         title: 'Home',	
-        classsChange: 'sub-menu-down',		
-        content: [
-            {
-                title: 'Home-1',
-                to: '/',					
-            },
-            {
-                title: 'Home-2',
-                to: '/index-2',
-                
-            },            
-            
-        ],
-    },
-    {   
-        title: 'About Us',	
-        to: '/about-us',
+        to: '/',
     },
     {
-        title: 'Pages',
-        classsChange: 'sub-menu-down',        
-        content: [            
+        title: 'Shop',
+        classsChange: 'sub-menu-down',
+        content: [
             {
-                title: 'Virtual Bookshelf',
-                to: '/virtual-bookshelf',
+                title: 'All Books',
+                to: '/books-grid-view-sidebar',
             },
             {
-                title: 'Book List',
+                title: 'New Arrivals',
                 to: '/book-list',
             },
             {
-                title: 'My Profile',
-                to: '/my-profile',
+                title: 'Categories',
+                to: '/books-grid-view',
             },
             {
-                title: 'Services',
-                to: '/services',
+                title: 'Best Sellers',
+                to: '/shop-list',
+            },
+        ],
+    },
+    {
+        title: 'Community',
+        classsChange: 'sub-menu-down',
+        content: [
+            {
+                title: 'Reader Network',
+                to: '/reader-network',
+            },
+            {
+                title: 'Reading Rooms',
+                to: '/reading-room',
+            },
+            {
+                title: 'Reading Dashboard',
+                to: '/reading-dashboard',
+            },
+        ],
+    },
+    {
+        title: 'My Bookshelf',
+        to: '/virtual-bookshelf',
+    },
+    {
+        title: 'Blog',
+        to: '/blog-grid',
+    },
+    {
+        title: 'About',
+        classsChange: 'sub-menu-down',
+        content: [
+            {
+                title: 'About Us',
+                to: '/about-us',
+            },
+            {
+                title: 'Contact Us',
+                to: '/contact-us',
             },
             {
                 title: "FAQ's",
@@ -47,94 +71,6 @@ export const MenuListArray2 = [
                 title: 'Help Desk',
                 to: '/help-desk',
             },
-            {
-                title: 'Coming Soon',
-                to: '/coming-soon',
-            },
-            {
-                title: 'Pricing',
-                to: '/pricing',
-            },
-            {
-                title: 'Privacy Policy',
-                to: '/privacy-policy',
-            },
-            {
-                title: 'Under Construction',
-                to: '/under-construction',
-            },
-            {
-                title: 'Error 404',
-                to: '/error-404',
-            },
-            {
-                title: 'Reader Network',
-                to: '/reader-network',
-            },
-            {
-                title: 'Reading Dashboard',
-                to: '/reading-dashboard',
-            },
-            {
-                title: 'Reading Room',
-                to: '/reading-room',
-            },
         ],
-    },
-    
-    {
-        title: 'Shop',
-        classsChange: 'sub-menu-down',
-        content : [
-            {
-                title: 'Books List',
-                to: '/shop-list',
-            },
-            {
-                title: 'Cart',
-                to: '/shop-cart',
-            },
-            {
-                title: 'Checkout',
-                to: '/shop-checkout',
-            },
-            {
-                title: 'Login',
-                to: '/shop-login',
-            },
-            {
-                title: 'Registration',
-                to: '/shop-registration',
-            },
-        ],
-    },
-    {
-        title: 'Blog',
-        classsChange: 'sub-menu-down',
-        content:[
-            {
-                title:'Blog Grid',
-                to:'/blog-grid',
-            },
-            {
-                title:'Blog Large Sidebar',
-                to:'/blog-large-sidebar',
-            },
-            {
-                title:'Blog List Sidebar',
-                to:'/blog-list-sidebar',
-            },
-            {
-                title:'Blog Details',
-                to:'/blog-detail',
-            },
-            
-        ],
-    },
-    {
-        title: 'Contact Us',	
-        to: '/contact-us',
     },
 ]
-
-
