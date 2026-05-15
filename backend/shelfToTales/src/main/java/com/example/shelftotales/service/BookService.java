@@ -27,7 +27,7 @@ public class BookService {
     public PagedResponse<BookResponse> getBooks(String query, Long categoryId, int page, int size, String sortBy, String sortDir) {
         Sort sort = "desc".equalsIgnoreCase(sortDir) ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Book> bookPage = bookRepository.searchBooks(query, categoryId, pageable);
+        Page<Book> bookPage = bookRepository.searchBooksNative(query, categoryId, pageable);
 
         return PagedResponse.<BookResponse>builder()
                 .content(bookPage.map(this::toResponse).getContent())
