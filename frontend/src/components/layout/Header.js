@@ -14,9 +14,13 @@ import {MenuListArray2} from './MenuListArray2';
 
 function Header(){
 	const [selectBtn, setSelectBtn] = useState('Category');
-	/* for sticky header */
+	const [active, setActive] = useState(null);
 	const [headerFix, setheaderFix] = React.useState(false);
 	const [user, setUser] = useState(null);
+
+	const handleMenuActive = (title) => {
+		setActive(active === title ? null : title);
+	};
 	useEffect(() => {
 		window.addEventListener("scroll", () => {
 			setheaderFix(window.scrollY > 50);
