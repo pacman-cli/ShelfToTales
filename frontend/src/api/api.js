@@ -25,12 +25,9 @@ export const authService = {
 };
 
 export const bookService = {
-  getAll: (searchQuery = null) => {
-    const url = searchQuery ? `/books?q=${searchQuery}` : '/books';
-    return api.get(url);
-  },
+  getAll: (params = {}) => api.get('/books', { params }),
   getById: (id) => api.get(`/books/${id}`),
-  getByCategory: (categoryId) => api.get(`/books?categoryId=${categoryId}`),
+  getByCategory: (categoryId) => api.get(`/books`, { params: { categoryId } }),
 };
 
 export const categoryService = {

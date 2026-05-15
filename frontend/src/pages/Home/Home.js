@@ -59,8 +59,8 @@ function Home() {
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const response = await bookService.getAll();
-                setBooks(response.data?.slice(0, 8) || []);
+                const response = await bookService.getAll({ page: 0, size: 8 });
+                setBooks(response.data?.content || []);
             } catch (error) {
                 console.error('Error fetching books:', error);
             }
@@ -121,11 +121,11 @@ function Home() {
                                                     <img src={book.coverUrl || `https://via.placeholder.com/300x420/${bookColors[i % bookColors.length].replace('#','')}/ffffff?text=${encodeURIComponent(book.title?.substring(0,10) || 'Book')}`} alt={book.title} />
                                                 </div>
                                                 <div className="hero-slide-info">
-                                                    <span className="hero-slide-badge">{book.category?.name || 'Featured'}</span>
+                                                    <span className="hero-slide-badge">{book.categoryName || 'Featured'}</span>
                                                     <h3>{book.title}</h3>
                                                     <p className="hero-slide-author">by {book.author}</p>
                                                     <p className="hero-slide-desc">{book.description?.substring(0, 100) || 'A captivating read that will keep you turning pages late into the night.'}...</p>
-                                                    <div className="hero-slide-price">${book.discountPrice || book.price || '19.99'}</div>
+                                                    <div className="hero-slide-price">${book.price || '19.99'}</div>
                                                 </div>
                                             </Link>
                                         </SwiperSlide>
@@ -211,12 +211,11 @@ function Home() {
                                             </button>
                                         </div>
                                         <div className="book-info">
-                                            <div className="book-category">{book.category?.name || 'General'}</div>
+                                            <div className="book-category">{book.categoryName || 'General'}</div>
                                             <h6>{book.title}</h6>
                                             <div className="book-author">by {book.author}</div>
                                             <div className="book-price">
-                                                ${book.discountPrice || book.price || '19.99'}
-                                                {book.discountPrice && <del>${book.price}</del>}
+                                                $ {book.price || '19.99'}
                                             </div>
                                         </div>
                                     </div>
