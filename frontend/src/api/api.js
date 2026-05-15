@@ -41,8 +41,8 @@ export const wishlistService = {
 };
 
 export const userService = {
-  getProfile: () => api.get('/users/profile'), // Note: this might not exist in backend, but keeping if frontend needs it and we didn't check UserController
-  updateProfile: (profileData) => api.put('/users/profile', profileData),
+  getProfile: () => api.get('/profile'),
+  updateProfile: (profileData) => api.put('/profile', profileData),
 };
 
 // Mock services to prevent compilation errors for unsupported pages
