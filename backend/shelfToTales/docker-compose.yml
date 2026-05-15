@@ -36,6 +36,8 @@ services:
       DB_PASSWORD: shelftotales_password
       DB_DIALECT: org.hibernate.dialect.PostgreSQLDialect
       H2_CONSOLE_ENABLED: false
+      CORS_ALLOWED_ORIGINS: ${FRONTEND_URL:http://localhost:3000},https://yourdomain.com
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
     depends_on:
       postgres:
         condition: service_healthy
