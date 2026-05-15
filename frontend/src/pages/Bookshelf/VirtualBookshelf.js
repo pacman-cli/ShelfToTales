@@ -76,6 +76,16 @@ function VirtualBookshelf() {
                         hidden: stored === 'true' || false,
                     };
                 }) : demoBooksList;
+
+                // Restore saved book order from localStorage
+                try {
+                    const savedOrder = JSON.parse(localStorage.getItem('vbookshelf_order'));
+                    if (savedOrder && savedOrder.length === fetchedBooks.length) {
+                        const bookMap = new Map(fetchedBooks.map(b => [b.id, b]));
+                        fetchedBooks = savedOrder.map(id => bookMap.get(id)).filter(Boolean);
+                    }
+                } catch (_) {}
+
                 setBooks(fetchedBooks);
                 setOriginalBooks(fetchedBooks);
                 if (fetchedBooks.length > 0) setCurrentBook(fetchedBooks[0]);
@@ -158,6 +168,7 @@ function VirtualBookshelf() {
         if (t < 0 || t >= n.length) return;
         [n[index], n[t]] = [n[t], n[index]];
         setBooks(n); setOriginalBooks(n);
+        localStorage.setItem('vbookshelf_order', JSON.stringify(n.map(b => b.id)));
     };
 
     const addNewBookshelf = async () => {
