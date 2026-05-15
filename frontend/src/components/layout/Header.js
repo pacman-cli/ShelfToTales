@@ -16,6 +16,7 @@ function Header(){
 	const [selectBtn, setSelectBtn] = useState('Category');
 	/* for sticky header */
 	const [headerFix, setheaderFix] = React.useState(false);
+	const [user, setUser] = useState(null);
 	useEffect(() => {
 		window.addEventListener("scroll", () => {
 			setheaderFix(window.scrollY > 50);
@@ -27,29 +28,6 @@ function Header(){
 	const showSidebar = () => setSidebarOpen(!sidebarOpen);
 	/*  Toggle btn End  */
 	
-	useEffect(() => {
-		var mainMenu = document.getElementById('OpenMenu'); 
-		if(mainMenu){
-			if(sidebarOpen){
-				mainMenu.classList.add('show');
-			}else{
-				mainMenu.classList.remove('show');
-			}
-		}	
-	});
-	
-	// Menu dropdown list 
-	const [active , setActive] = useState('Home')
-    const handleMenuActive = status => {
-		setActive(status)
-        if(active === status){
-			setActive('');
-		}
-    }
-
-	const [user, setUser] = useState(null);
-	const [cartCount, setCartCount] = useState(0);
-
 	useEffect(() => {
 		const storedUser = localStorage.getItem('user');
 		if (storedUser) {
@@ -93,15 +71,15 @@ function Header(){
 								{user ? (
 									<Dropdown as="li" className="nav-item dropdown profile-dropdown ms-4">
 										<Dropdown.Toggle as="div" className="nav-link i-false" style={{cursor: 'pointer'}}>
-											<img src={profile} alt="/" />
+											<img src={user.profileImageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || 'User')}&background=9cd2ef&color=fff&size=80`} alt="/" style={{width:32,height:32,borderRadius:'50%',objectFit:'cover'}} />
 											<div className="profile-info">
-												<h6 className="title">{user.username}</h6>
+												<h6 className="title">{user.fullName || user.email}</h6>
 												<span>{user.email}</span>
 											</div>
 										</Dropdown.Toggle>
 										<Dropdown.Menu className="dropdown-menu py-0 dropdown-menu-end">
 											<div className="dropdown-header">
-												<h6 className="m-0">{user.username}</h6>
+												<h6 className="m-0">{user.fullName || user.email}</h6>
 												<span>{user.email}</span>
 											</div>
 											<div className="dropdown-body">
