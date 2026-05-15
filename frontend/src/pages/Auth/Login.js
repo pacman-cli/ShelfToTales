@@ -23,7 +23,7 @@ function Login(){
             });
             window.google.accounts.id.renderButton(
                 document.getElementById('google-signin-btn'),
-                { theme: 'outline', size: 'large', width: 300, text: 'continue_with' }
+                { theme: 'outline', size: 'large', width: 250, text: 'continue_with' }
             );
         }
     }, []);
