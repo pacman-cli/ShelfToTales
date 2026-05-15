@@ -12,6 +12,7 @@ import java.util.Optional;
 @Repository
 public interface BookshelfRepository extends JpaRepository<Bookshelf, Long> {
     List<Bookshelf> findByUserIdOrderByPositionAsc(Long userId);
+
     Optional<Bookshelf> findByIdAndUserId(Long id, Long userId);
 
     @Query("SELECT COALESCE(MAX(b.position), -1) + 1 FROM Bookshelf b WHERE b.user.id = :userId")

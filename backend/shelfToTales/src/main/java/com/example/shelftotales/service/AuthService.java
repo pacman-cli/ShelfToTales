@@ -3,6 +3,7 @@ package com.example.shelftotales.service;
 import com.example.shelftotales.dto.AuthResponse;
 import com.example.shelftotales.dto.LoginRequest;
 import com.example.shelftotales.dto.RegisterRequest;
+import com.example.shelftotales.model.AuthProvider;
 import com.example.shelftotales.model.Role;
 import com.example.shelftotales.model.User;
 import com.example.shelftotales.repository.UserRepository;
@@ -24,7 +25,7 @@ public class AuthService {
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
-        if (repository.findByEmail(request.getEmail()).isPresent()) {
+        if (repository.existsByEmail(request.getEmail())) {
             throw new IllegalArgumentException("Email already registered: " + request.getEmail());
         }
 
@@ -33,6 +34,7 @@ public class AuthService {
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
+                .authProvider(AuthProvider.LOCAL)
                 .build();
         repository.save(user);
         var jwtToken = jwtService.generateToken(user);
@@ -45,19 +47,25 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
+        var user = repository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new IllegalArgumentException("User not found: " + request.getEmail()));
+
+        if (user.getAuthProvider() != AuthProvider.LOCAL) {
+            throw new IllegalArgumentException("This account uses " + user.getAuthProvider() + " login. Please sign in with " + user.getAuthProvider() + ".");
+        }
+
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
                         request.getPassword()
                 )
         );
-        var user = repository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + request.getEmail()));
         var jwtToken = jwtService.generateToken(user);
         return AuthResponse.builder()
                 .token(jwtToken)
                 .email(user.getEmail())
                 .fullName(user.getFullName())
+                .profileImageUrl(user.getProfileImageUrl())
                 .role(user.getRole())
                 .build();
     }
