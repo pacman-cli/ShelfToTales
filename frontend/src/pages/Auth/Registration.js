@@ -67,6 +67,10 @@ function Registration(){
                 <h1 className="auth-heading">Ready to start your<br />success story?</h1>
                 <p className="auth-subheading">Signup to our website and start leafing<br />through your favorite literature today!</p>
                 
+                <div id="google-signup-btn" className="auth-google-btn"></div>
+
+                <div className="auth-divider"><span>or</span></div>
+                
                 <form onSubmit={handleRegister}>
                     <div className="auth-input-group">
                         <label className="auth-input-label">Full name</label>
@@ -113,10 +117,6 @@ function Registration(){
                     
                     <button type="submit" className="auth-submit-btn">Sign up</button>
                 </form>
-
-                <div className="auth-divider"><span>or</span></div>
-
-                <div id="google-signup-btn" className="auth-google-btn"></div>
 
                 <div className="auth-switch-link">
                     Already have an account? <Link to="/shop-login">Login here</Link>

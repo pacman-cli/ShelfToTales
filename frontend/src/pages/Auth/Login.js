@@ -65,6 +65,10 @@ function Login(){
                         <h1 className="auth-heading">Welcome Back!</h1>
                         <p className="auth-subheading">Sign in to continue leafing through<br />your favorite literature today.</p>
                         
+                        <div id="google-signin-btn" className="auth-google-btn"></div>
+
+                        <div className="auth-divider"><span>or</span></div>
+                        
                         <form onSubmit={handleLogin}>
                             <div className="auth-input-group">
                                 <label className="auth-input-label">Email</label>
@@ -98,10 +102,6 @@ function Login(){
                             
                             <button type="submit" className="auth-submit-btn">Login</button>
                         </form>
-
-                        <div className="auth-divider"><span>or</span></div>
-
-                        <div id="google-signin-btn" className="auth-google-btn"></div>
 
                         <div className="auth-switch-link">
                             Don't have an account? <Link to="/shop-registration">Sign up here</Link>
