@@ -31,6 +31,12 @@ public class GoogleAuthService {
         String email = (String) payload.get("email");
         String name = (String) payload.get("name");
         String pictureUrl = (String) payload.get("picture");
+        String audience = (String) payload.get("aud");
+
+        // Validate that token was issued for our app
+        if (!"908376284076-qp26p58bj59uatj3am37l9dk6sqm5bcb.apps.googleusercontent.com".equals(audience)) {
+            throw new IllegalArgumentException("Google token not issued for this application");
+        }
 
         if (email == null || email.isBlank()) {
             throw new IllegalArgumentException("Google account has no email");
