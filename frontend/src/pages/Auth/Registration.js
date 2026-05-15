@@ -17,21 +17,16 @@ function Registration(){
     const navigate = useNavigate();
 
     useEffect(() => {
-        const script = document.createElement('script');
-        script.src = 'https://accounts.google.com/gsi/client';
-        script.async = true;
-        script.onload = () => {
-            window.google?.accounts.id.initialize({
+        if (window.google) {
+            window.google.accounts.id.initialize({
                 client_id: GOOGLE_CLIENT_ID,
                 callback: handleGoogleResponse,
             });
-            window.google?.accounts.id.renderButton(
+            window.google.accounts.id.renderButton(
                 document.getElementById('google-signup-btn'),
                 { theme: 'outline', size: 'large', width: 300, text: 'signup_with' }
             );
-        };
-        document.body.appendChild(script);
-        return () => { document.body.removeChild(script); };
+        }
     }, []);
 
     const handleGoogleResponse = async (response) => {
