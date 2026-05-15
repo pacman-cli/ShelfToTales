@@ -30,7 +30,11 @@ public class BookshelfService {
     public BookshelfResponse createBookshelf(BookshelfRequest request) {
         User user = AuthUtils.getCurrentUser(userRepository);
         int position = bookshelfRepository.nextPosition(user.getId());
-        Bookshelf shelf = Bookshelf.builder().name(request.getName()).position(position).user(user).build();
+        Bookshelf shelf = Bookshelf.builder()
+                .name(request.getName())
+                .position(position)
+                .theme(request.getTheme() != null ? request.getTheme() : "glass")
+                .user(user).build();
         return toResponse(bookshelfRepository.save(shelf));
     }
 
@@ -39,7 +43,8 @@ public class BookshelfService {
         User user = AuthUtils.getCurrentUser(userRepository);
         Bookshelf shelf = bookshelfRepository.findByIdAndUserId(id, user.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Bookshelf not found: " + id));
-        shelf.setName(request.getName());
+        if (request.getName() != null) shelf.setName(request.getName());
+        if (request.getTheme() != null) shelf.setTheme(request.getTheme());
         return toResponse(bookshelfRepository.save(shelf));
     }
 
@@ -66,6 +71,7 @@ public class BookshelfService {
     private BookshelfResponse toResponse(Bookshelf shelf) {
         return BookshelfResponse.builder()
                 .id(shelf.getId()).name(shelf.getName()).position(shelf.getPosition())
+                .theme(shelf.getTheme())
                 .bookCount(0).createdAt(shelf.getCreatedAt()).updatedAt(shelf.getUpdatedAt()).build();
     }
 }

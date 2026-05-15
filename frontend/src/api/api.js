@@ -46,6 +46,17 @@ export const userService = {
   updateProfile: (profileData) => api.put('/profile', profileData),
 };
 
+export const bookshelfService = {
+  getAll: () => api.get('/bookshelves'),
+  create: (data) => api.post('/bookshelves', data),
+  update: (id, data) => api.put(`/bookshelves/${id}`, data),
+  delete: (id) => api.delete(`/bookshelves/${id}`),
+  reorder: (shelfIds) => api.post('/bookshelves/reorder', shelfIds),
+  getBooks: (shelfId) => api.get(`/bookshelves/${shelfId}/books`),
+  addBook: (shelfId, bookId) => api.post(`/bookshelves/${shelfId}/books/${bookId}`),
+  removeBook: (shelfId, bookId) => api.delete(`/bookshelves/${shelfId}/books/${bookId}`),
+};
+
 // Mock services to prevent compilation errors for unsupported pages
 export const orderService = {
   getCart: () => Promise.resolve({ data: { items: [], totalAmount: 0 } }),

@@ -1,0 +1,1 @@
+ALTER TABLE bookshelves ADD COLUMN theme VARCHAR(50) NOT NULL DEFAULT 'glass';

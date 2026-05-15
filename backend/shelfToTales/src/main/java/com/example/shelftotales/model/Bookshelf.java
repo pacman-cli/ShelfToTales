@@ -23,6 +23,10 @@ public class Bookshelf {
     @Column(nullable = false)
     private int position;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private String theme = "glass";
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;

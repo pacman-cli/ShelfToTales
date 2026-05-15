@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { bookService } from '../../api/api';
+import { bookService, bookshelfService } from '../../api/api';
 import { useNavigate } from 'react-router-dom';
 import './VirtualBookshelf.css';
 import Swal from 'sweetalert2';
@@ -26,10 +26,9 @@ function VirtualBookshelf() {
     const logoInputRef = useRef(null);
 
     // Multi-Bookshelf State
-    const [bookshelves, setBookshelves] = useState([
-        { id: 1, name: 'Main Bookshelf', description: 'My primary collection.', isFolded: false, theme: 'glass' }
-    ]);
-    const [activeBookshelfId, setActiveBookshelfId] = useState(1);
+    const [bookshelves, setBookshelves] = useState([]);
+    const [activeBookshelfId, setActiveBookshelfId] = useState(null);
+    const [loadingShelves, setLoadingShelves] = useState(true);
     
     const [logoUrl, setLogoUrl] = useState(logoImage);
     const [menuVisibility, setMenuVisibility] = useState({ logo: true, title: true, search: true, share: true });
@@ -47,8 +46,11 @@ function VirtualBookshelf() {
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const response = await bookService.getMyBooks();
-                const data = response.data?.content || response.data || [];
+                const [booksRes, shelvesRes] = await Promise.all([
+                    bookService.getMyBooks(),
+                    bookshelfService.getAll().catch(() => ({ data: [] }))
+                ]);
+                const data = booksRes.data?.content || booksRes.data || [];
                 let fetchedBooks = data.length > 0 ? data.map(b => ({
                     id: b.id?.toString() || Math.random().toString(),
                     title: b.title || 'Untitled',
@@ -60,14 +62,39 @@ function VirtualBookshelf() {
                 setBooks(fetchedBooks);
                 setOriginalBooks(fetchedBooks);
                 if (fetchedBooks.length > 0) setCurrentBook(fetchedBooks[0]);
+
+                const shelfData = shelvesRes.data || [];
+                if (shelfData.length > 0) {
+                    setBookshelves(shelfData.map(s => ({ ...s, isFolded: false, description: '' })));
+                    setActiveBookshelfId(shelfData[0].id);
+                } else {
+                    const defaultShelf = { id: 1, name: 'Main Bookshelf', description: '', isFolded: false, theme: 'glass' };
+                    setBookshelves([defaultShelf]);
+                    setActiveBookshelfId(1);
+                }
             } catch (error) {
                 setBooks(demoBooksList);
                 setOriginalBooks(demoBooksList);
                 setCurrentBook(demoBooksList[0]);
+                const defaultShelf = { id: 1, name: 'Main Bookshelf', description: '', isFolded: false, theme: 'glass' };
+                setBookshelves([defaultShelf]);
+                setActiveBookshelfId(1);
+            } finally {
+                setLoadingShelves(false);
             }
         };
         fetchBooks();
     }, []);
+
+    const saveShelf = async (id, updates) => {
+        try {
+            const res = await bookshelfService.update(id, updates);
+            return res.data;
+        } catch (err) {
+            console.error('Failed to save shelf:', err);
+            return null;
+        }
+    };
 
     const handleLogoUpload = (e) => {
         const file = e.target.files[0];
@@ -106,25 +133,36 @@ function VirtualBookshelf() {
         setBooks(n); setOriginalBooks(n);
     };
 
-    const addNewBookshelf = () => {
-        const newId = Date.now();
-        setBookshelves([...bookshelves, { id: newId, name: `New Bookshelf ${bookshelves.length + 1}`, description: '...', isFolded: false, theme: 'glass' }]);
-        setActiveBookshelfId(newId);
+    const addNewBookshelf = async () => {
+        try {
+            const res = await bookshelfService.create({ name: `New Bookshelf ${bookshelves.length + 1}` });
+            const newShelf = { ...res.data, isFolded: false, description: '' };
+            setBookshelves([...bookshelves, newShelf]);
+            setActiveBookshelfId(newShelf.id);
+        } catch (err) {
+            Swal.fire('Error', 'Failed to create bookshelf', 'error');
+        }
     };
 
-    const removeBookshelf = (id) => {
+    const removeBookshelf = async (id) => {
         if (bookshelves.length === 1) return;
-        Swal.fire({ title: 'Remove Bookshelf?', icon: 'warning', showCancelButton: true }).then(r => {
+        Swal.fire({ title: 'Remove Bookshelf?', icon: 'warning', showCancelButton: true }).then(async (r) => {
             if (r.isConfirmed) {
-                const n = bookshelves.filter(s => s.id !== id);
-                setBookshelves(n);
-                if (activeBookshelfId === id) setActiveBookshelfId(n[0].id);
+                try {
+                    await bookshelfService.delete(id);
+                    const n = bookshelves.filter(s => s.id !== id);
+                    setBookshelves(n);
+                    if (activeBookshelfId === id) setActiveBookshelfId(n[0].id);
+                } catch (err) {
+                    Swal.fire('Error', 'Failed to delete bookshelf', 'error');
+                }
             }
         });
     };
 
     const updateActiveShelf = (updates) => {
         setBookshelves(prev => prev.map(s => s.id === activeBookshelfId ? { ...s, ...updates } : s));
+        if (activeBookshelfId) saveShelf(activeBookshelfId, updates);
     };
 
     const activeShelf = bookshelves.find(s => s.id === activeBookshelfId) || bookshelves[0];

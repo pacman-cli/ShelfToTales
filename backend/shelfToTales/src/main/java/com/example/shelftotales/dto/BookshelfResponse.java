@@ -13,6 +13,7 @@ public class BookshelfResponse {
     private Long id;
     private String name;
     private int position;
+    private String theme;
     private int bookCount;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
