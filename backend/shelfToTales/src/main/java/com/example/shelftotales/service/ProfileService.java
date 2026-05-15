@@ -4,10 +4,8 @@ import com.example.shelftotales.dto.ProfileRequest;
 import com.example.shelftotales.dto.ProfileResponse;
 import com.example.shelftotales.model.User;
 import com.example.shelftotales.repository.UserRepository;
+import com.example.shelftotales.util.AuthUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,22 +16,14 @@ import java.time.LocalDateTime;
 public class ProfileService {
     private final UserRepository userRepository;
 
-    private User getAuthenticatedUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
-            throw new IllegalArgumentException("Authentication required");
-        }
-        return userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + auth.getName()));
-    }
-
+    @Transactional(readOnly = true)
     public ProfileResponse getProfile() {
-        return toResponse(getAuthenticatedUser());
+        return toResponse(AuthUtils.getCurrentUser(userRepository));
     }
 
     @Transactional
     public ProfileResponse updateProfile(ProfileRequest request) {
-        User user = getAuthenticatedUser();
+        User user = AuthUtils.getCurrentUser(userRepository);
         if (request.getFullName() != null) user.setFullName(request.getFullName());
         if (request.getBio() != null) user.setBio(request.getBio());
         if (request.getProfileImageUrl() != null) user.setProfileImageUrl(request.getProfileImageUrl());

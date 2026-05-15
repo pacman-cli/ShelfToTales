@@ -1,12 +1,12 @@
 package com.example.shelftotales.service;
 
 import com.example.shelftotales.dto.*;
-import com.example.shelftotales.model.*;
-import com.example.shelftotales.repository.*;
+import com.example.shelftotales.model.Bookshelf;
+import com.example.shelftotales.model.User;
+import com.example.shelftotales.repository.BookshelfRepository;
+import com.example.shelftotales.repository.UserRepository;
+import com.example.shelftotales.util.AuthUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -19,24 +19,16 @@ public class BookshelfService {
     private final BookshelfRepository bookshelfRepository;
     private final UserRepository userRepository;
 
-    private User getAuthenticatedUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
-            throw new IllegalArgumentException("Authentication required");
-        }
-        return userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + auth.getName()));
-    }
-
+    @Transactional(readOnly = true)
     public List<BookshelfResponse> getUserBookshelves() {
-        User user = getAuthenticatedUser();
+        User user = AuthUtils.getCurrentUser(userRepository);
         return bookshelfRepository.findByUserIdOrderByPositionAsc(user.getId())
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
     @Transactional
     public BookshelfResponse createBookshelf(BookshelfRequest request) {
-        User user = getAuthenticatedUser();
+        User user = AuthUtils.getCurrentUser(userRepository);
         int position = bookshelfRepository.nextPosition(user.getId());
         Bookshelf shelf = Bookshelf.builder().name(request.getName()).position(position).user(user).build();
         return toResponse(bookshelfRepository.save(shelf));
@@ -44,7 +36,7 @@ public class BookshelfService {
 
     @Transactional
     public BookshelfResponse updateBookshelf(Long id, BookshelfRequest request) {
-        User user = getAuthenticatedUser();
+        User user = AuthUtils.getCurrentUser(userRepository);
         Bookshelf shelf = bookshelfRepository.findByIdAndUserId(id, user.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Bookshelf not found: " + id));
         shelf.setName(request.getName());
@@ -53,7 +45,7 @@ public class BookshelfService {
 
     @Transactional
     public void deleteBookshelf(Long id) {
-        User user = getAuthenticatedUser();
+        User user = AuthUtils.getCurrentUser(userRepository);
         Bookshelf shelf = bookshelfRepository.findByIdAndUserId(id, user.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Bookshelf not found: " + id));
         bookshelfRepository.delete(shelf);
@@ -61,7 +53,7 @@ public class BookshelfService {
 
     @Transactional
     public void reorder(List<Long> shelfIds) {
-        User user = getAuthenticatedUser();
+        User user = AuthUtils.getCurrentUser(userRepository);
         List<Bookshelf> shelves = bookshelfRepository.findByUserIdOrderByPositionAsc(user.getId());
         for (int i = 0; i < shelfIds.size() && i < shelves.size(); i++) {
             int pos = i;

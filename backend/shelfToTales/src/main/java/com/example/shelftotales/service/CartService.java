@@ -1,12 +1,14 @@
 package com.example.shelftotales.service;
 
 import com.example.shelftotales.dto.*;
-import com.example.shelftotales.model.*;
-import com.example.shelftotales.repository.*;
+import com.example.shelftotales.model.Book;
+import com.example.shelftotales.model.CartItem;
+import com.example.shelftotales.model.User;
+import com.example.shelftotales.repository.BookRepository;
+import com.example.shelftotales.repository.CartItemRepository;
+import com.example.shelftotales.repository.UserRepository;
+import com.example.shelftotales.util.AuthUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,38 +23,29 @@ public class CartService {
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
 
-    private User getAuthenticatedUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
-            throw new IllegalArgumentException("Authentication required");
-        }
-        return userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + auth.getName()));
-    }
-
+    @Transactional(readOnly = true)
     public CartResponse getCart() {
-        User user = getAuthenticatedUser();
+        User user = AuthUtils.getCurrentUser(userRepository);
         return buildCartResponse(cartItemRepository.findByUserIdWithBook(user.getId()));
     }
 
     @Transactional
     public CartResponse addToCart(Long bookId, int quantity) {
-        User user = getAuthenticatedUser();
+        User user = AuthUtils.getCurrentUser(userRepository);
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new IllegalArgumentException("Book not found: " + bookId));
 
         cartItemRepository.findByUserIdAndBookId(user.getId(), bookId)
                 .ifPresentOrElse(
-                    item -> { item.setQuantity(item.getQuantity() + quantity); cartItemRepository.save(item); },
-                    () -> cartItemRepository.save(CartItem.builder().user(user).book(book).quantity(quantity).build())
-                );
+                        item -> { item.setQuantity(item.getQuantity() + quantity); cartItemRepository.save(item); },
+                        () -> cartItemRepository.save(CartItem.builder().user(user).book(book).quantity(quantity).build()));
 
         return buildCartResponse(cartItemRepository.findByUserIdWithBook(user.getId()));
     }
 
     @Transactional
     public CartResponse updateQuantity(Long bookId, int quantity) {
-        User user = getAuthenticatedUser();
+        User user = AuthUtils.getCurrentUser(userRepository);
         CartItem item = cartItemRepository.findByUserIdAndBookId(user.getId(), bookId)
                 .orElseThrow(() -> new IllegalArgumentException("Book not in cart: " + bookId));
         item.setQuantity(quantity);
@@ -62,7 +55,7 @@ public class CartService {
 
     @Transactional
     public CartResponse removeFromCart(Long bookId) {
-        User user = getAuthenticatedUser();
+        User user = AuthUtils.getCurrentUser(userRepository);
         cartItemRepository.deleteByUserIdAndBookId(user.getId(), bookId);
         return buildCartResponse(cartItemRepository.findByUserIdWithBook(user.getId()));
     }

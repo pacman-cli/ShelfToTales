@@ -1,12 +1,16 @@
 package com.example.shelftotales.service;
 
 import com.example.shelftotales.dto.ShelfBookResponse;
-import com.example.shelftotales.model.*;
-import com.example.shelftotales.repository.*;
+import com.example.shelftotales.model.Book;
+import com.example.shelftotales.model.Bookshelf;
+import com.example.shelftotales.model.ShelfBook;
+import com.example.shelftotales.model.User;
+import com.example.shelftotales.repository.BookRepository;
+import com.example.shelftotales.repository.BookshelfRepository;
+import com.example.shelftotales.repository.ShelfBookRepository;
+import com.example.shelftotales.repository.UserRepository;
+import com.example.shelftotales.util.AuthUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -21,21 +25,13 @@ public class ShelfBookService {
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
 
-    private User getAuthenticatedUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
-            throw new IllegalArgumentException("Authentication required");
-        }
-        return userRepository.findByEmail(auth.getName())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + auth.getName()));
-    }
-
     private Bookshelf getOwnedShelf(Long shelfId) {
-        User user = getAuthenticatedUser();
+        User user = AuthUtils.getCurrentUser(userRepository);
         return bookshelfRepository.findByIdAndUserId(shelfId, user.getId())
                 .orElseThrow(() -> new IllegalArgumentException("Bookshelf not found: " + shelfId));
     }
 
+    @Transactional(readOnly = true)
     public List<ShelfBookResponse> getShelfBooks(Long shelfId) {
         getOwnedShelf(shelfId);
         return shelfBookRepository.findByBookshelfIdWithBook(shelfId)

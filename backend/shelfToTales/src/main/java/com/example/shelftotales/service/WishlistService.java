@@ -1,15 +1,15 @@
 package com.example.shelftotales.service;
 
+import com.example.shelftotales.dto.WishlistItemResponse;
 import com.example.shelftotales.model.Book;
 import com.example.shelftotales.model.User;
 import com.example.shelftotales.model.WishlistItem;
 import com.example.shelftotales.repository.BookRepository;
 import com.example.shelftotales.repository.UserRepository;
 import com.example.shelftotales.repository.WishlistRepository;
+import com.example.shelftotales.util.AuthUtils;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -23,41 +23,41 @@ public class WishlistService {
     private final BookRepository bookRepository;
     private final UserRepository userRepository;
 
-    private User getAuthenticatedUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
-            throw new IllegalArgumentException("Authentication required");
-        }
-        String email = auth.getName();
-        return userRepository.findByEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + email));
+    @Transactional(readOnly = true)
+    public List<WishlistItemResponse> getUserWishlist() {
+        User user = AuthUtils.getCurrentUser(userRepository);
+        return wishlistRepository.findByUserIdWithBook(user.getId())
+                .stream().map(this::toResponse).collect(Collectors.toList());
     }
 
-    public List<Book> getUserWishlist() {
-        User user = getAuthenticatedUser();
-        return wishlistRepository.findByUserId(user.getId())
-                .stream()
-                .map(WishlistItem::getBook)
-                .collect(Collectors.toList());
-    }
-
+    @Transactional
     public void addToWishlist(Long bookId) {
-        User user = getAuthenticatedUser();
+        User user = AuthUtils.getCurrentUser(userRepository);
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new IllegalArgumentException("Book not found: " + bookId));
 
-        if (wishlistRepository.findByUserIdAndBookId(user.getId(), bookId).isEmpty()) {
-            WishlistItem item = WishlistItem.builder()
-                    .user(user)
-                    .book(book)
-                    .build();
-            wishlistRepository.save(item);
+        try {
+            wishlistRepository.save(WishlistItem.builder().user(user).book(book).build());
+        } catch (DataIntegrityViolationException e) {
+            throw new IllegalArgumentException("Book already in wishlist");
         }
     }
 
     @Transactional
     public void removeFromWishlist(Long bookId) {
-        User user = getAuthenticatedUser();
+        User user = AuthUtils.getCurrentUser(userRepository);
         wishlistRepository.deleteByUserIdAndBookId(user.getId(), bookId);
+    }
+
+    private WishlistItemResponse toResponse(WishlistItem item) {
+        return WishlistItemResponse.builder()
+                .id(item.getId())
+                .bookId(item.getBook().getId())
+                .title(item.getBook().getTitle())
+                .author(item.getBook().getAuthor())
+                .coverUrl(item.getBook().getCoverUrl())
+                .description(item.getBook().getDescription())
+                .addedAt(item.getAddedAt())
+                .build();
     }
 }
