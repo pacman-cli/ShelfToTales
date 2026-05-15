@@ -60,6 +60,7 @@ function MyProfile() {
             setProfile(res.data);
             const stored = JSON.parse(localStorage.getItem('user') || '{}');
             localStorage.setItem('user', JSON.stringify({ ...stored, ...res.data }));
+            window.dispatchEvent(new Event('profile-updated'));
             Swal.fire('Success', 'Profile updated successfully', 'success');
         } catch (err) {
             Swal.fire('Error', err.response?.data?.message || 'Failed to update profile', 'error');

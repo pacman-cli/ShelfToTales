@@ -50,6 +50,23 @@ function Header(){
 		}
 	}, []);
 
+	// Re-fetch profile when updated from /my-profile
+	useEffect(() => {
+		const handleProfileUpdate = () => {
+			const token = localStorage.getItem('token');
+			if (token) {
+				userService.getProfile()
+					.then(res => {
+						setUser(res.data);
+						localStorage.setItem('user', JSON.stringify(res.data));
+					})
+					.catch(() => {});
+			}
+		};
+		window.addEventListener('profile-updated', handleProfileUpdate);
+		return () => window.removeEventListener('profile-updated', handleProfileUpdate);
+	}, []);
+
 	const handleLogout = () => {
 		localStorage.removeItem('token');
 		localStorage.removeItem('user');
