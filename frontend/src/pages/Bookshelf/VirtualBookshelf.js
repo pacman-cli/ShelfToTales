@@ -24,109 +24,15 @@ function VirtualBookshelf() {
     const [searchQuery, setSearchQuery] = useState('');
     const [isSortedNewest, setIsSortedNewest] = useState(() => localStorage.getItem('vbookshelf_sort') !== 'false');
     const logoInputRef = useRef(null);
-
-    // Multi-Bookshelf State
-    const [bookshelves, setBookshelves] = useState([]);
-    const [activeBookshelfId, setActiveBookshelfId] = useState(null);
-    const [loadingShelves, setLoadingShelves] = useState(true);
-    
-    const [logoUrl, setLogoUrl] = useState(() => localStorage.getItem('vbookshelf_logo') || logoImage);
-    const [menuVisibility, setMenuVisibility] = useState(() => {
-        try { return JSON.parse(localStorage.getItem('vbookshelf_menu') || 'null') || { logo: true, title: true, search: true, share: true }; }
-        catch { return { logo: true, title: true, search: true, share: true }; }
-    });
-    const [activeSection, setActiveSection] = useState('info');
-
-    // Persist menu visibility
-    useEffect(() => {
-        localStorage.setItem('vbookshelf_menu', JSON.stringify(menuVisibility));
-    }, [menuVisibility]);
-
-    // Persist logo URL
-    useEffect(() => {
-        localStorage.setItem('vbookshelf_logo', logoUrl);
-    }, [logoUrl]);
-
-    const sidebarSections = [
-        { id: 'info', title: 'Bookshelf info', icon: 'fa-solid fa-circle-info' },
-        { id: 'manage', title: 'Manage flipbooks', icon: 'fa-solid fa-square-plus' },
-        { id: 'position', title: 'Books position', icon: 'fa-solid fa-up-down-left-right' },
-        { id: 'design', title: 'Design', icon: 'fa-solid fa-palette' },
-        { id: 'logo', title: 'Add logo', icon: 'fa-solid fa-image' },
-        { id: 'menu', title: 'Menu', icon: 'fa-solid fa-bars' }
-    ];
-
-    useEffect(() => {
-        const fetchBooks = async () => {
-            try {
-                const [booksRes, shelvesRes] = await Promise.all([
-                    bookService.getMyBooks(),
-                    bookshelfService.getAll().catch(() => ({ data: [] }))
-                ]);
-                const data = booksRes.data?.content || booksRes.data || [];
-                let fetchedBooks = data.length > 0 ? data.map(b => {
-                    const bid = b.id?.toString() || Math.random().toString();
-                    const stored = localStorage.getItem(`vbookshelf_hide_${bid}`);
-                    return {
-                        id: bid,
-                        title: b.title || 'Untitled',
-                        author: b.author || 'Unknown',
-                        imageUrl: b.coverUrl || `${FALLBACK_IMG}/${(b.title || 'book').replace(/\s+/g, '-')}/250/350`,
-                        createdAt: b.publishedDate || new Date().toISOString().split('T')[0],
-                        hidden: stored === 'true' || false,
-                    };
-                }) : demoBooksList;
-
-                // Restore saved book order from localStorage
-                try {
-                    const savedOrder = JSON.parse(localStorage.getItem('vbookshelf_order'));
-                    if (savedOrder && savedOrder.length === fetchedBooks.length) {
-                        const bookMap = new Map(fetchedBooks.map(b => [b.id, b]));
-                        fetchedBooks = savedOrder.map(id => bookMap.get(id)).filter(Boolean);
-                    }
-                } catch (_) {}
-
-                setBooks(fetchedBooks);
-                setOriginalBooks(fetchedBooks);
-                if (fetchedBooks.length > 0) setCurrentBook(fetchedBooks[0]);
-
-                const shelfData = shelvesRes.data || [];
-                if (shelfData.length > 0) {
-                    setBookshelves(shelfData.map(s => ({ ...s, isFolded: false, description: '' })));
-                    setActiveBookshelfId(shelfData[0].id);
-                } else {
-                    const defaultShelf = { id: 1, name: 'Main Bookshelf', description: '', isFolded: false, theme: 'glass' };
-                    setBookshelves([defaultShelf]);
-                    setActiveBookshelfId(1);
-                }
-            } catch (error) {
-                setBooks(demoBooksList);
-                setOriginalBooks(demoBooksList);
-                setCurrentBook(demoBooksList[0]);
-                const defaultShelf = { id: 1, name: 'Main Bookshelf', description: '', isFolded: false, theme: 'glass' };
-                setBookshelves([defaultShelf]);
-                setActiveBookshelfId(1);
-            } finally {
-                setLoadingShelves(false);
-            }
-        };
-        fetchBooks();
-    }, []);
-
-    useEffect(() => {
-        return () => { if (saveShelfRef.current) clearTimeout(saveShelfRef.current); };
-    }, []);
-
     const saveShelfRef = useRef(null);
+
     const saveShelf = (id, updates) => {
         if (saveShelfRef.current) clearTimeout(saveShelfRef.current);
         saveShelfRef.current = setTimeout(async () => {
             try {
-                const res = await bookshelfService.update(id, updates);
-                return res.data;
+                await bookshelfService.update(id, updates);
             } catch (err) {
-                console.error('Failed to save shelf:', err);
-                return null;
+                console.error('Failed to save shelf to backend:', err.response?.data || err.message);
             }
         }, 500);
     };
