@@ -22,7 +22,7 @@ function VirtualBookshelf() {
     const [originalBooks, setOriginalBooks] = useState([]);
     const [currentBook, setCurrentBook] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
-    const [isSortedNewest, setIsSortedNewest] = useState(true);
+    const [isSortedNewest, setIsSortedNewest] = useState(() => localStorage.getItem('vbookshelf_sort') !== 'false');
     const logoInputRef = useRef(null);
 
     // Multi-Bookshelf State
@@ -64,14 +64,18 @@ function VirtualBookshelf() {
                     bookshelfService.getAll().catch(() => ({ data: [] }))
                 ]);
                 const data = booksRes.data?.content || booksRes.data || [];
-                let fetchedBooks = data.length > 0 ? data.map(b => ({
-                    id: b.id?.toString() || Math.random().toString(),
-                    title: b.title || 'Untitled',
-                    author: b.author || 'Unknown',
-                    imageUrl: b.coverUrl || `${FALLBACK_IMG}/${(b.title || 'book').replace(/\s+/g, '-')}/250/350`,
-                    createdAt: b.publishedDate || new Date().toISOString().split('T')[0],
-                    hidden: false,
-                })) : demoBooksList;
+                let fetchedBooks = data.length > 0 ? data.map(b => {
+                    const bid = b.id?.toString() || Math.random().toString();
+                    const stored = localStorage.getItem(`vbookshelf_hide_${bid}`);
+                    return {
+                        id: bid,
+                        title: b.title || 'Untitled',
+                        author: b.author || 'Unknown',
+                        imageUrl: b.coverUrl || `${FALLBACK_IMG}/${(b.title || 'book').replace(/\s+/g, '-')}/250/350`,
+                        createdAt: b.publishedDate || new Date().toISOString().split('T')[0],
+                        hidden: stored === 'true' || false,
+                    };
+                }) : demoBooksList;
                 setBooks(fetchedBooks);
                 setOriginalBooks(fetchedBooks);
                 if (fetchedBooks.length > 0) setCurrentBook(fetchedBooks[0]);
@@ -132,7 +136,7 @@ function VirtualBookshelf() {
     };
 
     const handleSearch = (query) => { setSearchQuery(query); applyFilters(query, isSortedNewest); };
-    const toggleSort = () => { const n = !isSortedNewest; setIsSortedNewest(n); applyFilters(searchQuery, n); };
+    const toggleSort = () => { const n = !isSortedNewest; setIsSortedNewest(n); localStorage.setItem('vbookshelf_sort', n); applyFilters(searchQuery, n); };
     const applyFilters = (query, newestFirst) => {
         let filtered = [...originalBooks];
         if (query) filtered = filtered.filter(b => b.title.toLowerCase().includes(query.toLowerCase()));
@@ -141,7 +145,9 @@ function VirtualBookshelf() {
     };
 
     const toggleVisibility = (id) => {
-        const up = originalBooks.map(b => b.id === id ? { ...b, hidden: !b.hidden } : b);
+        const nextHidden = !originalBooks.find(b => b.id === id)?.hidden;
+        localStorage.setItem(`vbookshelf_hide_${id}`, nextHidden);
+        const up = originalBooks.map(b => b.id === id ? { ...b, hidden: nextHidden } : b);
         setOriginalBooks(up);
         setBooks(up);
     };
