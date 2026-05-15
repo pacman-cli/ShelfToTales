@@ -1,6 +1,5 @@
 package com.example.shelftotales.dto;
 
-import com.example.shelftotales.model.Role;
 import lombok.*;
 
 @Getter

@@ -45,7 +45,7 @@ public class CategoryService {
         if (!categoryRepository.existsById(id)) {
             throw new IllegalArgumentException("Category not found: " + id);
         }
-        if (!bookRepository.findByCategoryId(id, org.springframework.data.domain.Pageable.unpaged()).isEmpty()) {
+        if (bookRepository.countByCategoryId(id) > 0) {
             throw new IllegalArgumentException("Cannot delete category with existing books. Remove or reassign books first.");
         }
         categoryRepository.deleteById(id);
