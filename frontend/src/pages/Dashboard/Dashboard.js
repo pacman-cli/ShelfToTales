@@ -63,8 +63,8 @@ function Dashboard() {
                         <div className="card shadow-sm sticky-top" style={{ top: '100px' }}>
                             <div className="card-body p-0">
                                 <div className="p-3 text-center border-bottom">
-                                    <img src={profileImg} alt="profile" className="rounded-circle mb-2" style={{ width: '80px', height: '80px' }} />
-                                    <h5 className="mb-0">{user?.username || 'User'}</h5>
+                                    <img src={user?.profileImageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.fullName || 'User')}&background=9cd2ef&color=fff&size=80`} alt="profile" className="rounded-circle mb-2" style={{ width: '80px', height: '80px', objectFit: 'cover' }} />
+                                    <h5 className="mb-0">{user?.fullName || 'User'}</h5>
                                     <small className="text-muted">{user?.email}</small>
                                 </div>
                                 <div className="list-group list-group-flush">
@@ -94,8 +94,8 @@ function Dashboard() {
                         <div className="card shadow-sm mb-4">
                             <div className="card-body">
                                 <div className="d-flex align-items-center mb-3">
-                                    <img src={profileImg} alt="profile" className="rounded-circle me-3" style={{ width: '40px', height: '40px' }} />
-                                    <input type="text" className="form-control rounded-pill bg-light" placeholder={`What's on your mind, ${user?.username || 'User'}?`} />
+                                    <img src={user?.profileImageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user?.fullName || 'User')}&background=9cd2ef&color=fff&size=40`} alt="profile" className="rounded-circle me-3" style={{ width: '40px', height: '40px', objectFit: 'cover' }} />
+                                    <input type="text" className="form-control rounded-pill bg-light" placeholder={`What's on your mind, ${user?.fullName || 'User'}?`} />
                                 </div>
                                 <hr />
                                 <div className="d-flex justify-content-around">
