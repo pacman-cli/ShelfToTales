@@ -27,7 +27,7 @@ public class BookService {
     public PagedResponse<BookResponse> getBooks(String query, Long categoryId, int page, int size, String sortBy, String sortDir) {
         Sort sort = "desc".equalsIgnoreCase(sortDir) ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Book> bookPage = bookRepository.searchBooksNative(query, categoryId, pageable);
+        Page<Book> bookPage = bookRepository.searchBooks(query, categoryId, pageable);
 
         return PagedResponse.<BookResponse>builder()
                 .content(bookPage.map(this::toResponse).getContent())
@@ -68,6 +68,9 @@ public class BookService {
                 .description(request.getDescription())
                 .coverUrl(request.getCoverUrl())
                 .publishedDate(request.getPublishedDate())
+                .pdfUrl(request.getPdfUrl())
+                .previewAvailable(request.getPreviewAvailable() != null ? request.getPreviewAvailable() : false)
+                .price(request.getPrice())
                 .category(category)
                 .build();
         return toResponse(bookRepository.save(book));
@@ -87,6 +90,9 @@ public class BookService {
         book.setDescription(request.getDescription());
         book.setCoverUrl(request.getCoverUrl());
         book.setPublishedDate(request.getPublishedDate());
+        book.setPdfUrl(request.getPdfUrl());
+        book.setPreviewAvailable(request.getPreviewAvailable() != null ? request.getPreviewAvailable() : false);
+        book.setPrice(request.getPrice());
         book.setCategory(category);
         return toResponse(bookRepository.save(book));
     }
@@ -112,6 +118,7 @@ public class BookService {
                 .categoryId(book.getCategory() != null ? book.getCategory().getId() : null)
                 .pdfUrl(book.getPdfUrl())
                 .previewAvailable(book.isPreviewAvailable())
+                .price(book.getPrice())
                 .build();
     }
 }

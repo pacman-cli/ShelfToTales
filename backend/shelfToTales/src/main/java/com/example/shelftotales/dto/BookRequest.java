@@ -3,6 +3,8 @@ package com.example.shelftotales.dto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+
+import java.math.BigDecimal;
 import java.time.LocalDate;
 
 @Getter
@@ -28,4 +30,10 @@ public class BookRequest {
 
     @NotNull(message = "Category ID is required")
     private Long categoryId;
+
+    private String pdfUrl;
+
+    private Boolean previewAvailable;
+
+    private BigDecimal price;
 }

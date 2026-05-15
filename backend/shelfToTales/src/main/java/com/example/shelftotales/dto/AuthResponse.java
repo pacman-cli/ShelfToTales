@@ -1,7 +1,9 @@
 package com.example.shelftotales.dto;
 
-import com.example.shelftotales.model.Role;
 import lombok.*;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -10,8 +12,9 @@ import lombok.*;
 @NoArgsConstructor
 public class AuthResponse {
     private String token;
+    private Long id;
     private String email;
     private String fullName;
     private String profileImageUrl;
-    private Role role;
+    private com.example.shelftotales.model.Role role;
 }

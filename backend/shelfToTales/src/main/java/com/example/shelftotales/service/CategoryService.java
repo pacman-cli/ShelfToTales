@@ -1,33 +1,43 @@
 package com.example.shelftotales.service;
 
+import com.example.shelftotales.dto.CategoryRequest;
+import com.example.shelftotales.dto.CategoryResponse;
 import com.example.shelftotales.model.Category;
+import com.example.shelftotales.repository.BookRepository;
 import com.example.shelftotales.repository.CategoryRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class CategoryService {
     private final CategoryRepository categoryRepository;
+    private final BookRepository bookRepository;
 
-    public List<Category> getAllCategories() {
-        return categoryRepository.findAll();
+    public List<CategoryResponse> getAllCategories() {
+        return categoryRepository.findAll().stream()
+                .map(this::toResponse).collect(Collectors.toList());
     }
 
-    public Category saveCategory(Category category) {
-        return categoryRepository.save(category);
+    public CategoryResponse saveCategory(CategoryRequest request) {
+        Category category = Category.builder()
+                .name(request.getName())
+                .description(request.getDescription())
+                .build();
+        return toResponse(categoryRepository.save(category));
     }
 
     @Transactional
-    public Category updateCategory(Long id, Category updated) {
+    public CategoryResponse updateCategory(Long id, CategoryRequest request) {
         Category category = categoryRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Category not found: " + id));
-        category.setName(updated.getName());
-        category.setDescription(updated.getDescription());
-        return categoryRepository.save(category);
+        if (request.getName() != null) category.setName(request.getName());
+        if (request.getDescription() != null) category.setDescription(request.getDescription());
+        return toResponse(categoryRepository.save(category));
     }
 
     @Transactional
@@ -35,6 +45,17 @@ public class CategoryService {
         if (!categoryRepository.existsById(id)) {
             throw new IllegalArgumentException("Category not found: " + id);
         }
+        if (!bookRepository.findByCategoryId(id, org.springframework.data.domain.Pageable.unpaged()).isEmpty()) {
+            throw new IllegalArgumentException("Cannot delete category with existing books. Remove or reassign books first.");
+        }
         categoryRepository.deleteById(id);
+    }
+
+    private CategoryResponse toResponse(Category category) {
+        return CategoryResponse.builder()
+                .id(category.getId())
+                .name(category.getName())
+                .description(category.getDescription())
+                .build();
     }
 }

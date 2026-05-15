@@ -10,6 +10,7 @@ import com.example.shelftotales.repository.UserRepository;
 import com.example.shelftotales.security.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,7 +27,7 @@ public class AuthService {
     @Transactional
     public AuthResponse register(RegisterRequest request) {
         if (repository.existsByEmail(request.getEmail())) {
-            throw new IllegalArgumentException("Email already registered: " + request.getEmail());
+            throw new IllegalArgumentException("Email already registered");
         }
 
         var user = User.builder()
@@ -39,6 +40,7 @@ public class AuthService {
         repository.save(user);
         var jwtToken = jwtService.generateToken(user);
         return AuthResponse.builder()
+                .id(user.getId())
                 .token(jwtToken)
                 .email(user.getEmail())
                 .fullName(user.getFullName())
@@ -48,10 +50,10 @@ public class AuthService {
 
     public AuthResponse login(LoginRequest request) {
         var user = repository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new IllegalArgumentException("User not found: " + request.getEmail()));
+                .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
 
         if (user.getAuthProvider() != AuthProvider.LOCAL) {
-            throw new IllegalArgumentException("This account uses " + user.getAuthProvider() + " login. Please sign in with " + user.getAuthProvider() + ".");
+            throw new BadCredentialsException("Invalid email or password");
         }
 
         authenticationManager.authenticate(
@@ -62,6 +64,7 @@ public class AuthService {
         );
         var jwtToken = jwtService.generateToken(user);
         return AuthResponse.builder()
+                .id(user.getId())
                 .token(jwtToken)
                 .email(user.getEmail())
                 .fullName(user.getFullName())

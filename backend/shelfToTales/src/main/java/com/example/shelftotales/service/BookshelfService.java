@@ -4,6 +4,7 @@ import com.example.shelftotales.dto.*;
 import com.example.shelftotales.model.Bookshelf;
 import com.example.shelftotales.model.User;
 import com.example.shelftotales.repository.BookshelfRepository;
+import com.example.shelftotales.repository.ShelfBookRepository;
 import com.example.shelftotales.repository.UserRepository;
 import com.example.shelftotales.util.AuthUtils;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class BookshelfService {
     private final BookshelfRepository bookshelfRepository;
+    private final ShelfBookRepository shelfBookRepository;
     private final UserRepository userRepository;
 
     @Transactional(readOnly = true)
@@ -72,6 +74,7 @@ public class BookshelfService {
         return BookshelfResponse.builder()
                 .id(shelf.getId()).name(shelf.getName()).position(shelf.getPosition())
                 .theme(shelf.getTheme())
-                .bookCount(0).createdAt(shelf.getCreatedAt()).updatedAt(shelf.getUpdatedAt()).build();
+                .bookCount(shelfBookRepository.countByBookshelfId(shelf.getId()))
+                .createdAt(shelf.getCreatedAt()).updatedAt(shelf.getUpdatedAt()).build();
     }
 }

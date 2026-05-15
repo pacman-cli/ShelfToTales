@@ -33,7 +33,6 @@ public class GoogleAuthService {
         String pictureUrl = (String) payload.get("picture");
         String audience = (String) payload.get("aud");
 
-        // Validate that token was issued for our app
         if (!"908376284076-qp26p58bj59uatj3am37l9dk6sqm5bcb.apps.googleusercontent.com".equals(audience)) {
             throw new IllegalArgumentException("Google token not issued for this application");
         }
@@ -56,7 +55,7 @@ public class GoogleAuthService {
                     .build();
         } else {
             if (user.getAuthProvider() == AuthProvider.LOCAL) {
-                throw new IllegalArgumentException("Email already registered with password login. Use email/password to sign in.");
+                throw new IllegalArgumentException("Email already registered with password login");
             }
             user.setGoogleId(googleId);
             user.setAuthProvider(AuthProvider.GOOGLE);
@@ -68,6 +67,7 @@ public class GoogleAuthService {
 
         String jwt = jwtService.generateToken(user);
         return AuthResponse.builder()
+                .id(user.getId())
                 .token(jwt)
                 .email(user.getEmail())
                 .fullName(user.getFullName())
@@ -82,7 +82,7 @@ public class GoogleAuthService {
             String url = GOOGLE_TOKEN_INFO_URL + idToken;
             return restTemplate.getForObject(url, Map.class);
         } catch (Exception e) {
-            throw new IllegalArgumentException("Invalid Google ID token: " + e.getMessage());
+            throw new IllegalArgumentException("Invalid Google ID token");
         }
     }
 }

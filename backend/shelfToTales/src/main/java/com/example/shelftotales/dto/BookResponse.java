@@ -21,4 +21,5 @@ public class BookResponse {
     private Long categoryId;
     private String pdfUrl;
     private boolean previewAvailable;
+    private java.math.BigDecimal price;
 }
