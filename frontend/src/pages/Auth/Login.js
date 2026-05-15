@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { authService } from '../../api/api';
+import { authService, userService } from '../../api/api';
 import Swal from 'sweetalert2';
 
 // Styles & Images
@@ -34,6 +34,10 @@ function Login(){
             const res = await authService.googleAuth(response.credential);
             localStorage.setItem('token', res.data.token);
             localStorage.setItem('user', JSON.stringify(res.data));
+            try {
+                const profileRes = await userService.getProfile();
+                localStorage.setItem('user', JSON.stringify(profileRes.data));
+            } catch (_) {}
             Swal.fire('Success', 'Logged in with Google', 'success');
             window.location.href = '/dashboard';
         } catch (error) {
@@ -50,6 +54,11 @@ function Login(){
             const response = await authService.login({ email, password });
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('user', JSON.stringify(response.data));
+            // Fetch full profile immediately to sync with backend
+            try {
+                const profileRes = await userService.getProfile();
+                localStorage.setItem('user', JSON.stringify(profileRes.data));
+            } catch (_) {}
             Swal.fire('Success', 'Logged in successfully', 'success');
             window.location.href = '/dashboard'; 
         } catch (error) {

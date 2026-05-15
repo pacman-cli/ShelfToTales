@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { authService } from '../../api/api';
+import { authService, userService } from '../../api/api';
 import Swal from 'sweetalert2';
 
 // Styles & Images
@@ -35,6 +35,10 @@ function Registration(){
             const res = await authService.googleAuth(response.credential);
             localStorage.setItem('token', res.data.token);
             localStorage.setItem('user', JSON.stringify(res.data));
+            try {
+                const profileRes = await userService.getProfile();
+                localStorage.setItem('user', JSON.stringify(profileRes.data));
+            } catch (_) {}
             Swal.fire('Success', 'Account created with Google', 'success');
             window.location.href = '/dashboard';
         } catch (error) {
