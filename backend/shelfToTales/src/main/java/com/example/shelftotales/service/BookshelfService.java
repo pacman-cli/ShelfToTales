@@ -37,7 +37,7 @@ public class BookshelfService {
     @Transactional
     public BookshelfResponse createBookshelf(BookshelfRequest request) {
         User user = getAuthenticatedUser();
-        int position = bookshelfRepository.countByUserId(user.getId());
+        int position = bookshelfRepository.nextPosition(user.getId());
         Bookshelf shelf = Bookshelf.builder().name(request.getName()).position(position).user(user).build();
         return toResponse(bookshelfRepository.save(shelf));
     }

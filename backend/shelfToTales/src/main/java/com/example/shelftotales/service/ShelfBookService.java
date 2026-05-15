@@ -38,7 +38,7 @@ public class ShelfBookService {
 
     public List<ShelfBookResponse> getShelfBooks(Long shelfId) {
         getOwnedShelf(shelfId);
-        return shelfBookRepository.findByBookshelfIdOrderByAddedAtAsc(shelfId)
+        return shelfBookRepository.findByBookshelfIdWithBook(shelfId)
                 .stream().map(this::toResponse).collect(Collectors.toList());
     }
 

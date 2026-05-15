@@ -32,7 +32,7 @@ public class CartService {
 
     public CartResponse getCart() {
         User user = getAuthenticatedUser();
-        return buildCartResponse(cartItemRepository.findByUserIdOrderByCreatedAtAsc(user.getId()));
+        return buildCartResponse(cartItemRepository.findByUserIdWithBook(user.getId()));
     }
 
     @Transactional
@@ -47,7 +47,7 @@ public class CartService {
                     () -> cartItemRepository.save(CartItem.builder().user(user).book(book).quantity(quantity).build())
                 );
 
-        return buildCartResponse(cartItemRepository.findByUserIdOrderByCreatedAtAsc(user.getId()));
+        return buildCartResponse(cartItemRepository.findByUserIdWithBook(user.getId()));
     }
 
     @Transactional
@@ -57,14 +57,14 @@ public class CartService {
                 .orElseThrow(() -> new IllegalArgumentException("Book not in cart: " + bookId));
         item.setQuantity(quantity);
         cartItemRepository.save(item);
-        return buildCartResponse(cartItemRepository.findByUserIdOrderByCreatedAtAsc(user.getId()));
+        return buildCartResponse(cartItemRepository.findByUserIdWithBook(user.getId()));
     }
 
     @Transactional
     public CartResponse removeFromCart(Long bookId) {
         User user = getAuthenticatedUser();
         cartItemRepository.deleteByUserIdAndBookId(user.getId(), bookId);
-        return buildCartResponse(cartItemRepository.findByUserIdOrderByCreatedAtAsc(user.getId()));
+        return buildCartResponse(cartItemRepository.findByUserIdWithBook(user.getId()));
     }
 
     private CartResponse buildCartResponse(List<CartItem> items) {
