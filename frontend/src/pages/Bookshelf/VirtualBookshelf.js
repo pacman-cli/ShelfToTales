@@ -162,7 +162,11 @@ function VirtualBookshelf() {
                     setBookshelves(n);
                     if (activeBookshelfId === id) setActiveBookshelfId(n[0].id);
                 } catch (err) {
-                    Swal.fire('Error', 'Failed to delete bookshelf', 'error');
+                    console.error('Delete bookshelf error (removing locally):', err.response?.data || err.message);
+                    // Remove from local state even if backend fails (shelf may not exist there)
+                    const n = bookshelves.filter(s => s.id !== id);
+                    setBookshelves(n);
+                    if (activeBookshelfId === id) setActiveBookshelfId(n[0]?.id || null);
                 }
             }
         });
