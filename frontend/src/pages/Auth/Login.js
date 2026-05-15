@@ -16,15 +16,25 @@ function Login(){
     const navigate = useNavigate();
 
     useEffect(() => {
-        if (window.google) {
-            window.google.accounts.id.initialize({
-                client_id: GOOGLE_CLIENT_ID,
-                callback: handleGoogleResponse,
-            });
-            window.google.accounts.id.renderButton(
-                document.getElementById('google-signin-btn'),
-                { theme: 'outline', size: 'large', width: 250, text: 'continue_with' }
-            );
+        const initGoogle = () => {
+            if (window.google) {
+                window.google.accounts.id.initialize({
+                    client_id: GOOGLE_CLIENT_ID,
+                    callback: handleGoogleResponse,
+                });
+                window.google.accounts.id.renderButton(
+                    document.getElementById('google-signin-btn'),
+                    { theme: 'outline', size: 'large', width: 250, text: 'continue_with' }
+                );
+                return true;
+            }
+            return false;
+        };
+        if (!initGoogle()) {
+            const interval = setInterval(() => {
+                if (initGoogle()) clearInterval(interval);
+            }, 300);
+            return () => clearInterval(interval);
         }
     }, []);
 

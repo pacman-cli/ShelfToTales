@@ -30,9 +30,22 @@ function VirtualBookshelf() {
     const [activeBookshelfId, setActiveBookshelfId] = useState(null);
     const [loadingShelves, setLoadingShelves] = useState(true);
     
-    const [logoUrl, setLogoUrl] = useState(logoImage);
-    const [menuVisibility, setMenuVisibility] = useState({ logo: true, title: true, search: true, share: true });
+    const [logoUrl, setLogoUrl] = useState(() => localStorage.getItem('vbookshelf_logo') || logoImage);
+    const [menuVisibility, setMenuVisibility] = useState(() => {
+        try { return JSON.parse(localStorage.getItem('vbookshelf_menu') || 'null') || { logo: true, title: true, search: true, share: true }; }
+        catch { return { logo: true, title: true, search: true, share: true }; }
+    });
     const [activeSection, setActiveSection] = useState('info');
+
+    // Persist menu visibility
+    useEffect(() => {
+        localStorage.setItem('vbookshelf_menu', JSON.stringify(menuVisibility));
+    }, [menuVisibility]);
+
+    // Persist logo URL
+    useEffect(() => {
+        localStorage.setItem('vbookshelf_logo', logoUrl);
+    }, [logoUrl]);
 
     const sidebarSections = [
         { id: 'info', title: 'Bookshelf info', icon: 'fa-solid fa-circle-info' },
