@@ -5,7 +5,6 @@ import { bookService, wishlistService } from '../../api/api';
 import Swal from 'sweetalert2';
 
 //Component
-import PageTitle from '../../components/layout/PageTitle';
 import ClientsSlider from '../../components/features/Home/ClientsSlider';
 import CounterSection from '../../components/common/CounterSection';
 import NewsLetter from '../../components/features/NewsLetter';
@@ -69,7 +68,6 @@ function BooksGridView() {
 
     return (
         <>
-            <PageTitle parentPage="Home" childPage="Books Grid View" />
             <div className="page-content bg-grey">
                 <section className="content-inner-1 border-bottom">
                     <div className="container">
@@ -165,7 +163,7 @@ function BooksGridView() {
                                             </label>
                                         </div> 
                                         <div className="dz-content">
-                                            <h5 className="title"><Link to={`/shop-detail/${data.id}`}>{data.title}</Link></h5>
+                                            <h5 className="title"><Link to={`/books-detail/${data.id}`}>{data.title}</Link></h5>
                                             <ul className="dz-tags">
                                                 <li>{data.category?.name || 'General'}</li>
                                             </ul>
@@ -181,7 +179,7 @@ function BooksGridView() {
                                                     <span className="price-num">${data.discountPrice || data.price}</span>
                                                     {data.discountPrice && <del>${data.price}</del>}
                                                 </div>
-                                                <Link to={`/shop-detail/${data.id}`} className="btn btn-secondary box-btn btnhover btnhover2"><i className="flaticon-shopping-cart-1 m-r10"></i> Add to cart</Link>
+                                                <Link to={`/books-detail/${data.id}`} className="btn btn-secondary box-btn btnhover btnhover2"><i className="flaticon-shopping-cart-1 m-r10"></i> View Details</Link>
                                             </div>
                                         </div>
                                     </div>

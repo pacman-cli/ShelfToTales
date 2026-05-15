@@ -7,7 +7,6 @@ import Swal from 'sweetalert2';
 import ClientsSlider from '../../components/features/Home/ClientsSlider';
 import CounterSection from '../../components/common/CounterSection';
 import NewsLetter from '../../components/features/NewsLetter';
-import PageTitle from '../../components/layout/PageTitle';
 import { Collapse, Dropdown } from 'react-bootstrap';
 
 const lableBlogData = [
@@ -86,7 +85,6 @@ function BookListPage() {
 
     return (
         <div className="page-content bg-grey">
-            <PageTitle parentPage="Pages" childPage="Book List" />
             
             <section className="content-inner-1 border-bottom">
                 <div className="container">

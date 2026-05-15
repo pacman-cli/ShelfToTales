@@ -1,13 +1,11 @@
 import React from 'react';
 import {Link} from 'react-router-dom';
 
-import PageTitle from '../../components/layout/PageTitle';
 
 function HelpDesk(){
     return(
         <>
             <div className="page-content">
-                <PageTitle childPage="Help Desk" parentPage="Pages" />
                 <div className="section-full content-inner-1 bg-white">
                     <div className="container">
                         <div className="row">

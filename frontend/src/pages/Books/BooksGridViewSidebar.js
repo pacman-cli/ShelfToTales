@@ -7,7 +7,6 @@ import ClientsSlider from '../../components/features/Home/ClientsSlider';
 import NewsLetter from '../../components/features/NewsLetter';
 
 //element
-import PageTitle from '../../components/layout/PageTitle';
 import CounterSection from '../../components/common/CounterSection';
 import ShopSidebar from '../../components/common/ShopSidebar';
 
@@ -53,18 +52,18 @@ const lableBlogData = [
 ];
 
 const cardDetials = [
-    {image:book16, title:'Thunder Stunt', subtitle1:'ADVANTURE',subtitle2:'SCIENCE', price1:'54.78', price2:'70.00' },
-    {image:book14, title:'A Heavy Lift', subtitle1:'RACING',subtitle2:'DRAMA', price1:'25.18', price2:'68.00' },
-    {image:book15, title:'Terrible Madness', subtitle1:'SPORTS',subtitle2:'GAME', price1:'25.30', price2:'38.00' },
-    {image:book4, title:'Such Fun Age', subtitle1:'ADVANTURE', price1:'20.15', price2:'33.00' },
-    {image:book9, title:'Pushing Clouds', subtitle1:'ADVANTURE', price1:'30.12', price2:'40.00' },
-    {image:book2, title:'Homie', subtitle1:'HORROR',subtitle2:'DRAMA', price1:'15.25', price2:'45.00' },
-    {image:book7, title:'SECONDS', subtitle1:'SPORTS',subtitle2:'GAME', price1:'21.78', price2:'36.00' },
-    {image:book13, title:'REWORK', subtitle1:'THRILLER', price1:'23.20', price2:'49.00' },
-    {image:book11, title:'ALL GOOD NEWS', subtitle1:'DRAMA',subtitle2:'COMEDY', price1:'40.78', price2:'68.00' },
-    {image:book10, title:'Emily The Back', subtitle1:'DRAMA',subtitle2:'SIRIAL', price1:'54.78', price2:'63.00' },
-    {image:book8, title:'The Adventure', subtitle1:'BIOGRAPHY', price1:'37.00', price2:'47.00' },
-    {image:book14, title:'A Heavy Lift', subtitle1:'STORY',subtitle2:'BIOGRAPHY', price1:'22.00', price2:'51.00' },
+    {id: 1, image:book16, title:'Thunder Stunt', subtitle1:'ADVANTURE',subtitle2:'SCIENCE', price1:'54.78', price2:'70.00' },
+    {id: 2, image:book14, title:'A Heavy Lift', subtitle1:'RACING',subtitle2:'DRAMA', price1:'25.18', price2:'68.00' },
+    {id: 3, image:book15, title:'Terrible Madness', subtitle1:'SPORTS',subtitle2:'GAME', price1:'25.30', price2:'38.00' },
+    {id: 4, image:book4, title:'Such Fun Age', subtitle1:'ADVANTURE', price1:'20.15', price2:'33.00' },
+    {id: 5, image:book9, title:'Pushing Clouds', subtitle1:'ADVANTURE', price1:'30.12', price2:'40.00' },
+    {id: 6, image:book2, title:'Homie', subtitle1:'HORROR',subtitle2:'DRAMA', price1:'15.25', price2:'45.00' },
+    {id: 7, image:book7, title:'SECONDS', subtitle1:'SPORTS',subtitle2:'GAME', price1:'21.78', price2:'36.00' },
+    {id: 8, image:book13, title:'REWORK', subtitle1:'THRILLER', price1:'23.20', price2:'49.00' },
+    {id: 9, image:book11, title:'ALL GOOD NEWS', subtitle1:'DRAMA',subtitle2:'COMEDY', price1:'40.78', price2:'68.00' },
+    {id: 10, image:book10, title:'Emily The Back', subtitle1:'DRAMA',subtitle2:'SIRIAL', price1:'54.78', price2:'63.00' },
+    {id: 11, image:book8, title:'The Adventure', subtitle1:'BIOGRAPHY', price1:'37.00', price2:'47.00' },
+    {id: 12, image:book14, title:'A Heavy Lift', subtitle1:'STORY',subtitle2:'BIOGRAPHY', price1:'22.00', price2:'51.00' },
 ];
 
 
@@ -74,7 +73,6 @@ function BooksGridViewSidebar(){
     const [selectBtn, setSelectBtn] = useState('Newest');
     return(
         <>
-            <PageTitle parentPage="Home" childPage="Books Grid View Sidebar" />
             <div className="page-content bg-grey">
                 <div className="content-inner-1 border-bottom">
                     <div className="container">
@@ -174,10 +172,10 @@ function BooksGridViewSidebar(){
                                                     </label>
                                                 </div> 
                                                 <div className="dz-content">
-                                                    <h5 className="title"><Link to={"/books-grid-view"}>{data.title}</Link></h5>
+                                                    <h5 className="title"><Link to={`/books-detail/${data.id}`}>{data.title}</Link></h5>
                                                     <ul className="dz-tags">
-                                                        <li><Link to={"/books-grid-view"}>{data.subtitle1},</Link></li>
-                                                        <li><Link to={"/books-grid-view"}>{data.subtitle2}</Link></li>
+                                                        <li><Link to={`/books-detail/${data.id}`}>{data.subtitle1},</Link></li>
+                                                        <li><Link to={`/books-detail/${data.id}`}>{data.subtitle2}</Link></li>
                                                     </ul>
                                                     <ul className="dz-rating">
                                                         <li><i className="flaticon-star text-yellow"></i></li>	

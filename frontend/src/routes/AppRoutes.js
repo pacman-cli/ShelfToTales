@@ -21,6 +21,7 @@ import BookListPage from '../pages/Books/BookListPage';
 import ShopList from '../pages/Shop/ShopList';
 import BooksGridViewSidebar from '../pages/Books/BooksGridViewSidebar';
 import BooksListViewSidebar from '../pages/Books/BooksListViewSidebar';
+import BookDetail from '../pages/Books/BookDetail';
 import ShopCart from '../pages/Shop/ShopCart';
 import Wishlist from '../pages/Shop/Wishlist';
 import Login from '../pages/Auth/Login';
@@ -80,7 +81,7 @@ function AppRoutes(props){
 					<Route path='/shop-registration' exact element={<Registration/>} />
 					<Route path='/shop-checkout' exact element={<ShopCheckout/>} />
 					<Route path='/shop-detail/:id' exact element={<ShopDetail/>} />
-					<Route path='/books-detail/:id' exact element={<ShopDetail/>} />
+					<Route path='/books-detail/:id' exact element={<BookDetail/>} />
 					<Route path='/blog-grid' exact element={<BlogGrid/>} />
 					<Route path='/blog-large-sidebar' exact element={<BlogLargeSidebar/>} />
 					<Route path='/blog-list-sidebar' exact element={<BlogListSidebar/>} />

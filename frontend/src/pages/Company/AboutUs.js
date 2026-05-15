@@ -4,7 +4,6 @@ import CountUp from 'react-countup';
 
 
 //Components 
-import PageTitle from '../../components/layout/PageTitle';
 import TestimonialSlider from '../../components/features/Home/TestimonialSlider';
 import ClientsSlider from '../../components/features/Home/ClientsSlider';
 import NewsLetter from '../../components/features/NewsLetter';
@@ -27,7 +26,6 @@ function AboutUs(){
     return(
         <>
             <div className="page-content bg-white">
-               <PageTitle  parentPage="Home" childPage="About us" />
                <section className="content-inner overlay-white-middle">
                     <div className="container">
                         <div className="row about-style1 align-items-center">

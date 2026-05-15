@@ -116,7 +116,7 @@ function Home() {
                                 >
                                     {books.length > 0 ? books.slice(0, 6).map((book, i) => (
                                         <SwiperSlide key={book.id || i}>
-                                            <Link to={`/shop-detail/${book.id}`} className="hero-slide-inner">
+                                            <Link to={`/books-detail/${book.id}`} className="hero-slide-inner">
                                                 <div className="hero-slide-cover">
                                                     <img src={book.coverUrl || `https://via.placeholder.com/300x420/${bookColors[i % bookColors.length].replace('#','')}/ffffff?text=${encodeURIComponent(book.title?.substring(0,10) || 'Book')}`} alt={book.title} />
                                                 </div>
@@ -202,7 +202,7 @@ function Home() {
                     <div className="row g-4">
                         {books.slice(0, 4).map((book, i) => (
                             <div className="col-lg-3 col-md-6" key={book.id || i}>
-                                <Link to={`/shop-detail/${book.id}`} style={{textDecoration:'none'}}>
+                                <Link to={`/books-detail/${book.id}`} style={{textDecoration:'none'}}>
                                     <div className="stt-book-card">
                                         <div className="book-cover">
                                             <img src={book.coverUrl || `https://via.placeholder.com/250x350/${bookColors[i].replace('#','')}/ffffff?text=${encodeURIComponent(book.title?.substring(0,10) || 'Book')}`} alt={book.title} />

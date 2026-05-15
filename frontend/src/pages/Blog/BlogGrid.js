@@ -1,6 +1,5 @@
 import React from 'react';
 import {Link} from 'react-router-dom';
-import PageTitle from '../../components/layout/PageTitle';
 
 import blog1 from '../../assets/images/blog/large/blog1.jpg';
 import blog2 from '../../assets/images/blog/large/blog2.jpg';
@@ -18,7 +17,6 @@ const BlogGrid = () =>{
     return(
         <>
             <div className="page-content">
-                <PageTitle  parentPage="Blog" childPage="Blog Grid" />      
                 <section className="content-inner-1 bg-img-fix">
                     <div className="container">
                         <div className="row">

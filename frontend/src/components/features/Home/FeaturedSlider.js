@@ -66,7 +66,7 @@ function FeaturedSlider() {
                                     {item.discountPrice && <del>${item.price}</del>}
                                 </div>
                                 <div className="bookcard-footer">
-                                    <Link to={`/shop-detail/${item.id}`} className="btn btn-outline-secondary btnhover m-t15">See Details</Link>
+                                    <Link to={`/books-detail/${item.id}`} className="btn btn-outline-secondary btnhover m-t15">See Details</Link>
                                 </div>
                             </div>
                         </div>

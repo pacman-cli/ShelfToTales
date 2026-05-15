@@ -47,12 +47,12 @@ const lableBlogData = [
 ];
 
 const cardDetials = [
-    {image:book12, title:'The Missadventure of David', subtitle1:'DRAMA',subtitle2:'HORROR', price1:'23.00', price2:'52.00' },
-    {image:book16, title:'Thunder Stunt', subtitle1:'ADVANTURE',subtitle2:'SCIENCE', price1:'54.78', price2:'70.00' },
-    {image:book14, title:'A Heavy Lift', subtitle1:'RACING',subtitle2:'DRAMA', price1:'25.18', price2:'68.00' },
-    {image:book15, title:'Terrible Madness', subtitle1:'SPORTS',subtitle2:'GAME', price1:'25.30', price2:'38.00' },
-    {image:book11, title:'ALL GOOD NEWS', subtitle1:'DRAMA',subtitle2:'COMEDY', price1:'40.78', price2:'68.00' },
-    {image:book10, title:'Emily The Back', subtitle1:'DRAMA',subtitle2:'SIRIAL', price1:'54.78', price2:'63.00' }, 
+    {id: 1, image:book12, title:'The Missadventure of David', subtitle1:'DRAMA',subtitle2:'HORROR', price1:'23.00', price2:'52.00' },
+    {id: 2, image:book16, title:'Thunder Stunt', subtitle1:'ADVANTURE',subtitle2:'SCIENCE', price1:'54.78', price2:'70.00' },
+    {id: 3, image:book14, title:'A Heavy Lift', subtitle1:'RACING',subtitle2:'DRAMA', price1:'25.18', price2:'68.00' },
+    {id: 4, image:book15, title:'Terrible Madness', subtitle1:'SPORTS',subtitle2:'GAME', price1:'25.30', price2:'38.00' },
+    {id: 5, image:book11, title:'ALL GOOD NEWS', subtitle1:'DRAMA',subtitle2:'COMEDY', price1:'40.78', price2:'68.00' },
+    {id: 6, image:book10, title:'Emily The Back', subtitle1:'DRAMA',subtitle2:'SIRIAL', price1:'54.78', price2:'63.00' }, 
  ];
 
 
@@ -159,7 +159,7 @@ function BooksListViewSidebar(){
                                                         <li><Link to={"#"}>{data.subtitle2},</Link></li>
                                                         <li><Link to={"#"}>COMEDY</Link></li>
                                                     </ul>
-                                                    <h4 className="title mb-0"><Link to={"books-list-view-sidebar"}>{data.title}</Link></h4>
+                                                    <h4 className="title mb-0"><Link to={`/books-detail/${data.id}`}>{data.title}</Link></h4>
                                                 </div>
                                                 <div className="price">
                                                     <span className="price-num text-primary">${data.price1}</span>
@@ -196,7 +196,7 @@ function BooksListViewSidebar(){
                                                         <li><span>Year</span>2019</li>
                                                     </ul>
                                                     <div className="d-flex">
-                                                        <Link to={"/shop-cart"} className="btn btn-secondary btnhover btnhover2"><i className="flaticon-shopping-cart-1 m-r10"></i> Add to cart</Link>
+                                                        <Link to={`/books-detail/${data.id}`} className="btn btn-secondary btnhover btnhover2">View Details</Link>
                                                         <div className="bookmark-btn style-1">
                                                             <input className="form-check-input" type="checkbox" id="flexCheckDefault1" />
                                                             <label className="form-check-label" for="flexCheckDefault1">
