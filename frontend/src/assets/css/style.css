@@ -18872,9 +18872,15 @@ ul a.rsswidget {
         right: 0px;
         font-size: 10px;
         padding: 0;
-        line-height: 22px;
+        line-height: 20px;
         height: 20px;
-        width: 20px; }
+        width: 20px;
+        border-radius: 50%;
+        background-color: var(--primary);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center; }
     .extra-nav .extra-cell .header-right .nav-item:hover .nav-link {
       background: whitesmoke; }
   .extra-nav .extra-cell .header-right .dropdown-menu {

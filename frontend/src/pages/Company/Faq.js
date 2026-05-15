@@ -2,7 +2,6 @@ import React from 'react';
 import {Accordion} from 'react-bootstrap';
 
 //Components 
-import PageTitle from '../../components/layout/PageTitle';
 //element
 import CounterSection from '../../components/common/CounterSection';
 //image
@@ -19,7 +18,6 @@ function Faq(){
     return(
         <>
             <div className="page-content">
-                <PageTitle  parentPage="Pages" childPage="FAQ's" />
                 <section className="main-faq-content content-inner">
                     <div className="container">
                         <div className="row">

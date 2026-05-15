@@ -1,13 +1,11 @@
 import React from 'react';
 import {Link} from 'react-router-dom';
 
-import PageTitle from '../../components/layout/PageTitle';
 
 function PrivacyPolicy(){
     return(
         <>
             <div className="page-content">
-                <PageTitle childPage="Privacy Policy" parentPage="Pages" />
                 <section className="content-inner-1 shop-account">
                     <div className="container">
                         <div className="row">

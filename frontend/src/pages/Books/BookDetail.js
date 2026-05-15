@@ -5,16 +5,41 @@ import { bookService, wishlistService } from '../../api/api';
 import Swal from 'sweetalert2';
 
 // Components
-import PageTitle from '../../components/layout/PageTitle';
 import ClientsSlider from '../../components/features/Home/ClientsSlider';
 import CounterSection from '../../components/common/CounterSection';
 import NewsLetter from '../../components/features/NewsLetter';
 
 // Images
 import profile2 from '../../assets/images/profile2.jpg';
-import profile3 from '../../assets/images/profile3.jpg';
+import profile4 from '../../assets/images/profile4.jpg';
+import book16 from '../../assets/images/books/grid/book16.jpg';
+import book8 from '../../assets/images/books/grid/book8.jpg';
+import book14 from '../../assets/images/books/grid/book14.jpg';
+import book15 from '../../assets/images/books/grid/book15.jpg';
+import book4 from '../../assets/images/books/grid/book4.jpg';
+import book9 from '../../assets/images/books/grid/book9.jpg';
+import book2 from '../../assets/images/books/grid/book2.jpg';
+import book7 from '../../assets/images/books/grid/book7.jpg';
+import book13 from '../../assets/images/books/grid/book13.jpg';
+import book10 from '../../assets/images/books/grid/book10.jpg';
+import book11 from '../../assets/images/books/grid/book11.jpg';
+import book12 from '../../assets/images/books/grid/book12.jpg';
 
-// --- Star Rating Component ---
+const MOCK_BOOKS = [
+    {id: 1, imageUrl:book16, title:'Thunder Stunt', author: 'Kevin Smiley', category: {name: 'ADVENTURE'}, price: 54.78, discountPrice: 70.00, description: 'A thrilling adventure through the stormy mountains.' },
+    {id: 2, imageUrl:book14, title:'A Heavy Lift', author: 'John Doe', category: {name: 'RACING'}, price: 25.18, discountPrice: 68.00, description: 'The story of a legendary racer overcoming all odds.' },
+    {id: 3, imageUrl:book15, title:'Terrible Madness', author: 'Sarah Jenkins', category: {name: 'SPORTS'}, price: 25.30, discountPrice: 38.00, description: 'Inside the mind of the worlds greatest athletes.' },
+    {id: 4, imageUrl:book4, title:'Such Fun Age', author: 'Kiley Reid', category: {name: 'ADVENTURE'}, price: 20.15, discountPrice: 33.00, description: 'A striking and surprising debut novel about race and privilege.' },
+    {id: 5, imageUrl:book9, title:'Pushing Clouds', author: 'Amanda Sky', category: {name: 'ADVENTURE'}, price: 30.12, discountPrice: 40.00, description: 'A poetic journey through the clouds and beyond.' },
+    {id: 6, imageUrl:book2, title:'Homie', author: 'Danez Smith', category: {name: 'HORROR'}, price: 15.25, discountPrice: 45.00, description: 'A magnificent anthem about the care and feeding of friendship.' },
+    {id: 7, imageUrl:book7, title:'SECONDS', author: 'Bryan Lee OMalley', category: {name: 'SPORTS'}, price: 21.78, discountPrice: 36.00, description: 'A young chef gets a second chance at fixing her mistakes.' },
+    {id: 8, imageUrl:book13, title:'REWORK', author: 'Jason Fried', category: {name: 'THRILLER'}, price: 23.20, discountPrice: 49.00, description: 'A better, faster, easier way to succeed in business.' },
+    {id: 9, imageUrl:book11, title:'ALL GOOD NEWS', author: 'Happy Ray', category: {name: 'DRAMA'}, price: 40.78, discountPrice: 68.00, description: 'A collection of the most inspiring stories of the decade.' },
+    {id: 10, imageUrl:book10, title:'Emily The Back', author: 'Tim Burton', category: {name: 'DRAMA'}, price: 54.78, discountPrice: 63.00, description: 'The gothic tale of a girl who lives in the shadows.' },
+    {id: 11, imageUrl:book8, title:'The Adventure', author: 'Mark Twain', category: {name: 'BIOGRAPHY'}, price: 37.00, discountPrice: 47.00, description: 'The classic tale of Huckleberry Finn on the Mississippi.' },
+    {id: 12, imageUrl:book12, title:'The Missadventure of David', author: 'Charles Dickens', category: {name: 'DRAMA'}, price: 23.00, discountPrice: 52.00, description: 'The life and times of David Copperfield.' },
+];
+
 function StarRating({ rating = 4, max = 5 }) {
     return (
         <ul className="dz-rating">
@@ -27,7 +52,6 @@ function StarRating({ rating = 4, max = 5 }) {
     );
 }
 
-// --- Comment/Review Component ---
 function CommentBlog({ title, comment, date, rating }) {
     return (
         <div className="comment-body" id="div-comment-3">
@@ -50,7 +74,6 @@ function CommentBlog({ title, comment, date, rating }) {
     );
 }
 
-// --- Related Book Card Component ---
 function RelatedBookCard({ book }) {
     return (
         <div className="col-book style-2">
@@ -89,8 +112,7 @@ function RelatedBookCard({ book }) {
     );
 }
 
-// --- Main BookDetail Page ---
-function ShopDetail() {
+function BookDetail() {
     const { id } = useParams();
     const [book, setBook] = useState(null);
     const [relatedBooks, setRelatedBooks] = useState([]);
@@ -105,17 +127,28 @@ function ShopDetail() {
         const fetchData = async () => {
             setLoading(true);
             try {
+                // Try fetching from real API
                 const bookRes = await bookService.getById(id);
-                setBook(bookRes.data);
-                // Fetch all books for related section
+                if (bookRes.data) {
+                    setBook(bookRes.data);
+                } else {
+                    // Fallback to mock if API returns empty
+                    const mock = MOCK_BOOKS.find(b => String(b.id) === String(id));
+                    setBook(mock || null);
+                }
+                
                 const allBooksRes = await bookService.getAll();
-                const others = (allBooksRes.data || [])
-                    .filter(b => String(b.id) !== String(id))
-                    .slice(0, 3);
+                const others = (allBooksRes.data && allBooksRes.data.length > 0) 
+                    ? allBooksRes.data.filter(b => String(b.id) !== String(id)).slice(0, 3)
+                    : MOCK_BOOKS.filter(b => String(b.id) !== String(id)).slice(0, 3);
+                
                 setRelatedBooks(others);
-                setReviews([]);
             } catch (error) {
-                console.error('Error fetching book data:', error);
+                console.error('Error fetching book data, using mock fallback:', error);
+                // Final fallback if API fails completely (e.g. backend down)
+                const mock = MOCK_BOOKS.find(b => String(b.id) === String(id));
+                setBook(mock || null);
+                setRelatedBooks(MOCK_BOOKS.filter(b => String(b.id) !== String(id)).slice(0, 3));
             } finally {
                 setLoading(false);
             }
@@ -159,7 +192,6 @@ function ShopDetail() {
     if (loading) {
         return (
             <div className="page-content bg-grey">
-                <PageTitle parentPage="Shop" childPage="Book Detail" />
                 <div className="container d-flex justify-content-center align-items-center" style={{ minHeight: '50vh' }}>
                     <div className="spinner-border text-primary" role="status">
                         <span className="visually-hidden">Loading...</span>
@@ -172,7 +204,6 @@ function ShopDetail() {
     if (!book) {
         return (
             <div className="page-content bg-grey">
-                <PageTitle parentPage="Shop" childPage="Book Detail" />
                 <div className="container text-center py-5">
                     <h4>Book not found.</h4>
                     <Link to="/books-grid-view" className="btn btn-primary mt-3">Back to Books</Link>
@@ -195,33 +226,29 @@ function ShopDetail() {
     return (
         <>
             <div className="page-content bg-grey">
-                <PageTitle parentPage="Shop" childPage="Book Detail" />
 
-                {/* ===== HERO SECTION ===== */}
                 <section className="content-inner-1">
                     <div className="container">
                         <div className="row book-grid-row style-4 m-b60">
                             <div className="col">
                                 <div className="dz-box">
-
-                                    {/* Book Cover */}
-                                    <div className="dz-media" style={{ position: 'relative' }}>
+                                    <div className="dz-media" style={{ 
+                                        position: 'relative',
+                                        overflow: 'hidden',
+                                        borderRadius: '15px',
+                                        boxShadow: '0 30px 60px rgba(0,0,0,0.2)'
+                                    }}>
                                         <img
                                             src={book.coverUrl || book.imageUrl}
                                             alt={book.title}
                                             style={{
-                                                maxWidth: '300px',
                                                 width: '100%',
-                                                borderRadius: '8px',
-                                                boxShadow: '0 20px 50px rgba(0,0,0,0.15)',
+                                                display: 'block',
+                                                transition: 'transform 0.5s ease'
                                             }}
                                         />
                                     </div>
-
-                                    {/* Book Content */}
                                     <div className="dz-content">
-
-                                        {/* Header: rating + title */}
                                         <div className="dz-header">
                                             <h3 className="title">{book.title}</h3>
                                             <div className="shop-item-rating">
@@ -234,12 +261,9 @@ function ShopDetail() {
                                                 </div>
                                             </div>
                                         </div>
-
-                                        {/* Body */}
                                         <div className="dz-body">
                                             <div className="book-detail">
                                                 <ul className="book-info">
-                                                    {/* Author */}
                                                     <li>
                                                         <div className="writer-info">
                                                             <img src={profile2} alt="author" />
@@ -249,26 +273,9 @@ function ShopDetail() {
                                                             </div>
                                                         </div>
                                                     </li>
-                                                    {/* Publisher & Year */}
-                                                    {book.publisher && (
-                                                        <li>
-                                                            <span className="text-muted">Publisher</span>
-                                                            <strong className="ms-2">{book.publisher}</strong>
-                                                        </li>
-                                                    )}
-                                                    {book.year && (
-                                                        <li>
-                                                            <span className="text-muted">Year</span>
-                                                            <strong className="ms-2">{book.year}</strong>
-                                                        </li>
-                                                    )}
                                                 </ul>
                                             </div>
-
-                                            {/* Description */}
                                             <p className="text-1">{book.description}</p>
-
-                                            {/* Price + Actions */}
                                             <div className="book-footer">
                                                 <div className="price">
                                                     <h5>${book.discountPrice || book.price}</h5>
@@ -278,14 +285,13 @@ function ShopDetail() {
                                                         </p>
                                                     )}
                                                 </div>
-
-                                                <div className="product-num mt-3">
-                                                    {/* Quantity Selector */}
-                                                    <div className="quantity btn-quantity style-1 me-3">
+                                                <div className="product-num mt-3 d-flex flex-wrap gap-3">
+                                                    <div className="quantity btn-quantity style-1">
                                                         <button
                                                             className="btn btn-minus"
                                                             type="button"
                                                             onClick={() => setCount(Math.max(1, count - 1))}
+                                                            style={{ border: '1px solid #eee' }}
                                                         >
                                                             <i className="ti-minus"></i>
                                                         </button>
@@ -294,39 +300,35 @@ function ShopDetail() {
                                                             type="text"
                                                             value={count}
                                                             readOnly
+                                                            style={{ width: '50px', textAlign: 'center', borderTop: '1px solid #eee', borderBottom: '1px solid #eee' }}
                                                         />
                                                         <button
                                                             className="btn btn-plus"
                                                             type="button"
                                                             onClick={() => setCount(count + 1)}
+                                                            style={{ border: '1px solid #eee' }}
                                                         >
                                                             <i className="ti-plus"></i>
                                                         </button>
                                                     </div>
-
-                                                    {/* Add to Cart */}
                                                     <button
                                                         onClick={handleAddToCart}
-                                                        className="btn btn-primary btnhover me-2"
-                                                        id="btn-add-to-cart"
+                                                        className="btn btn-primary btnhover px-4"
+                                                        style={{ borderRadius: '30px' }}
                                                     >
                                                         <i className="flaticon-shopping-cart-1 m-r10"></i>
                                                         <span>Add to Cart</span>
                                                     </button>
-
-                                                    {/* Add to Wishlist */}
                                                     <button
                                                         onClick={handleAddToWishlist}
-                                                        className="btn btn-outline-primary btnhover btnhover2"
-                                                        id="btn-add-to-wishlist"
+                                                        className="btn btn-outline-primary btnhover px-4"
+                                                        style={{ borderRadius: '30px' }}
                                                     >
                                                         <i className="flaticon-heart m-r10"></i>
                                                         <span>Wishlist</span>
                                                     </button>
                                                 </div>
                                             </div>
-
-                                            {/* Tags */}
                                             {tags.length > 0 && (
                                                 <div className="mt-4">
                                                     <strong className="me-2">Tags:</strong>
@@ -354,7 +356,6 @@ function ShopDetail() {
                             </div>
                         </div>
 
-                        {/* ===== TABS: Details + Reviews ===== */}
                         <div className="row">
                             <div className="col-xl-8">
                                 <Tab.Container defaultActiveKey="details">
@@ -368,8 +369,6 @@ function ShopDetail() {
                                             </Nav.Item>
                                         </Nav>
                                         <Tab.Content>
-
-                                            {/* --- Details Tab --- */}
                                             <Tab.Pane eventKey="details">
                                                 <table className="table border book-overview">
                                                     <tbody>
@@ -382,8 +381,6 @@ function ShopDetail() {
                                                     </tbody>
                                                 </table>
                                             </Tab.Pane>
-
-                                            {/* --- Reviews Tab --- */}
                                             <Tab.Pane eventKey="review">
                                                 <div className="clear" id="comment-list">
                                                     <div className="post-comments comments-area style-1 clearfix">
@@ -409,16 +406,11 @@ function ShopDetail() {
                                                                 )}
                                                             </ol>
                                                         </div>
-
-                                                        {/* Leave a Reply */}
                                                         <div className="default-form comment-respond style-1" id="respond">
-                                                            <h4 className="comment-reply-title" id="reply-title">
-                                                                LEAVE A REPLY
-                                                            </h4>
+                                                            <h4 className="comment-reply-title">LEAVE A REPLY</h4>
                                                             <div className="clearfix">
                                                                 <form onSubmit={handleReviewSubmit} className="comment-form">
                                                                     <p className="comment-form-comment">
-                                                                        {/* Star Rating Picker */}
                                                                         <div className="mb-2 d-flex align-items-center gap-1">
                                                                             {[1, 2, 3, 4, 5].map((star) => (
                                                                                 <i
@@ -430,12 +422,9 @@ function ShopDetail() {
                                                                                     onMouseLeave={() => setHoverRating(0)}
                                                                                 ></i>
                                                                             ))}
-                                                                            <span className="ms-2 text-muted" style={{ fontSize: '13px' }}>
-                                                                                {rating} Star{rating !== 1 ? 's' : ''}
-                                                                            </span>
                                                                         </div>
                                                                         <textarea
-                                                                            placeholder="Share your thoughts about this book..."
+                                                                            placeholder="Type Comment Here"
                                                                             className="form-control"
                                                                             rows="4"
                                                                             value={comment}
@@ -447,10 +436,8 @@ function ShopDetail() {
                                                                         <button
                                                                             type="submit"
                                                                             className="submit btn btn-primary filled"
-                                                                            id="btn-submit-review"
                                                                         >
-                                                                            Submit Now{' '}
-                                                                            <i className="fa fa-angle-right m-l10"></i>
+                                                                            Submit Now <i className="fa fa-angle-right m-l10"></i>
                                                                         </button>
                                                                     </p>
                                                                 </form>
@@ -467,7 +454,6 @@ function ShopDetail() {
                     </div>
                 </section>
 
-                {/* ===== RELATED BOOKS ===== */}
                 {relatedBooks.length > 0 && (
                     <section className="content-inner-1 bg-white">
                         <div className="container">
@@ -486,14 +472,12 @@ function ShopDetail() {
                     </section>
                 )}
 
-                {/* ===== CLIENTS SLIDER ===== */}
                 <div className="bg-white py-5">
                     <div className="container">
                         <ClientsSlider />
                     </div>
                 </div>
 
-                {/* ===== COUNTER ===== */}
                 <section className="content-inner bg-grey">
                     <div className="container">
                         <div className="row sp15">
@@ -502,11 +486,10 @@ function ShopDetail() {
                     </div>
                 </section>
 
-                {/* ===== NEWSLETTER ===== */}
                 <NewsLetter />
             </div>
         </>
     );
 }
 
-export default ShopDetail;
+export default BookDetail;

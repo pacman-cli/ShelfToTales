@@ -4,7 +4,6 @@ import { Collapse, Dropdown } from 'react-bootstrap';
 import { bookService } from '../../api/api';
 
 //Component
-import PageTitle from '../../components/layout/PageTitle';
 import ClientsSlider from '../../components/features/Home/ClientsSlider';
 import CounterSection from '../../components/common/CounterSection';
 import NewsLetter from '../../components/features/NewsLetter';
@@ -56,7 +55,6 @@ function ShopList(){
 
     return(
         <>
-            <PageTitle parentPage="Home" childPage="Shop List" />
             <div className="page-content bg-grey">
                 <section className="content-inner-1 border-bottom">
                     <div className="container">
@@ -149,7 +147,7 @@ function ShopList(){
                                                     <ul className="dz-tags">
                                                         <li><Link to={"#"}>{data.category?.name}</Link></li>
                                                     </ul>
-                                                    <h4 className="title mb-0"><Link to={`/shop-detail/${data.id}`}>{data.title}</Link></h4>
+                                                    <h4 className="title mb-0"><Link to={`/books-detail/${data.id}`}>{data.title}</Link></h4>
                                                 </div>
                                                 <div className="price">
                                                     <span className="price-num text-primary">${data.discountPrice || data.price}</span>
@@ -178,7 +176,7 @@ function ShopList(){
                                                         <li><span>Writen by</span>{data.author}</li>
                                                     </ul>
                                                     <div className="d-flex">
-                                                        <Link to={`/shop-detail/${data.id}`} className="btn btn-secondary btnhover btnhover2">View Details</Link>
+                                                        <Link to={`/books-detail/${data.id}`} className="btn btn-secondary btnhover btnhover2">View Details</Link>
                                                     </div>
                                                 </div>
                                             </div>
