@@ -173,7 +173,18 @@ function VirtualBookshelf() {
         if (activeBookshelfId) saveShelf(activeBookshelfId, updates);
     };
 
-    const activeShelf = bookshelves.find(s => s.id === activeBookshelfId) || bookshelves[0];
+    const activeShelf = bookshelves.find(s => s.id === activeBookshelfId) || bookshelves[0] || { theme: 'glass', name: 'Bookshelf' };
+
+    if (loadingShelves) {
+        return (
+            <div className="bookshelf-container theme-glass d-flex align-items-center justify-content-center" style={{minHeight: '100vh'}}>
+                <div className="text-center">
+                    <div className="spinner-border text-primary mb-3" role="status"><span className="visually-hidden">Loading...</span></div>
+                    <p className="text-muted">Loading your bookshelves...</p>
+                </div>
+            </div>
+        );
+    }
 
     const renderLibrary = () => {
         const visibleBooks = books.filter(b => !b.hidden);
