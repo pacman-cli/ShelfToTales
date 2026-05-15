@@ -18,6 +18,19 @@ api.interceptors.request.use(
   (error) => Promise.reject(error)
 );
 
+// Response interceptor: handle 401 globally — clear session and redirect
+api.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401 && !error.config.url?.includes('/auth/')) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/shop-login';
+    }
+    return Promise.reject(error);
+  }
+);
+
 export const authService = {
   login: (credentials) => api.post('/auth/login', credentials),
   register: (userData) => api.post('/auth/register', userData),
