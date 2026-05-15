@@ -36,13 +36,16 @@ function Registration(){
 
     const handleGoogleResponse = async (response) => {
         try {
+            console.log('Google token received, sending to backend...');
             const res = await authService.googleAuth(response.credential);
             localStorage.setItem('token', res.data.token);
             localStorage.setItem('user', JSON.stringify(res.data));
             Swal.fire('Success', 'Account created with Google', 'success');
             window.location.href = '/dashboard';
         } catch (error) {
-            Swal.fire('Error', error.response?.data?.message || 'Google signup failed', 'error');
+            console.error('Google auth error:', error);
+            console.error('Response data:', error.response?.data);
+            Swal.fire('Error', error.response?.data?.message || error.message || 'Google login failed', 'error');
         }
     };
 

@@ -35,13 +35,17 @@ function Login(){
 
     const handleGoogleResponse = async (response) => {
         try {
+            console.log('Google token received, sending to backend...');
             const res = await authService.googleAuth(response.credential);
             localStorage.setItem('token', res.data.token);
             localStorage.setItem('user', JSON.stringify(res.data));
             Swal.fire('Success', 'Logged in with Google', 'success');
             window.location.href = '/dashboard';
         } catch (error) {
-            Swal.fire('Error', error.response?.data?.message || 'Google login failed', 'error');
+            console.error('Google auth error:', error);
+            console.error('Response data:', error.response?.data);
+            console.error('Status:', error.response?.status);
+            Swal.fire('Error', error.response?.data?.message || error.message || 'Google login failed', 'error');
         }
     };
 
