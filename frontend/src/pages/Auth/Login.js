@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { authService } from '../../api/api';
 import Swal from 'sweetalert2';
@@ -7,11 +7,43 @@ import Swal from 'sweetalert2';
 import './AuthLayout.css';
 import loginImage from '../../assets/images/login-signup.jpg';
 
+const GOOGLE_CLIENT_ID = '908376284076-qp26p58bj59uatj3am37l9dk6sqm5bcb.apps.googleusercontent.com';
+
 function Login(){
     const [forgotPass, setForgotPass] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate();
+
+    useEffect(() => {
+        const script = document.createElement('script');
+        script.src = 'https://accounts.google.com/gsi/client';
+        script.async = true;
+        script.onload = () => {
+            window.google?.accounts.id.initialize({
+                client_id: GOOGLE_CLIENT_ID,
+                callback: handleGoogleResponse,
+            });
+            window.google?.accounts.id.renderButton(
+                document.getElementById('google-signin-btn'),
+                { theme: 'outline', size: 'large', width: 300, text: 'continue_with' }
+            );
+        };
+        document.body.appendChild(script);
+        return () => { document.body.removeChild(script); };
+    }, []);
+
+    const handleGoogleResponse = async (response) => {
+        try {
+            const res = await authService.googleAuth(response.credential);
+            localStorage.setItem('token', res.data.token);
+            localStorage.setItem('user', JSON.stringify(res.data));
+            Swal.fire('Success', 'Logged in with Google', 'success');
+            window.location.href = '/dashboard';
+        } catch (error) {
+            Swal.fire('Error', error.response?.data?.message || 'Google login failed', 'error');
+        }
+    };
 
     const handleLogin = async (e) => {
         e.preventDefault();
@@ -66,11 +98,15 @@ function Login(){
                             </div>
                             
                             <button type="submit" className="auth-submit-btn">Login</button>
-                            
-                            <div className="auth-switch-link">
-                                Don't have an account? <Link to="/shop-registration">Sign up here</Link>
-                            </div>
                         </form>
+
+                        <div className="auth-divider"><span>or</span></div>
+
+                        <div id="google-signin-btn" className="auth-google-btn"></div>
+
+                        <div className="auth-switch-link">
+                            Don't have an account? <Link to="/shop-registration">Sign up here</Link>
+                        </div>
                     </>
                 ) : (
                     <>
