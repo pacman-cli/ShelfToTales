@@ -52,17 +52,22 @@ function Login(){
         e.preventDefault();
         try {
             const response = await authService.login({ email, password });
+            console.log('Login response:', response.data);
             localStorage.setItem('token', response.data.token);
             localStorage.setItem('user', JSON.stringify(response.data));
             // Fetch full profile immediately to sync with backend
             try {
                 const profileRes = await userService.getProfile();
+                console.log('Profile after login:', profileRes.data);
                 localStorage.setItem('user', JSON.stringify(profileRes.data));
-            } catch (_) {}
+            } catch (err) {
+                console.warn('Profile fetch after login failed:', err);
+            }
             Swal.fire('Success', 'Logged in successfully', 'success');
             window.location.href = '/dashboard'; 
         } catch (error) {
             Swal.fire('Error', error.response?.data?.message || 'Login failed', 'error');
+        }
         }
     };
 
