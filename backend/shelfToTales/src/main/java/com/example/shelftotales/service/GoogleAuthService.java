@@ -60,7 +60,7 @@ public class GoogleAuthService {
             user.setGoogleId(googleId);
             user.setAuthProvider(AuthProvider.GOOGLE);
             if (pictureUrl != null) user.setProfileImageUrl(pictureUrl);
-            if (name != null) user.setFullName(name);
+            // Do NOT overwrite fullName — user may have customized it
         }
 
         userRepository.save(user);
