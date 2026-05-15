@@ -33,11 +33,8 @@ function Login(){
             console.log('Google token received, sending to backend...');
             const res = await authService.googleAuth(response.credential);
             localStorage.setItem('token', res.data.token);
-            localStorage.setItem('user', JSON.stringify(res.data));
-            try {
-                const profileRes = await userService.getProfile();
-                localStorage.setItem('user', JSON.stringify(profileRes.data));
-            } catch (_) {}
+            const profileRes = await userService.getProfile();
+            localStorage.setItem('user', JSON.stringify(profileRes.data));
             Swal.fire('Success', 'Logged in with Google', 'success');
             window.location.href = '/dashboard';
         } catch (error) {
@@ -52,22 +49,14 @@ function Login(){
         e.preventDefault();
         try {
             const response = await authService.login({ email, password });
-            console.log('Login response:', response.data);
             localStorage.setItem('token', response.data.token);
-            localStorage.setItem('user', JSON.stringify(response.data));
-            // Fetch full profile immediately to sync with backend
-            try {
-                const profileRes = await userService.getProfile();
-                console.log('Profile after login:', profileRes.data);
-                localStorage.setItem('user', JSON.stringify(profileRes.data));
-            } catch (err) {
-                console.warn('Profile fetch after login failed:', err);
-            }
+            // Fetch full profile — this is the canonical user data
+            const profileRes = await userService.getProfile();
+            localStorage.setItem('user', JSON.stringify(profileRes.data));
             Swal.fire('Success', 'Logged in successfully', 'success');
             window.location.href = '/dashboard'; 
         } catch (error) {
             Swal.fire('Error', error.response?.data?.message || 'Login failed', 'error');
-        }
         }
     };
 

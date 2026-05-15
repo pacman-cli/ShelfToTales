@@ -34,11 +34,8 @@ function Registration(){
             console.log('Google token received, sending to backend...');
             const res = await authService.googleAuth(response.credential);
             localStorage.setItem('token', res.data.token);
-            localStorage.setItem('user', JSON.stringify(res.data));
-            try {
-                const profileRes = await userService.getProfile();
-                localStorage.setItem('user', JSON.stringify(profileRes.data));
-            } catch (_) {}
+            const profileRes = await userService.getProfile();
+            localStorage.setItem('user', JSON.stringify(profileRes.data));
             Swal.fire('Success', 'Account created with Google', 'success');
             window.location.href = '/dashboard';
         } catch (error) {
