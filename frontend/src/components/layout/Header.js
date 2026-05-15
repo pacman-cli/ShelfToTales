@@ -1,6 +1,7 @@
 import React,{useEffect, useState} from 'react';
 import {Link} from 'react-router-dom';
 import {Dropdown} from 'react-bootstrap';
+import { userService } from '../../api/api';
 //images
 
 import logo from './../../assets/images/logo.png';
@@ -33,9 +34,19 @@ function Header(){
 	/*  Toggle btn End  */
 	
 	useEffect(() => {
-		const storedUser = localStorage.getItem('user');
-		if (storedUser) {
-			setUser(JSON.parse(storedUser));
+		const token = localStorage.getItem('token');
+		if (token) {
+			// Try to fetch fresh profile from backend
+			userService.getProfile()
+				.then(res => {
+					setUser(res.data);
+					localStorage.setItem('user', JSON.stringify(res.data));
+				})
+				.catch(() => {
+					// Fallback to cached user data
+					const storedUser = localStorage.getItem('user');
+					if (storedUser) setUser(JSON.parse(storedUser));
+				});
 		}
 	}, []);
 

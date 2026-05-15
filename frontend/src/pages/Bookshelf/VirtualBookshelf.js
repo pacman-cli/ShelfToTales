@@ -86,14 +86,22 @@ function VirtualBookshelf() {
         fetchBooks();
     }, []);
 
-    const saveShelf = async (id, updates) => {
-        try {
-            const res = await bookshelfService.update(id, updates);
-            return res.data;
-        } catch (err) {
-            console.error('Failed to save shelf:', err);
-            return null;
-        }
+    useEffect(() => {
+        return () => { if (saveShelfRef.current) clearTimeout(saveShelfRef.current); };
+    }, []);
+
+    const saveShelfRef = useRef(null);
+    const saveShelf = (id, updates) => {
+        if (saveShelfRef.current) clearTimeout(saveShelfRef.current);
+        saveShelfRef.current = setTimeout(async () => {
+            try {
+                const res = await bookshelfService.update(id, updates);
+                return res.data;
+            } catch (err) {
+                console.error('Failed to save shelf:', err);
+                return null;
+            }
+        }, 500);
     };
 
     const handleLogoUpload = (e) => {
