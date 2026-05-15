@@ -3,6 +3,8 @@ package com.example.shelftotales.dto;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.time.LocalDate;
+
 @Getter
 @Setter
 @Builder
@@ -17,4 +19,15 @@ public class ProfileRequest {
 
     @Size(max = 500, message = "Profile image URL must not exceed 500 characters")
     private String profileImageUrl;
+
+    @Size(max = 50, message = "Phone must not exceed 50 characters")
+    private String phone;
+
+    @Size(max = 500, message = "Address must not exceed 500 characters")
+    private String address;
+
+    @Size(max = 500, message = "Hobbies must not exceed 500 characters")
+    private String hobbies;
+
+    private LocalDate dateOfBirth;
 }

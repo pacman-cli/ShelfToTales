@@ -16,6 +16,10 @@ function MyProfile() {
         email: '',
         bio: '',
         profileImageUrl: '',
+        phone: '',
+        address: '',
+        hobbies: '',
+        dateOfBirth: '',
         createdAt: '',
         updatedAt: '',
     });
@@ -48,9 +52,12 @@ function MyProfile() {
                 fullName: profile.fullName,
                 bio: profile.bio,
                 profileImageUrl: profile.profileImageUrl,
+                phone: profile.phone,
+                address: profile.address,
+                hobbies: profile.hobbies,
+                dateOfBirth: profile.dateOfBirth || null,
             });
             setProfile(res.data);
-            // Update stored user info
             const stored = JSON.parse(localStorage.getItem('user') || '{}');
             localStorage.setItem('user', JSON.stringify({ ...stored, ...res.data }));
             Swal.fire('Success', 'Profile updated successfully', 'success');
@@ -138,6 +145,18 @@ function MyProfile() {
                                             </div>
                                             <div className="col-lg-6">
                                                 <div className="mb-3">
+                                                    <label className="form-label">Phone</label>
+                                                    <input type="tel" name="phone" className="form-control" value={profile.phone || ''} onChange={handleChange} placeholder="+1 (555) 123-4567" />
+                                                </div>
+                                            </div>
+                                            <div className="col-lg-6">
+                                                <div className="mb-3">
+                                                    <label className="form-label">Date of Birth</label>
+                                                    <input type="date" name="dateOfBirth" className="form-control" value={profile.dateOfBirth || ''} onChange={handleChange} />
+                                                </div>
+                                            </div>
+                                            <div className="col-lg-6">
+                                                <div className="mb-3">
                                                     <label className="form-label">Profile Image URL</label>
                                                     <input type="url" name="profileImageUrl" className="form-control" value={profile.profileImageUrl || ''} onChange={handleChange} placeholder="https://example.com/avatar.jpg" />
                                                 </div>
@@ -150,8 +169,20 @@ function MyProfile() {
                                             </div>
                                             <div className="col-12">
                                                 <div className="mb-3">
+                                                    <label className="form-label">Address</label>
+                                                    <textarea name="address" className="form-control" rows="2" value={profile.address || ''} onChange={handleChange} placeholder="123 Main St, City, State, ZIP"></textarea>
+                                                </div>
+                                            </div>
+                                            <div className="col-12">
+                                                <div className="mb-3">
+                                                    <label className="form-label">Hobbies & Interests</label>
+                                                    <textarea name="hobbies" className="form-control" rows="2" value={profile.hobbies || ''} onChange={handleChange} placeholder="Reading, writing, hiking, photography..."></textarea>
+                                                </div>
+                                            </div>
+                                            <div className="col-12">
+                                                <div className="mb-3">
                                                     <label className="form-label">Bio</label>
-                                                    <textarea name="bio" className="form-control" rows="4" value={profile.bio || ''} onChange={handleChange} placeholder="Tell us about yourself..." maxLength={500}></textarea>
+                                                    <textarea name="bio" className="form-control" rows="3" value={profile.bio || ''} onChange={handleChange} placeholder="Tell us about yourself..." maxLength={500}></textarea>
                                                     <small className="text-muted">{(profile.bio || '').length}/500 characters</small>
                                                 </div>
                                             </div>

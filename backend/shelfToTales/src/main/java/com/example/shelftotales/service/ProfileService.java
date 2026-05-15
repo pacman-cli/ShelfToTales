@@ -27,6 +27,10 @@ public class ProfileService {
         if (request.getFullName() != null) user.setFullName(request.getFullName());
         if (request.getBio() != null) user.setBio(request.getBio());
         if (request.getProfileImageUrl() != null) user.setProfileImageUrl(request.getProfileImageUrl());
+        if (request.getPhone() != null) user.setPhone(request.getPhone());
+        if (request.getAddress() != null) user.setAddress(request.getAddress());
+        if (request.getHobbies() != null) user.setHobbies(request.getHobbies());
+        if (request.getDateOfBirth() != null) user.setDateOfBirth(request.getDateOfBirth());
         user.setUpdatedAt(LocalDateTime.now());
         return toResponse(userRepository.save(user));
     }
@@ -36,6 +40,8 @@ public class ProfileService {
                 .id(user.getId()).email(user.getEmail())
                 .fullName(user.getFullName()).bio(user.getBio())
                 .profileImageUrl(user.getProfileImageUrl())
+                .phone(user.getPhone()).address(user.getAddress())
+                .hobbies(user.getHobbies()).dateOfBirth(user.getDateOfBirth())
                 .createdAt(user.getCreatedAt()).updatedAt(user.getUpdatedAt())
                 .build();
     }
