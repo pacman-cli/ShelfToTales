@@ -5,13 +5,14 @@ import './VirtualBookshelf.css';
 import Swal from 'sweetalert2';
 import logoImage from '../../assets/images/logo.png';
 
-// Professional Demo Books
+// Professional Demo Books (fallback if API fails)
+const FALLBACK_IMG = 'https://picsum.photos/seed';
 const demoBooksList = [
-    { id: 'demo-1', title: 'The Great Gatsby', author: 'F. Scott Fitzgerald', imageUrl: 'https://via.placeholder.com/250x350/1a1668/ffffff?text=Gatsby', createdAt: '2024-01-01', hidden: false },
-    { id: 'demo-2', title: '1984', author: 'George Orwell', imageUrl: 'https://via.placeholder.com/250x350/ff3b30/ffffff?text=1984', createdAt: '2024-02-01', hidden: false },
-    { id: 'demo-3', title: 'To Kill a Mockingbird', author: 'Harper Lee', imageUrl: 'https://via.placeholder.com/250x350/00aeff/ffffff?text=Mockingbird', createdAt: '2024-03-01', hidden: false },
-    { id: 'demo-4', title: 'The Art of War', author: 'Sun Tzu', imageUrl: 'https://via.placeholder.com/250x350/333333/00ffcc?text=Art+of+War', createdAt: '2024-04-01', hidden: false },
-    { id: 'demo-5', title: 'Digital Fortress', author: 'Dan Brown', imageUrl: 'https://via.placeholder.com/250x350/a1887f/ffffff?text=Digital+Fortress', createdAt: '2024-05-01', hidden: false }
+    { id: 'demo-1', title: 'The Great Gatsby', author: 'F. Scott Fitzgerald', imageUrl: `${FALLBACK_IMG}/gatsby/250/350`, createdAt: '2024-01-01', hidden: false },
+    { id: 'demo-2', title: '1984', author: 'George Orwell', imageUrl: `${FALLBACK_IMG}/1984/250/350`, createdAt: '2024-02-01', hidden: false },
+    { id: 'demo-3', title: 'To Kill a Mockingbird', author: 'Harper Lee', imageUrl: `${FALLBACK_IMG}/mockingbird/250/350`, createdAt: '2024-03-01', hidden: false },
+    { id: 'demo-4', title: 'The Art of War', author: 'Sun Tzu', imageUrl: `${FALLBACK_IMG}/war/250/350`, createdAt: '2024-04-01', hidden: false },
+    { id: 'demo-5', title: 'Digital Fortress', author: 'Dan Brown', imageUrl: `${FALLBACK_IMG}/fortress/250/350`, createdAt: '2024-05-01', hidden: false }
 ];
 
 function VirtualBookshelf() {
@@ -47,8 +48,15 @@ function VirtualBookshelf() {
         const fetchBooks = async () => {
             try {
                 const response = await bookService.getMyBooks();
-                let fetchedBooks = response.data && response.data.length > 0 ? response.data : demoBooksList;
-                fetchedBooks = fetchedBooks.map(b => ({ ...b, hidden: b.hidden || false, createdAt: b.createdAt || new Date().toISOString() }));
+                const data = response.data?.content || response.data || [];
+                let fetchedBooks = data.length > 0 ? data.map(b => ({
+                    id: b.id?.toString() || Math.random().toString(),
+                    title: b.title || 'Untitled',
+                    author: b.author || 'Unknown',
+                    imageUrl: b.coverUrl || `${FALLBACK_IMG}/${(b.title || 'book').replace(/\s+/g, '-')}/250/350`,
+                    createdAt: b.publishedDate || new Date().toISOString().split('T')[0],
+                    hidden: false,
+                })) : demoBooksList;
                 setBooks(fetchedBooks);
                 setOriginalBooks(fetchedBooks);
                 if (fetchedBooks.length > 0) setCurrentBook(fetchedBooks[0]);
@@ -130,10 +138,11 @@ function VirtualBookshelf() {
             <div className="library-view animate__animated animate__fadeIn">
                 <div className="shelf-group hero-shelf-group">
                     <div className="hero-shelf-container">
-                        <div className="hero-shelf-layout d-flex align-items-center justify-content-center gap-4">
-                            <div className="hero-text text-start">
-                                <h2 className="hero-book-title fw-bold"><i className="fa-solid fa-bookmark me-3 opacity-25"></i>{visibleBooks[0].title}</h2>
-                                <button className="btn btn-sm btn-outline-primary mt-3 px-3 rounded-pill" onClick={() => handleReadBook(visibleBooks[0])}>Read</button>
+                        <div className="hero-shelf-layout d-flex align-items-center justify-content-center gap-4 flex-wrap">
+                            <div className="hero-text text-start" style={{minWidth: '200px', maxWidth: '350px'}}>
+                                <h2 className="hero-book-title fw-bold" style={{wordBreak: 'break-word', fontSize: '1.5rem'}}><i className="fa-solid fa-bookmark me-3 opacity-25"></i>{visibleBooks[0].title}</h2>
+                                <p className="text-muted small mb-1">by {visibleBooks[0].author}</p>
+                                <button className="btn btn-sm btn-outline-primary mt-2 px-3 rounded-pill" onClick={() => handleReadBook(visibleBooks[0])}>Read</button>
                             </div>
                             <div className="bookshelf-book hero-book-main" onClick={() => handleReadBook(visibleBooks[0])}><img src={visibleBooks[0].imageUrl} alt="" /></div>
                         </div>
@@ -144,7 +153,7 @@ function VirtualBookshelf() {
                     <div key={si} className="shelf-group mt-5">
                         <div className="book-row">{visibleBooks.slice(1 + si * 4, 1 + (si + 1) * 4).map(b => (
                             <div key={b.id} className="book-with-header">
-                                <div className="book-top-info px-2 py-1 mb-2 small fw-bold text-truncate" style={{maxWidth: '90px', fontSize: '0.65rem'}}>{b.title}</div>
+                                <div className="book-top-info px-2 py-1 mb-2 small fw-bold" style={{maxWidth: '90px', fontSize: '0.7rem', color: '#333', textAlign: 'center', lineHeight: '1.2', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{b.title}</div>
                                 <div className="bookshelf-book" onClick={() => handleReadBook(b)}><img src={b.imageUrl} alt="" /></div>
                             </div>
                         ))}</div>

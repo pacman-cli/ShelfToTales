@@ -28,6 +28,7 @@ export const bookService = {
   getAll: (params = {}) => api.get('/books', { params }),
   getById: (id) => api.get(`/books/${id}`),
   getByCategory: (categoryId) => api.get(`/books`, { params: { categoryId } }),
+  getMyBooks: () => api.get('/books'),
 };
 
 export const categoryService = {
