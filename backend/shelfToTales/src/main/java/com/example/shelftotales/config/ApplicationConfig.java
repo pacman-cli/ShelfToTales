@@ -18,7 +18,8 @@ import org.springframework.boot.autoconfigure.jackson.Jackson2ObjectMapperBuilde
 public class ApplicationConfig {
 
     /**
-     * Customizes Jackson to handle Hibernate lazy initialization and avoid errors on empty beans.
+     * Customizes Jackson to handle Hibernate lazy initialization and avoid errors
+     * on empty beans.
      */
     @Bean
     public Jackson2ObjectMapperBuilderCustomizer jacksonCustomizer() {
@@ -39,7 +40,8 @@ public class ApplicationConfig {
      * Note: DaoAuthenticationProvider uses setters for its dependencies.
      */
     @Bean
-    public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService, PasswordEncoder passwordEncoder) {
+    public AuthenticationProvider authenticationProvider(UserDetailsService userDetailsService,
+            PasswordEncoder passwordEncoder) {
         DaoAuthenticationProvider authProvider = new DaoAuthenticationProvider();
         authProvider.setUserDetailsService(userDetailsService);
         authProvider.setPasswordEncoder(passwordEncoder);

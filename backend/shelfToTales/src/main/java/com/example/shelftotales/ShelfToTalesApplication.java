@@ -9,5 +9,4 @@ public class ShelfToTalesApplication {
     public static void main(String[] args) {
         SpringApplication.run(ShelfToTalesApplication.class, args);
     }
-
 }

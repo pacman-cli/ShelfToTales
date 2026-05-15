@@ -1,34 +1,53 @@
 package com.example.shelftotales.controller;
 
-import com.example.shelftotales.model.Book;
+import com.example.shelftotales.dto.BookResponse;
+import com.example.shelftotales.dto.PagedResponse;
+import com.example.shelftotales.dto.ReadBookResponse;
 import com.example.shelftotales.service.BookService;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequestMapping("/api/books")
 @RequiredArgsConstructor
+@Tag(name = "Books", description = "Public book browsing endpoints")
 public class BookController {
     private final BookService bookService;
 
     @GetMapping
-    public List<Book> getBooks(@RequestParam(required = false) String q,
-                               @RequestParam(required = false) Long categoryId) {
-        if (categoryId != null) {
-            return bookService.getBooksByCategory(categoryId);
-        }
-        if (q != null) {
-            return bookService.searchBooks(q);
-        }
-        return bookService.getAllBooks();
+    @Operation(summary = "Browse books with pagination, search, and category filter")
+    public PagedResponse<BookResponse> getBooks(
+            @Parameter(description = "Search by title or author")
+            @RequestParam(required = false) String q,
+            @Parameter(description = "Filter by category ID")
+            @RequestParam(required = false) Long categoryId,
+            @Parameter(description = "Page number (0-based)")
+            @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "Page size")
+            @RequestParam(defaultValue = "20") int size,
+            @Parameter(description = "Sort field: title, author, publishedDate")
+            @RequestParam(defaultValue = "title") String sortBy,
+            @Parameter(description = "Sort direction: asc or desc")
+            @RequestParam(defaultValue = "asc") String sortDir) {
+        return bookService.getBooks(q, categoryId, page, size, sortBy, sortDir);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Book> getBookById(@PathVariable Long id) {
+    @Operation(summary = "Get book details by ID")
+    public ResponseEntity<BookResponse> getBookById(@PathVariable Long id) {
         return bookService.getBookById(id)
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    @GetMapping("/{id}/read")
+    @Operation(summary = "Get PDF reading info for a book")
+    public ResponseEntity<ReadBookResponse> getReadBookInfo(@PathVariable Long id) {
+        return bookService.getReadBookInfo(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());
     }
