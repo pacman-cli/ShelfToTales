@@ -12,7 +12,6 @@ const FlipbookReader = () => {
     const [isLoading, setIsLoading] = useState(true);
     const [isFlipping, setIsFlipping] = useState(false);
     const [theme, setTheme] = useState('glass');
-    const canvasRef = useRef(null);
     const flipbookRef = useRef(null);
 
     // Get theme from location state or default to glass
@@ -32,10 +31,7 @@ const FlipbookReader = () => {
     };
 
     useEffect(() => {
-        loadBookPages();
-    }, [bookId]);
-
-    const loadBookPages = async () => {
+        const loadBookPages = async () => {
         try {
             setIsLoading(true);
             const book = bookData[bookId] || bookData['demo-2'];
@@ -109,7 +105,9 @@ const FlipbookReader = () => {
             console.error('Error loading book pages:', error);
             setIsLoading(false);
         }
-    };
+        };
+        loadBookPages();
+    }, [bookId]);
 
     const handleNextPage = () => {
         if (currentPage < totalPages - 2 && !isFlipping) {

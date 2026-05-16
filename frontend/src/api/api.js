@@ -70,10 +70,16 @@ export const bookshelfService = {
   removeBook: (shelfId, bookId) => api.delete(`/bookshelves/${shelfId}/books/${bookId}`),
 };
 
+// Cart Service
+export const cartService = {
+  getCart: () => api.get('/cart'),
+  addToCart: (bookId, quantity = 1) => api.post(`/cart/${bookId}`, { quantity }),
+  updateQuantity: (bookId, quantity) => api.put(`/cart/${bookId}`, { quantity }),
+  removeFromCart: (bookId) => api.delete(`/cart/${bookId}`),
+};
+
 // Mock services to prevent compilation errors for unsupported pages
 export const orderService = {
-  getCart: () => Promise.resolve({ data: { items: [], totalAmount: 0 } }),
-  addToCart: () => Promise.resolve({ data: {} }),
   checkout: () => Promise.resolve({ data: {} }),
   getUserOrders: () => Promise.resolve({ data: [] }),
   getHistory: () => Promise.resolve({ data: [] }),

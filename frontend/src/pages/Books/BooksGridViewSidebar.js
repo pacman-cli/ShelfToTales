@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { bookService } from '../../api/api';
-import { Collapse } from 'react-bootstrap';
-
+import { bookService, wishlistService, cartService } from '../../api/api';
+import Swal from 'sweetalert2';
 import ClientsSlider from '../../components/features/Home/ClientsSlider';
 import NewsLetter from '../../components/features/NewsLetter';
 import CounterSection from '../../components/common/CounterSection';
@@ -22,10 +21,7 @@ function BooksGridViewSidebar() {
     const size = 12;
 
     useEffect(() => {
-        fetchBooks();
-    }, [page, search]);
-
-    const fetchBooks = async () => {
+        const fetchBooks = async () => {
         try {
             const res = await bookService.getAll({ page, size, q: search || undefined });
             setBooks(res.data.content || []);
@@ -34,11 +30,31 @@ function BooksGridViewSidebar() {
         } catch (err) {
             console.error('Error fetching books:', err);
         }
-    };
+        };
+        fetchBooks();
+    }, [page, search]);
 
     const handleSearch = (e) => {
         e.preventDefault();
         setPage(0);
+    };
+
+    const handleAddToWishlist = async (bookId) => {
+        try {
+            await wishlistService.addToWishlist(bookId);
+            Swal.fire({ icon: 'success', title: 'Added to wishlist', showConfirmButton: false, timer: 1500, toast: true, position: 'top-end' });
+        } catch (error) {
+            Swal.fire('Error', 'Please login to add to wishlist', 'error');
+        }
+    };
+
+    const handleAddToCart = async (bookId) => {
+        try {
+            await cartService.addToCart(bookId, 1);
+            Swal.fire({ icon: 'success', title: 'Added to cart', showConfirmButton: false, timer: 1500, toast: true, position: 'top-end' });
+        } catch (error) {
+            Swal.fire('Error', 'Please login to add to cart', 'error');
+        }
     };
 
     return (
@@ -77,7 +93,8 @@ function BooksGridViewSidebar() {
                                                 />
                                             </div>
                                             <div className="bookmark-btn style-2">
-                                                <input className="form-check-input" type="checkbox" id={`wish-${book.id}`} />
+                                                <input className="form-check-input" type="checkbox" id={`wish-${book.id}`}
+                                                    onChange={() => handleAddToWishlist(book.id)} />
                                                 <label className="form-check-label" htmlFor={`wish-${book.id}`}>
                                                     <i className="flaticon-heart"></i>
                                                 </label>
@@ -99,9 +116,9 @@ function BooksGridViewSidebar() {
                                                     <div className="price">
                                                         <span className="price-num">${book.price || '9.99'}</span>
                                                     </div>
-                                                    <Link to={`/shop-detail/${book.id}`} className="btn btn-secondary box-btn btnhover btnhover2">
-                                                        <i className="flaticon-shopping-cart-1 m-r10"></i> View Details
-                                                    </Link>
+                                                    <button onClick={() => handleAddToCart(book.id)} className="btn btn-secondary box-btn btnhover btnhover2">
+                                                        <i className="flaticon-shopping-cart-1 m-r10"></i> Add to cart
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>

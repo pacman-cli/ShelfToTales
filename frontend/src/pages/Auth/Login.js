@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { authService, userService } from '../../api/api';
 import Swal from 'sweetalert2';
 
@@ -13,8 +13,6 @@ function Login(){
     const [forgotPass, setForgotPass] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
-    const navigate = useNavigate();
-
     useEffect(() => {
         const initGoogle = () => {
             if (window.google) {

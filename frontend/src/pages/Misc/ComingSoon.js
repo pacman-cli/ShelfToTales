@@ -11,21 +11,19 @@ function ComingSoon(){
 	const [timerHours, setTimerHours] = useState('00');	
 	const [timerMinutes, setTimerMinutes] = useState('00');	
 	const [timerSeconds, setTimerSeconds] = useState('00');	
-	let interval = useRef();
-	
+	const interval = useRef();
+
 	const startTimer = () =>{
-		/* Website Launch Date */ 
+		/* Website Launch Date */
 		var WebsiteLaunchDate = new Date();
 		var monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
 		WebsiteLaunchDate.setMonth(WebsiteLaunchDate.getMonth() + 1);
 		WebsiteLaunchDate =  WebsiteLaunchDate.getDate() + " " + monthNames[WebsiteLaunchDate.getMonth()] + " " + WebsiteLaunchDate.getFullYear();
 		/* Website Launch Date END */
-		
-		//alert(WebsiteLaunchDate);
-	
-		const countdownDate = new Date("Dec 31, 2022 00:01:00").getTime();	
-		//const countdownDate = new Date(WebsiteLaunchDate+' 23:5').getTime();	
-		interval = setInterval(()=>{
+
+		const countdownDate = new Date("Dec 31, 2022 00:01:00").getTime();
+		//const countdownDate = new Date(WebsiteLaunchDate+' 23:5').getTime();
+		interval.current = setInterval(()=>{
 			const now = new Date().getTime();
 			const distance = countdownDate - now;
 			const days = Math.floor(distance / (1000*60*60*24));
@@ -47,12 +45,13 @@ function ComingSoon(){
 	};
 	
 	//componentDidMount
- 	useEffect(()=>{
+	useEffect(()=>{
 		startTimer();
+		const savedInterval = interval.current;
 		return()=>{
-			clearInterval(interval.current);
+			clearInterval(savedInterval);
 		};
-	});
+	}, []);
 	
 	//Email
 	const form = useRef();

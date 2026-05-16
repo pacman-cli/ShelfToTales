@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { bookService, bookshelfService } from '../../api/api';
-import { useNavigate } from 'react-router-dom';
 import './VirtualBookshelf.css';
 import Swal from 'sweetalert2';
 import logoImage from '../../assets/images/logo.png';
@@ -16,7 +15,6 @@ const demoBooksList = [
 ];
 
 function VirtualBookshelf() {
-    const navigate = useNavigate();
     const [view, setView] = useState('library');
     const [books, setBooks] = useState([]);
     const [originalBooks, setOriginalBooks] = useState([]);
@@ -141,7 +139,6 @@ function VirtualBookshelf() {
         setView('reader');
     };
 
-    const handleSearch = (query) => { setSearchQuery(query); applyFilters(query, isSortedNewest); };
     const toggleSort = () => { const n = !isSortedNewest; setIsSortedNewest(n); localStorage.setItem('vbookshelf_sort', n); applyFilters(searchQuery, n); };
     const applyFilters = (query, newestFirst) => {
         let filtered = [...originalBooks];

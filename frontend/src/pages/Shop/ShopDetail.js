@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { Nav, Tab } from 'react-bootstrap';
-import { bookService, wishlistService } from '../../api/api';
+import { bookService, wishlistService, cartService } from '../../api/api';
 import Swal from 'sweetalert2';
 
 //Component
-import ClientsSlider from '../../components/features/Home/ClientsSlider';
-import CounterSection from '../../components/common/CounterSection';
 import NewsLetter from '../../components/features/NewsLetter';
 
 //Images
 import profile2 from '../../assets/images/profile2.jpg';
-import profile3 from '../../assets/images/profile3.jpg';
 
 function CommentBlog({title, comment, date, rating}){
     return(
@@ -62,9 +59,18 @@ function ShopDetail(){
     const handleAddToWishlist = async () => {
         try {
             await wishlistService.addToWishlist(id);
-            Swal.fire('Success', 'Added to wishlist', 'success');
+            Swal.fire({ icon: 'success', title: 'Added to wishlist', showConfirmButton: false, timer: 1500, toast: true, position: 'top-end' });
         } catch (error) {
             Swal.fire('Error', 'Please login to add to wishlist', 'error');
+        }
+    };
+
+    const handleAddToCart = async () => {
+        try {
+            await cartService.addToCart(id, count);
+            Swal.fire({ icon: 'success', title: 'Added to cart', showConfirmButton: false, timer: 1500, toast: true, position: 'top-end' });
+        } catch (error) {
+            Swal.fire('Error', 'Please login to add to cart', 'error');
         }
     };
 
@@ -142,7 +148,8 @@ function ShopDetail(){
                                                                 <i className="ti-minus"></i>
                                                             </button> 
                                                         </div>
-                                                    <button onClick={handleAddToWishlist} className="btn btn-primary btnhover btnhover2"><i className="flaticon-heart"></i> <span>Add to wishlist</span></button>
+                                                                                    <button onClick={handleAddToWishlist} className="btn btn-primary btnhover btnhover2"><i className="flaticon-heart"></i> <span>Add to wishlist</span></button>
+                                                    <button onClick={handleAddToCart} className="btn btn-primary btnhover btnhover2 ms-2"><i className="flaticon-shopping-cart-1"></i> <span>Add to cart</span></button>
                                                 </div>
                                             </div>
                                         </div>
@@ -222,5 +229,5 @@ function ShopDetail(){
         </>
     )
 }
-export default ShopDetail;
+export default ShopDetail;
 

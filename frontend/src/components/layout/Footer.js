@@ -141,7 +141,7 @@ function Footer({footerChange, logoImage}){
 								<p>Made with <span className="heart"
 									onClick={heartToggle}
 								></span> by 
-								<a href="https://dexignzone.com/" target="_blank"> DexignZone</a></p>
+								<a href="https://dexignzone.com/" target="_blank" rel="noreferrer"> DexignZone</a></p>
 							</div>
 						</div>
 					</div>

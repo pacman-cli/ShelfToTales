@@ -5,10 +5,6 @@ import { userService } from '../../api/api';
 //images
 
 import logo from './../../assets/images/logo.png';
-import profile from './../../assets/images/profile1.jpg';
-import pic1 from './../../assets/images/books/small/pic1.jpg';
-import pic2 from './../../assets/images/books/small/pic2.jpg';
-import pic3 from './../../assets/images/books/small/pic3.jpg';
 
 import Collapse from 'react-bootstrap/Collapse';
 import {MenuListArray2} from './MenuListArray2';
@@ -269,10 +265,10 @@ function Header(){
 							</ul>
 							<div className="dz-social-icon">
 								<ul>
-									<li><a className="fab fa-facebook-f" target="_blank"  rel="noreferrer" 	href="https://www.facebook.com/dexignzone"></a></li>
-									<li><a className="fab fa-twitter" target="_blank"  rel="noreferrer" href="https://twitter.com/dexignzones"></a></li>
-									<li><a className="fab fa-linkedin-in" target="_blank"  rel="noreferrer" href="https://www.linkedin.com/showcase/3686700/admin/"></a></li>
-									<li><a className="fab fa-instagram" target="_blank"  rel="noreferrer" href="https://www.instagram.com/website_templates__/"></a></li>
+									<li><a className="fab fa-facebook-f" target="_blank" rel="noreferrer" href="https://www.facebook.com/dexignzone" aria-label="Facebook"></a></li>
+									<li><a className="fab fa-twitter" target="_blank" rel="noreferrer" href="https://twitter.com/dexignzones" aria-label="Twitter"></a></li>
+									<li><a className="fab fa-linkedin-in" target="_blank" rel="noreferrer" href="https://www.linkedin.com/showcase/3686700/admin/" aria-label="LinkedIn"></a></li>
+									<li><a className="fab fa-instagram" target="_blank" rel="noreferrer" href="https://www.instagram.com/website_templates__/" aria-label="Instagram"></a></li>
 								</ul>
 							</div>
 						</div>

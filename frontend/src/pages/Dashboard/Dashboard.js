@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import PageTitle from '../../components/layout/PageTitle';
+import { userService } from '../../api/api';
 
 // Images
-import profileImg from '../../assets/images/profile1.jpg';
 import book1 from '../../assets/images/books/grid/book1.jpg';
 import book2 from '../../assets/images/books/grid/book2.jpg';
 import book3 from '../../assets/images/books/grid/book3.jpg';
@@ -12,9 +12,17 @@ function Dashboard() {
     const [user, setUser] = useState(null);
 
     useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-            setUser(JSON.parse(storedUser));
+        const token = localStorage.getItem('token');
+        if (token) {
+            userService.getProfile()
+                .then(res => {
+                    setUser(res.data);
+                    localStorage.setItem('user', JSON.stringify(res.data));
+                })
+                .catch(() => {
+                    const storedUser = localStorage.getItem('user');
+                    if (storedUser) setUser(JSON.parse(storedUser));
+                });
         }
     }, []);
 

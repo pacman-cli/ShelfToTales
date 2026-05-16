@@ -12,7 +12,6 @@ import './Home.css';
 import FeaturedSlider from '../../components/features/Home/FeaturedSlider';
 import TestimonialSlider from '../../components/features/Home/TestimonialSlider';
 import LatestNewsSlider from '../../components/features/Home/LatestNewsSlider';
-import NewsLetter from '../../components/features/NewsLetter';
 import CounterSection from '../../components/common/CounterSection';
 
 // Demo data for reading rooms
