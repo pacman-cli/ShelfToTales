@@ -24,7 +24,10 @@ public class ProfileService {
     @Transactional
     public ProfileResponse updateProfile(ProfileRequest request) {
         User user = AuthUtils.getCurrentUser(userRepository);
-        if (request.getFullName() != null) user.setFullName(request.getFullName());
+        if (request.getFullName() != null) {
+            user.setFullName(request.getFullName());
+            user.setNameOverridden(true);
+        }
         if (request.getBio() != null) user.setBio(request.getBio());
         if (request.getProfileImageUrl() != null) user.setProfileImageUrl(request.getProfileImageUrl());
         if (request.getPhone() != null) user.setPhone(request.getPhone());

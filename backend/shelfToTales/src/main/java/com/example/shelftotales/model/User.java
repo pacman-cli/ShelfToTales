@@ -56,6 +56,10 @@ public class User implements UserDetails {
     @Column(length = 500)
     private String hobbies;
 
+    @Column(name = "name_overridden", nullable = false)
+    @Builder.Default
+    private Boolean nameOverridden = false;
+
     private LocalDate dateOfBirth;
 
     private LocalDateTime createdAt;

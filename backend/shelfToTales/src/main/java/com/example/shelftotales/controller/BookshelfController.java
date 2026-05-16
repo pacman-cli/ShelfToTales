@@ -28,6 +28,9 @@ public class BookshelfController {
     @PostMapping
     @Operation(summary = "Create a new bookshelf")
     public ResponseEntity<BookshelfResponse> createBookshelf(@Valid @RequestBody BookshelfRequest request) {
+        if (request.getName() == null || request.getName().isBlank()) {
+            return ResponseEntity.badRequest().build();
+        }
         return ResponseEntity.status(HttpStatus.CREATED).body(bookshelfService.createBookshelf(request));
     }
 

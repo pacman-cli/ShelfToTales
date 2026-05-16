@@ -59,8 +59,17 @@ public class GoogleAuthService {
             }
             user.setGoogleId(googleId);
             user.setAuthProvider(AuthProvider.GOOGLE);
-            if (pictureUrl != null) user.setProfileImageUrl(pictureUrl);
-            // Do NOT overwrite fullName — user may have customized it
+
+            // Only sync name from Google if user has never customized it
+            if (!Boolean.TRUE.equals(user.getNameOverridden())) {
+                user.setFullName(name);
+            }
+
+            // Only sync avatar if user has not set a custom one
+            if (pictureUrl != null && (user.getProfileImageUrl() == null
+                    || user.getProfileImageUrl().contains("googleusercontent.com"))) {
+                user.setProfileImageUrl(pictureUrl);
+            }
         }
 
         userRepository.save(user);
