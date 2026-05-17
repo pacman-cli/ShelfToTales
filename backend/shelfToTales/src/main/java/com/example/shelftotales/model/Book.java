@@ -44,6 +44,10 @@ public class Book {
     @Column(precision = 10, scale = 2)
     private BigDecimal price;
 
+    @Column(nullable = false)
+    @Builder.Default
+    private int stock = 0;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id")
     @JsonIgnoreProperties("books")

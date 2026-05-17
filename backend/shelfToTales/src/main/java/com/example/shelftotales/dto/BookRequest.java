@@ -36,4 +36,6 @@ public class BookRequest {
     private Boolean previewAvailable;
 
     private BigDecimal price;
+
+    private Integer stock;
 }

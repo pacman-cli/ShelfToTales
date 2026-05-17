@@ -22,4 +22,5 @@ public class BookResponse {
     private String pdfUrl;
     private boolean previewAvailable;
     private java.math.BigDecimal price;
+    private int stock;
 }

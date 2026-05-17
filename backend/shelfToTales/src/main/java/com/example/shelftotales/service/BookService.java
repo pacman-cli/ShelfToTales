@@ -71,6 +71,7 @@ public class BookService {
                 .pdfUrl(request.getPdfUrl())
                 .previewAvailable(request.getPreviewAvailable() != null ? request.getPreviewAvailable() : false)
                 .price(request.getPrice())
+                .stock(request.getStock() != null ? request.getStock() : 0)
                 .category(category)
                 .build();
         return toResponse(bookRepository.save(book));
@@ -93,6 +94,9 @@ public class BookService {
         book.setPdfUrl(request.getPdfUrl());
         book.setPreviewAvailable(request.getPreviewAvailable() != null ? request.getPreviewAvailable() : false);
         book.setPrice(request.getPrice());
+        if (request.getStock() != null) {
+            book.setStock(request.getStock());
+        }
         book.setCategory(category);
         return toResponse(bookRepository.save(book));
     }
@@ -119,6 +123,7 @@ public class BookService {
                 .pdfUrl(book.getPdfUrl())
                 .previewAvailable(book.isPreviewAvailable())
                 .price(book.getPrice())
+                .stock(book.getStock())
                 .build();
     }
 }

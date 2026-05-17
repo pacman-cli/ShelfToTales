@@ -35,9 +35,19 @@ public class CartService {
         Book book = bookRepository.findById(bookId)
                 .orElseThrow(() -> new IllegalArgumentException("Book not found: " + bookId));
 
+        if (book.getStock() < quantity) {
+            throw new IllegalArgumentException("Insufficient stock. Available: " + book.getStock());
+        }
+
         cartItemRepository.findByUserIdAndBookId(user.getId(), bookId)
                 .ifPresentOrElse(
-                        item -> { item.setQuantity(item.getQuantity() + quantity); cartItemRepository.save(item); },
+                        item -> { 
+                            if (book.getStock() < item.getQuantity() + quantity) {
+                                throw new IllegalArgumentException("Insufficient stock. Available: " + book.getStock());
+                            }
+                            item.setQuantity(item.getQuantity() + quantity); 
+                            cartItemRepository.save(item); 
+                        },
                         () -> cartItemRepository.save(CartItem.builder().user(user).book(book).quantity(quantity).build()));
 
         return buildCartResponse(cartItemRepository.findByUserIdWithBook(user.getId()));
@@ -48,6 +58,12 @@ public class CartService {
         User user = AuthUtils.getCurrentUser(userRepository);
         CartItem item = cartItemRepository.findByUserIdAndBookId(user.getId(), bookId)
                 .orElseThrow(() -> new IllegalArgumentException("Book not in cart: " + bookId));
+        
+        Book book = item.getBook();
+        if (book.getStock() < quantity) {
+            throw new IllegalArgumentException("Insufficient stock. Available: " + book.getStock());
+        }
+        
         item.setQuantity(quantity);
         cartItemRepository.save(item);
         return buildCartResponse(cartItemRepository.findByUserIdWithBook(user.getId()));
