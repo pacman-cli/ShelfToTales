@@ -19,9 +19,13 @@ function Header(){
 		setActive(active === title ? null : title);
 	};
 	useEffect(() => {
-		window.addEventListener("scroll", () => {
+		const handleScroll = () => {
 			setheaderFix(window.scrollY > 50);
-		});
+		};
+		window.addEventListener("scroll", handleScroll, { passive: true });
+		return () => {
+			window.removeEventListener("scroll", handleScroll);
+		};
 	}, []); 
 	
 	/* for open menu Toggle btn  */
