@@ -2,6 +2,15 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import './FlipbookReader.css';
 
+// Sample book data with mock page counts (module-level constant — stable across renders)
+const BOOK_DATA = {
+    'demo-1': { title: 'The Great Gatsby', pages: 12 },
+    'demo-2': { title: '1984', pages: 15 },
+    'demo-3': { title: 'To Kill a Mockingbird', pages: 10 },
+    'demo-4': { title: 'The Art of War', pages: 8 },
+    'demo-5': { title: 'Digital Fortress', pages: 14 }
+};
+
 const FlipbookReader = () => {
     const { bookId } = useParams();
     const navigate = useNavigate();
@@ -21,20 +30,11 @@ const FlipbookReader = () => {
         }
     }, [location.state]);
 
-    // Sample book data with mock page images
-    const bookData = {
-        'demo-1': { title: 'The Great Gatsby', pages: 12 },
-        'demo-2': { title: '1984', pages: 15 },
-        'demo-3': { title: 'To Kill a Mockingbird', pages: 10 },
-        'demo-4': { title: 'The Art of War', pages: 8 },
-        'demo-5': { title: 'Digital Fortress', pages: 14 }
-    };
-
     useEffect(() => {
         const loadBookPages = async () => {
         try {
             setIsLoading(true);
-            const book = bookData[bookId] || bookData['demo-2'];
+            const book = BOOK_DATA[bookId] || BOOK_DATA['demo-2'];
             const pageCount = book.pages;
             
             setTotalPages(pageCount);

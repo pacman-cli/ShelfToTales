@@ -19,7 +19,8 @@ function VirtualBookshelf() {
     const [books, setBooks] = useState([]);
     const [originalBooks, setOriginalBooks] = useState([]);
     const [currentBook, setCurrentBook] = useState(null);
-    const [searchQuery, setSearchQuery] = useState('');
+    // TODO: wire up a search input that updates this state to enable book filtering
+    const [searchQuery] = useState('');
     const [isSortedNewest, setIsSortedNewest] = useState(() => localStorage.getItem('vbookshelf_sort') !== 'false');
     const [logoUrl, setLogoUrl] = useState(() => localStorage.getItem('vbookshelf_logo') || logoImage);
     const [menuVisibility, setMenuVisibility] = useState(() => {

@@ -19479,7 +19479,7 @@ ul a.rsswidget {
     color: var(--primary); }
 
 footer {
-  background-image: url(); }
+  /* background-image removed: was `url()` with no value, broke postcss build */ }
   @media only screen and (max-width: 767px) {
     footer .row {
       --bs-gutter-x: 10px; } }
