@@ -22,10 +22,15 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401 && !error.config.url?.includes('/auth/')) {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      window.location.href = '/shop-login';
+    if (error.response?.status === 401) {
+      const isAuthEndpoint = error.config?.url?.includes('/auth/');
+      const isLoginPage = window.location.pathname === '/shop-login';
+      
+      if (!isAuthEndpoint && !isLoginPage) {
+        localStorage.removeItem('token');
+        localStorage.removeItem('user');
+        window.location.href = '/shop-login';
+      }
     }
     return Promise.reject(error);
   }
