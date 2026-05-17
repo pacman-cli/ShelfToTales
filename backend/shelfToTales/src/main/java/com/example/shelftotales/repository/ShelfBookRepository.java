@@ -18,4 +18,11 @@ public interface ShelfBookRepository extends JpaRepository<ShelfBook, Long> {
     boolean existsByBookshelfIdAndBookId(Long shelfId, Long bookId);
     int countByBookshelfId(Long shelfId);
     void deleteByBookshelfIdAndBookId(Long shelfId, Long bookId);
+
+    /**
+     * Batch count of books per bookshelf to avoid N+1 queries when listing shelves.
+     * Returns rows of [shelfId, count].
+     */
+    @Query("SELECT sb.bookshelf.id, COUNT(sb) FROM ShelfBook sb WHERE sb.bookshelf.id IN :shelfIds GROUP BY sb.bookshelf.id")
+    List<Object[]> countByBookshelfIdIn(@Param("shelfIds") List<Long> shelfIds);
 }

@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,8 +25,23 @@ public class BookshelfService {
     @Transactional(readOnly = true)
     public List<BookshelfResponse> getUserBookshelves() {
         User user = AuthUtils.getCurrentUser(userRepository);
-        return bookshelfRepository.findByUserIdOrderByPositionAsc(user.getId())
-                .stream().map(this::toResponse).collect(Collectors.toList());
+        List<Bookshelf> shelves = bookshelfRepository.findByUserIdOrderByPositionAsc(user.getId());
+
+        if (shelves.isEmpty()) {
+            return List.of();
+        }
+
+        // Batch count of books per shelf to avoid N+1 queries
+        List<Long> shelfIds = shelves.stream().map(Bookshelf::getId).collect(Collectors.toList());
+        Map<Long, Long> bookCountMap = shelfBookRepository.countByBookshelfIdIn(shelfIds).stream()
+                .collect(Collectors.toMap(
+                        row -> (Long) row[0],
+                        row -> (Long) row[1]
+                ));
+
+        return shelves.stream()
+                .map(shelf -> toResponse(shelf, bookCountMap.getOrDefault(shelf.getId(), 0L).intValue()))
+                .collect(Collectors.toList());
     }
 
     @Transactional
@@ -61,20 +77,33 @@ public class BookshelfService {
     @Transactional
     public void reorder(List<Long> shelfIds) {
         User user = AuthUtils.getCurrentUser(userRepository);
-        List<Bookshelf> shelves = bookshelfRepository.findByUserIdOrderByPositionAsc(user.getId());
-        for (int i = 0; i < shelfIds.size() && i < shelves.size(); i++) {
-            int pos = i;
-            shelves.stream().filter(s -> s.getId().equals(shelfIds.get(pos))).findFirst()
+        List<Bookshelf> userShelves = bookshelfRepository.findByUserIdOrderByPositionAsc(user.getId());
+        
+        // Verify all requested shelf IDs belong to current user
+        for (Long shelfId : shelfIds) {
+            if (userShelves.stream().noneMatch(s -> s.getId().equals(shelfId))) {
+                throw new IllegalArgumentException("Bookshelf not found or unauthorized: " + shelfId);
+            }
+        }
+        
+        // Update positions
+        for (int i = 0; i < shelfIds.size(); i++) {
+            final int pos = i;
+            userShelves.stream().filter(s -> s.getId().equals(shelfIds.get(pos))).findFirst()
                     .ifPresent(s -> s.setPosition(pos));
         }
-        bookshelfRepository.saveAll(shelves);
+        bookshelfRepository.saveAll(userShelves);
     }
 
     private BookshelfResponse toResponse(Bookshelf shelf) {
+        return toResponse(shelf, shelfBookRepository.countByBookshelfId(shelf.getId()));
+    }
+
+    private BookshelfResponse toResponse(Bookshelf shelf, int bookCount) {
         return BookshelfResponse.builder()
                 .id(shelf.getId()).name(shelf.getName()).position(shelf.getPosition())
                 .theme(shelf.getTheme())
-                .bookCount(shelfBookRepository.countByBookshelfId(shelf.getId()))
+                .bookCount(bookCount)
                 .createdAt(shelf.getCreatedAt()).updatedAt(shelf.getUpdatedAt()).build();
     }
 }
