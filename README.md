@@ -1,156 +1,425 @@
-# ShelfToTales
+# 📚 ShelfToTales
 
-ShelfToTales is a full-stack bookstore and reader-community platform. It starts with a practical e-commerce base for browsing books, authentication, wishlists, categories, admin management, and checkout-oriented UI flows. The broader product vision is a digital home for readers where book discovery, community, sustainability, and reading progress work together.
+> A full-stack bookstore and reader-community platform where commerce meets community.
 
-## Project Vision
+ShelfToTales goes beyond a normal online bookstore — it's a digital home for readers where book discovery, community, sustainability, and reading progress work together.
 
-ShelfToTales is designed to go beyond a normal online bookstore.
+---
 
-- Build a digital home where commerce meets community.
-- Help readers discover books through smarter signals such as mood, images, and emotions.
-- Support a sustainable reading culture through book exchanges and donations.
-- Turn personal reading goals into shared achievements through gamified engagement.
-- Keep the community safe with moderation, secure user management, and monitoring.
+## 🏗️ System Architecture
 
-## Problem Statement
+```mermaid
+graph TB
+    subgraph Client["🖥️ Frontend — Next.js 15"]
+        UI[App Router Pages]
+        API_CLIENT[Axios HTTP Client]
+        AUTH_STORE[JWT Token Storage]
+    end
 
-Modern readers can buy books easily, but they still face several problems:
+    subgraph Server["⚙️ Backend — Spring Boot 3.4"]
+        subgraph Security["🔒 Security Layer"]
+            RATE[Rate Limiting Filter]
+            JWT_FILTER[JWT Authentication Filter]
+            CORS[CORS Configuration]
+        end
 
-| Problem | Why it matters |
-| --- | --- |
-| Lonely reader experience | Finding a real-time community to discuss books is difficult. |
-| Information overload | Genre and price filters do not always match a reader's mood or current interest. |
-| Spoiler anxiety | Online reviews and feeds can reveal major plot twists before readers are ready. |
-| Wasted books | Many books stay unused after one read, with no simple way to trade or donate them locally. |
+        subgraph API["🌐 REST Controllers"]
+            AUTH_C[AuthController]
+            BOOK_C[BookController]
+            SHELF_C[BookshelfController]
+            CART_C[CartController]
+            WISH_C[WishlistController]
+            DASH_C[DashboardController]
+            PROF_C[ProfileController]
+            ADMIN_C[Admin Controllers]
+        end
 
-## Current Application
+        subgraph Services["📦 Service Layer"]
+            AUTH_S[AuthService]
+            GOOGLE_S[GoogleAuthService]
+            BOOK_S[BookService]
+            SHELF_S[BookshelfService]
+            CART_S[CartService]
+            WISH_S[WishlistService]
+            DASH_S[DashboardService]
+            PROF_S[ProfileService]
+        end
 
-The current codebase implements the foundation for the ShelfToTales platform:
+        subgraph Data["💾 Data Layer"]
+            REPOS[JPA Repositories]
+            FLYWAY[Flyway Migrations]
+        end
+    end
 
-- Public book catalog with category filtering and keyword search.
-- JWT-based user registration and login.
-- Authenticated wishlist management.
-- React pages for book lists, details, cart, checkout, product comparison, blog, dashboard, profile, purchase history, and virtual bookshelf.
-- Admin-only backend APIs for managing books and categories.
-- H2 local database with Flyway migrations and starter seed data.
-- PostgreSQL-backed Docker setup for backend runtime.
-- Swagger/OpenAPI documentation for backend APIs.
+    subgraph Database["🗄️ Database"]
+        H2[(H2 — Dev)]
+        PG[(PostgreSQL — Prod)]
+    end
 
-## Feature Pillars
-
-### E-Commerce Core
-
-- Product catalog for books.
-- Shopping cart and checkout-oriented frontend flows.
-- Book detail pages.
-- Order and purchase-history UI structure.
-- Admin book management.
-
-### User Engagement
-
-- User accounts and JWT authentication.
-- Wishlist and favorites.
-- Product comparison.
-- Quick-view style book browsing.
-- Dashboard and profile pages.
-
-### Content and Navigation
-
-- Books organized by category.
-- Search by query string.
-- Category-based filtering.
-- Blog and content pages.
-- Blog management UI structure.
-
-### Smart Marketplace Vision
-
-These are planned product directions from the project concept:
-
-- AI image search: users can identify a book by uploading or taking a photo of its cover.
-- Mood-based suggestions: users can discover books based on how they want to feel.
-- Full checkout and order management as a complete commerce workflow.
-
-### Social Library Vision
-
-The long-term community layer includes:
-
-- Virtual bookshelves to track books read, owned, and wanted next.
-- Spoiler-free zones where AI filters hide spoilers from reviews and feeds.
-- Virtual reading rooms for shared reading, chat, and background Lo-fi music.
-
-### Giving Economy Vision
-
-ShelfToTales also aims to reduce unused books through:
-
-- Peer-to-peer physical book exchange.
-- Donation workflows so books can get a second life.
-- Local community circulation instead of one-time ownership only.
-
-### Engagement Tools Vision
-
-Planned reader-growth features include:
-
-- Reading challenges for annual goals and progress tracking.
-- Smart PDF annotations.
-- Sharing highlighted quotes or favorite passages to a social feed.
-
-### Admin, Trust, and Safety
-
-The platform is designed around a safe and manageable community:
-
-- Moderation tools for reports and community safety.
-- Analytics dashboard for trending books and platform activity.
-- Real-time monitoring.
-- Secure user management.
-- Role-based admin endpoints.
-
-## Tech Stack
-
-### Backend
-
-- Java 17
-- Spring Boot 3.4.0
-- Spring Web, Security, Validation, Data JPA, Hibernate
-- JWT auth with `io.jsonwebtoken`
-- Flyway-managed schema and seed data
-- H2 for local development
-- PostgreSQL support for Docker and deployed environments
-- Springdoc OpenAPI / Swagger UI
-- Lombok
-
-### Frontend
-
-- React 18
-- React Router 6
-- Axios
-- Bootstrap / React-Bootstrap
-- SweetAlert2
-- CRA scripts
-
-## Repository Layout
-
-```text
-.
-├── backend/shelfToTales/      # Spring Boot API
-│   ├── src/main/java/...      # controllers, services, repositories, models, DTOs
-│   ├── src/main/resources/    # app config and Flyway migrations
-│   ├── Dockerfile
-│   └── docker-compose.yml
-└── frontend/                  # React UI
-    └── src/
-        ├── api/api.js         # shared Axios client
-        ├── routes/AppRoutes.js
-        ├── pages/
-        └── components/
+    UI --> API_CLIENT
+    API_CLIENT -->|HTTP + Bearer Token| RATE
+    RATE --> JWT_FILTER
+    JWT_FILTER --> API
+    API --> Services
+    Services --> REPOS
+    REPOS --> H2
+    REPOS --> PG
+    FLYWAY --> H2
+    FLYWAY --> PG
 ```
 
-## Prerequisites
+---
 
-- Java 17
-- Node.js and npm
-- Docker Desktop, optional, for PostgreSQL-backed backend runtime
+## 🔐 Authentication Flow
 
-## Run Locally
+```mermaid
+sequenceDiagram
+    participant U as User/Browser
+    participant F as Next.js Frontend
+    participant B as Spring Boot API
+    participant G as Google OAuth2
+    participant DB as Database
+
+    Note over U,DB: Local Registration & Login
+    U->>F: Fill register form
+    F->>B: POST /api/auth/register
+    B->>DB: Save user (bcrypt password)
+    B-->>F: { token, email, role }
+    F->>F: Store JWT in localStorage
+
+    Note over U,DB: Google OAuth2 Login
+    U->>F: Click "Sign in with Google"
+    F->>G: OAuth2 consent flow
+    G-->>F: Google ID token
+    F->>B: POST /api/auth/google { idToken }
+    B->>G: Verify token with Google API
+    G-->>B: User info (email, name, picture)
+    B->>DB: Find or create user (AuthProvider.GOOGLE)
+    B-->>F: { token, email, role }
+
+    Note over U,DB: Authenticated Request
+    U->>F: Navigate to protected page
+    F->>B: GET /api/books (Authorization: Bearer <token>)
+    B->>B: JwtAuthFilter validates token
+    B->>B: Check TokenBlacklist
+    B-->>F: 200 OK + data
+
+    Note over U,DB: Logout
+    U->>F: Click logout
+    F->>B: POST /api/auth/logout
+    B->>B: Add token to TokenBlacklist
+    B-->>F: 200 OK
+```
+
+---
+
+## 🧱 Backend Architecture (Layered)
+
+```mermaid
+graph LR
+    subgraph Presentation["Controller Layer"]
+        C1[AuthController]
+        C2[BookController]
+        C3[BookshelfController]
+        C4[CartController]
+        C5[WishlistController]
+        C6[DashboardController]
+        C7[ProfileController]
+        C8[ShelfBookController]
+        C9[CategoryController]
+        C10[BookAdminController]
+        C11[CategoryAdminController]
+    end
+
+    subgraph Business["Service Layer"]
+        S1[AuthService]
+        S2[BookService]
+        S3[BookshelfService]
+        S4[CartService]
+        S5[WishlistService]
+        S6[DashboardService]
+        S7[ProfileService]
+        S8[ShelfBookService]
+        S9[CategoryService]
+        S10[GoogleAuthService]
+    end
+
+    subgraph Persistence["Repository Layer"]
+        R1[UserRepository]
+        R2[BookRepository]
+        R3[BookshelfRepository]
+        R4[CartItemRepository]
+        R5[WishlistRepository]
+        R6[ShelfBookRepository]
+        R7[CategoryRepository]
+        R8[OrderRepository]
+        R9[ReadingActivityRepository]
+    end
+
+    Presentation --> Business
+    Business --> Persistence
+```
+
+---
+
+## 📊 Database Entity Relationship
+
+```mermaid
+erDiagram
+    USER ||--o{ BOOKSHELF : owns
+    USER ||--o{ CART_ITEM : has
+    USER ||--o{ WISHLIST_ITEM : has
+    USER ||--o{ ORDER : places
+    USER ||--o{ READING_ACTIVITY : logs
+
+    BOOKSHELF ||--o{ SHELF_BOOK : contains
+    BOOK ||--o{ SHELF_BOOK : "added to"
+    BOOK ||--o{ CART_ITEM : "in cart"
+    BOOK ||--o{ WISHLIST_ITEM : "wishlisted"
+    BOOK }o--|| CATEGORY : "belongs to"
+
+    ORDER ||--o{ ORDER_ITEM : contains
+    BOOK ||--o{ ORDER_ITEM : purchased
+
+    USER {
+        Long id PK
+        String email UK
+        String password
+        String fullName
+        Role role
+        AuthProvider authProvider
+        String googleId
+        String bio
+        String profileImageUrl
+        LocalDateTime createdAt
+    }
+
+    BOOK {
+        Long id PK
+        String title
+        String author
+        String isbn
+        Double price
+        String description
+        String imageUrl
+        Long categoryId FK
+    }
+
+    BOOKSHELF {
+        Long id PK
+        String name
+        String description
+        Long userId FK
+    }
+
+    SHELF_BOOK {
+        Long id PK
+        Long bookshelfId FK
+        Long bookId FK
+        String status
+        Integer progress
+    }
+
+    CATEGORY {
+        Long id PK
+        String name
+        String description
+        String imageUrl
+    }
+
+    ORDER {
+        Long id PK
+        Long userId FK
+        String status
+        Double totalAmount
+        LocalDateTime createdAt
+    }
+
+    READING_ACTIVITY {
+        Long id PK
+        Long userId FK
+        Long bookId FK
+        String activityType
+        Integer pagesRead
+        LocalDateTime createdAt
+    }
+```
+
+---
+
+## 🔄 Request Lifecycle
+
+```mermaid
+flowchart TD
+    A[Client HTTP Request] --> B{Rate Limiter}
+    B -->|Allowed| C[CORS Filter]
+    B -->|429 Too Many Requests| Z[Error Response]
+    C --> D{JWT Filter}
+    D -->|Public endpoint| E[Controller]
+    D -->|Has token| F{Validate JWT}
+    F -->|Valid & not blacklisted| G[Set SecurityContext]
+    F -->|Invalid/Expired| H[401 Unauthorized]
+    G --> E
+    E --> I[Service Layer]
+    I --> J[Repository / DB]
+    J --> K[Entity → DTO Mapping]
+    K --> L[JSON Response]
+    H --> Z
+    Z --> M[GlobalExceptionHandler]
+    M --> N[Structured Error JSON]
+```
+
+---
+
+## 🖥️ Frontend Page Architecture
+
+```mermaid
+graph TD
+    subgraph Layout["Root Layout (app/layout.js)"]
+        HEADER[Header Component]
+        FOOTER[Footer Component]
+    end
+
+    subgraph Pages["App Router Pages"]
+        HOME[/ — Home]
+        HOME2[/index-2 — Home Alt]
+        
+        subgraph Books["📖 Books"]
+            BGL[/books-grid-view]
+            BGLS[/books-grid-view-sidebar]
+            BLL[/books-list-view-sidebar]
+            BL[/book-list]
+            BD[/books-detail/:id]
+            RB[/read-book/:bookId]
+        end
+
+        subgraph Shop["🛒 Shop"]
+            SL[/shop-list]
+            SD[/shop-detail/:id]
+            SC[/shop-cart]
+            SCO[/shop-checkout]
+            LOGIN[/shop-login]
+            REG[/shop-registration]
+        end
+
+        subgraph Community["👥 Community"]
+            VB[/virtual-bookshelf]
+            RR[/reading-room]
+            RN[/reader-network]
+            RD[/reading-dashboard]
+        end
+
+        subgraph User["👤 User"]
+            DASH[/dashboard]
+            PROF[/my-profile]
+            WISH[/wishlist]
+            PH[/purchase-history]
+        end
+
+        subgraph Content["📝 Content"]
+            BG[/blog-grid]
+            BLS[/blog-list-sidebar]
+            BLGS[/blog-large-sidebar]
+            BDET[/blog-detail]
+        end
+    end
+
+    Layout --> Pages
+```
+
+---
+
+## 🛡️ Security Architecture
+
+```mermaid
+flowchart LR
+    subgraph Filters["Security Filter Chain"]
+        direction TB
+        RF[RateLimitingFilter<br/>Token Bucket per IP]
+        JF[JwtAuthenticationFilter<br/>Token Validation]
+        TB[TokenBlacklist<br/>Logout Invalidation]
+    end
+
+    subgraph Access["Access Control"]
+        PUB[Public: /api/auth/**, /api/books, /api/categories]
+        AUTH[Authenticated: /api/wishlist, /api/cart, /api/profile]
+        ADMIN[Admin Only: /api/admin/**]
+    end
+
+    subgraph Crypto["Cryptography"]
+        BCRYPT[BCrypt Password Hashing]
+        HS256[HMAC-SHA256 JWT Signing]
+    end
+
+    RF --> JF
+    JF --> TB
+    TB --> Access
+    Access --> Crypto
+```
+
+---
+
+## 🛠️ Tech Stack
+
+| Layer | Technology |
+|-------|-----------|
+| **Frontend** | Next.js 15.5, React 19, Bootstrap 5, Chart.js, Swiper, Axios |
+| **Backend** | Java 17, Spring Boot 3.4, Spring Security, Spring Data JPA |
+| **Auth** | JWT (HMAC-SHA256), Google OAuth2, BCrypt |
+| **Database** | H2 (dev), PostgreSQL (prod), Flyway migrations |
+| **API Docs** | Springdoc OpenAPI / Swagger UI |
+| **Testing** | Vitest + Testing Library (frontend), JUnit + Mockito (backend) |
+| **Build** | Maven (backend), npm (frontend) |
+| **Deploy** | Docker Compose |
+
+---
+
+## 📁 Repository Layout
+
+```text
+ShelfToTales/
+├── backend/shelfToTales/
+│   ├── src/main/java/.../
+│   │   ├── controller/      # REST endpoints
+│   │   ├── service/         # Business logic
+│   │   ├── repository/      # Data access (JPA)
+│   │   ├── model/           # Entity classes
+│   │   ├── dto/             # Request/Response objects
+│   │   ├── security/        # JWT filter, rate limiter
+│   │   ├── config/          # Security, CORS, OpenAPI
+│   │   ├── exception/       # Global error handling
+│   │   └── util/            # Helpers (TokenBlacklist, etc.)
+│   ├── src/main/resources/
+│   │   ├── application.properties
+│   │   └── db/migration/    # Flyway SQL scripts
+│   ├── Dockerfile
+│   └── docker-compose.yml
+├── frontend-next/
+│   ├── app/
+│   │   ├── layout.js        # Root layout
+│   │   ├── page.js          # Home page
+│   │   ├── lib/api.js       # Axios client
+│   │   ├── components/      # Shared UI components
+│   │   ├── books-grid-view/ # Book browsing pages
+│   │   ├── shop-login/      # Auth pages
+│   │   ├── dashboard/       # User dashboard
+│   │   ├── virtual-bookshelf/
+│   │   └── ...              # 30+ route directories
+│   ├── public/assets/
+│   ├── package.json
+│   └── vitest.config.mjs
+└── README.md
+```
+
+---
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Java 17+
+- Node.js 18+
+- Docker Desktop (optional, for PostgreSQL)
 
 ### Backend
 
@@ -159,161 +428,109 @@ cd backend/shelfToTales
 ./mvnw spring-boot:run
 ```
 
-Backend starts at `http://localhost:8080`.
-
-Default H2 connection:
-
-- JDBC URL: `jdbc:h2:mem:shelftotalesdb`
-- User: `sa`
-- Password: `password`
-- Console: `http://localhost:8080/h2-console`
-
-Swagger UI:
-
-- `http://localhost:8080/swagger-ui.html`
-- OpenAPI JSON: `http://localhost:8080/api-docs`
+- API: `http://localhost:8080`
+- Swagger UI: `http://localhost:8080/swagger-ui.html`
+- H2 Console: `http://localhost:8080/h2-console`
 
 ### Frontend
 
 ```bash
-cd frontend
+cd frontend-next
 npm install
-npm start
+npm run dev
 ```
 
-Frontend starts at `http://localhost:3000` and calls the backend through `http://localhost:8080/api`.
+- App: `http://localhost:3000`
 
-## Docker Backend
-
-The backend directory includes Docker Compose for the API plus PostgreSQL.
+### Docker (Full Stack)
 
 ```bash
 cd backend/shelfToTales
 docker compose up --build
 ```
 
-Services:
+---
 
-- Backend: `http://localhost:8080`
-- PostgreSQL: `localhost:5432`
-- Database: `shelftotalesdb`
-- User: `shelftotales`
+## 📡 API Endpoints
 
-Stop services:
-
-```bash
-docker compose down
-```
-
-Remove database volume too:
-
-```bash
-docker compose down -v
-```
-
-## Configuration
-
-Backend config lives in `backend/shelfToTales/src/main/resources/application.properties`.
-
-Common environment variables:
-
-| Variable | Default |
-| --- | --- |
-| `DB_URL` | `jdbc:h2:mem:shelftotalesdb;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE` |
-| `DB_DRIVER` | `org.h2.Driver` |
-| `DB_USERNAME` | `sa` |
-| `DB_PASSWORD` | `password` |
-| `DB_DIALECT` | `org.hibernate.dialect.H2Dialect` |
-| `H2_CONSOLE_ENABLED` | `true` |
-| `JWT_SECRET_KEY` | development key in `application.properties` |
-| `JWT_EXPIRATION_MS` | `86400000` |
-
-Use a strong `JWT_SECRET_KEY` outside local development.
-
-## API Overview
-
-Public endpoints:
+### Public
 
 | Method | Path | Description |
-| --- | --- | --- |
-| `POST` | `/api/auth/register` | Register user and return JWT payload |
-| `POST` | `/api/auth/login` | Login user and return JWT payload |
-| `GET` | `/api/books` | List books |
-| `GET` | `/api/books?q=term` | Search books |
-| `GET` | `/api/books?categoryId=1` | List books by category |
-| `GET` | `/api/books/{id}` | Get one book |
-| `GET` | `/api/categories` | List categories |
+|--------|------|-------------|
+| POST | `/api/auth/register` | Register new user |
+| POST | `/api/auth/login` | Login (returns JWT) |
+| POST | `/api/auth/google` | Google OAuth2 login |
+| GET | `/api/books` | List/search books |
+| GET | `/api/books/{id}` | Get book details |
+| GET | `/api/categories` | List categories |
 
-Authenticated endpoints:
-
-| Method | Path | Description |
-| --- | --- | --- |
-| `GET` | `/api/wishlist` | Get current user's wishlist |
-| `POST` | `/api/wishlist/{bookId}` | Add book to wishlist |
-| `DELETE` | `/api/wishlist/{bookId}` | Remove book from wishlist |
-
-Admin endpoints require `ROLE_ADMIN`:
+### Authenticated (Bearer Token)
 
 | Method | Path | Description |
-| --- | --- | --- |
-| `POST` | `/api/admin/books` | Create book |
-| `PUT` | `/api/admin/books/{id}` | Update book |
-| `DELETE` | `/api/admin/books/{id}` | Delete book |
-| `POST` | `/api/admin/categories` | Create category |
-| `PUT` | `/api/admin/categories/{id}` | Update category |
-| `DELETE` | `/api/admin/categories/{id}` | Delete category |
+|--------|------|-------------|
+| GET | `/api/wishlist` | User's wishlist |
+| POST | `/api/wishlist/{bookId}` | Add to wishlist |
+| DELETE | `/api/wishlist/{bookId}` | Remove from wishlist |
+| GET/POST | `/api/cart` | Cart operations |
+| GET/POST | `/api/bookshelves` | Manage bookshelves |
+| GET | `/api/dashboard` | Reading dashboard data |
+| GET/PUT | `/api/profile` | User profile |
 
-Send JWTs as:
+### Admin (ROLE_ADMIN)
 
-```http
-Authorization: Bearer <token>
-```
+| Method | Path | Description |
+|--------|------|-------------|
+| POST | `/api/admin/books` | Create book |
+| PUT | `/api/admin/books/{id}` | Update book |
+| DELETE | `/api/admin/books/{id}` | Delete book |
+| POST/PUT/DELETE | `/api/admin/categories/{id}` | Manage categories |
 
-## Database
+---
 
-Flyway migrations live in `backend/shelfToTales/src/main/resources/db/migration`.
-
-Current migrations create:
-
-- categories
-- users
-- books
-- wishlist items
-- seed categories and books
-
-`DataSeeder` also inserts starter categories and books when tables are empty.
-
-## Tests and Builds
-
-Backend:
+## 🧪 Testing
 
 ```bash
+# Backend unit & integration tests
 cd backend/shelfToTales
 ./mvnw test
-```
 
-Frontend:
-
-```bash
-cd frontend
+# Frontend component tests
+cd frontend-next
 npm test
-npm run build
 ```
 
-## Team
+---
+
+## 🎯 Feature Roadmap
+
+| Feature | Status |
+|---------|--------|
+| Book catalog & search | ✅ Done |
+| JWT + Google OAuth2 auth | ✅ Done |
+| Wishlist & Cart | ✅ Done |
+| Virtual Bookshelf | ✅ Done |
+| Reading Dashboard | ✅ Done |
+| Reader Network | ✅ Done |
+| Reading Room | ✅ Done |
+| AI Image Search | 🔮 Planned |
+| Mood-based Suggestions | 🔮 Planned |
+| Book Exchange/Donation | 🔮 Planned |
+| Reading Challenges | 🔮 Planned |
+
+---
+
+## 👥 Team
 
 | Name | ID |
-| --- | --- |
+|------|-----|
 | Rushdania Bushra | 0112230039 |
 | Habiba Khatun | 011221085 |
 | Fayjullah Haque | 011221072 |
 | Ashikur Rahman Puspo | 0112310304 |
 | Mst. Sumia Khatun | 011221563 |
 
-## Notes for Development
+---
 
-- Backend package boundaries are `controller`, `service`, `repository`, `model`, `dto`, `security`, and `config`.
-- Controllers stay thin; business logic belongs in services.
-- Frontend API calls should go through `frontend/src/api/api.js`.
-- Frontend routes are centralized in `frontend/src/routes/AppRoutes.js`.
-- Default CORS allows `http://localhost:3000`.
+## 📄 License
+
+This project is developed as part of an academic course (AOOP).
