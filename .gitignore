@@ -7,6 +7,26 @@ graphify-out/
 CLAUDE.md
 CLAUDE*.md
 AGENTS.md
+.opencode/
+.serena/
+.mcp.json
+
+# Audit docs
+ARCHITECTURE_AUDIT.md
+AUDIT_CHECKLIST.md
+AUDIT_REPORT.md
+AUDIT_SUMMARY.md
+QUICK_FIXES.md
+README_AUDIT.md
+
+# CLI tools
+pacman-cli/
+
+# Migration/scaffolding artifacts
+MIGRATION_CHECKLIST.md
+docs/
+scripts/
+frontend-next/
 
 # OS
 .DS_Store
