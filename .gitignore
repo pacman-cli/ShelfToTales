@@ -27,7 +27,7 @@ pacman-cli/
 MIGRATION_CHECKLIST.md
 docs/
 scripts/
-frontend-next/
+frontend/
 
 # OS
 .DS_Store
