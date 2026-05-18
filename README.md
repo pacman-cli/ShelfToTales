@@ -275,52 +275,52 @@ flowchart TD
 
 ```mermaid
 graph TD
-    subgraph Layout["Root Layout (app/layout.js)"]
-        HEADER[Header Component]
-        FOOTER[Footer Component]
+    subgraph Layout["Root Layout - app/layout.js"]
+        HEADER["Header Component"]
+        FOOTER["Footer Component"]
     end
 
     subgraph Pages["App Router Pages"]
-        HOME[/ — Home]
-        HOME2[/index-2 — Home Alt]
+        HOME["Home - /"]
+        HOME2["Home Alt - /index-2"]
         
-        subgraph Books["📖 Books"]
-            BGL[/books-grid-view]
-            BGLS[/books-grid-view-sidebar]
-            BLL[/books-list-view-sidebar]
-            BL[/book-list]
-            BD[/books-detail/:id]
-            RB[/read-book/:bookId]
+        subgraph Books["Books"]
+            BGL["books-grid-view"]
+            BGLS["books-grid-view-sidebar"]
+            BLL["books-list-view-sidebar"]
+            BL["book-list"]
+            BD["books-detail/id"]
+            RB["read-book/bookId"]
         end
 
-        subgraph Shop["🛒 Shop"]
-            SL[/shop-list]
-            SD[/shop-detail/:id]
-            SC[/shop-cart]
-            SCO[/shop-checkout]
-            LOGIN[/shop-login]
-            REG[/shop-registration]
+        subgraph Shop["Shop"]
+            SL["shop-list"]
+            SD["shop-detail/id"]
+            SC["shop-cart"]
+            SCO["shop-checkout"]
+            LOGIN["shop-login"]
+            REG["shop-registration"]
         end
 
-        subgraph Community["👥 Community"]
-            VB[/virtual-bookshelf]
-            RR[/reading-room]
-            RN[/reader-network]
-            RD[/reading-dashboard]
+        subgraph Community["Community"]
+            VB["virtual-bookshelf"]
+            RR["reading-room"]
+            RN["reader-network"]
+            RD["reading-dashboard"]
         end
 
-        subgraph User["👤 User"]
-            DASH[/dashboard]
-            PROF[/my-profile]
-            WISH[/wishlist]
-            PH[/purchase-history]
+        subgraph User["User"]
+            DASH["dashboard"]
+            PROF["my-profile"]
+            WISH["wishlist"]
+            PH["purchase-history"]
         end
 
-        subgraph Content["📝 Content"]
-            BG[/blog-grid]
-            BLS[/blog-list-sidebar]
-            BLGS[/blog-large-sidebar]
-            BDET[/blog-detail]
+        subgraph Content["Content"]
+            BG["blog-grid"]
+            BLS["blog-list-sidebar"]
+            BLGS["blog-large-sidebar"]
+            BDET["blog-detail"]
         end
     end
 
