@@ -3,13 +3,14 @@
 // Force fully-dynamic rendering — page reads localStorage/window at render time.
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState } from 'react';
 import PageTitle from '../components/layout/PageTitle';
 import DashboardStatCard from '../components/dashboard/DashboardStatCard';
 import DashboardCurrentlyReading from '../components/dashboard/DashboardCurrentlyReading';
 import DashboardCategoryBreakdown from '../components/dashboard/DashboardCategoryBreakdown';
 import DashboardRecentActivity from '../components/dashboard/DashboardRecentActivity';
 import DashboardQuickActions from '../components/dashboard/DashboardQuickActions';
+import { useApi } from '../hooks/useApi';
 import { dashboardService } from '../lib/api';
 import './Dashboard.css';
 
@@ -21,25 +22,8 @@ const TABS = [
 ];
 
 function Dashboard() {
-  const [data, setData] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const { data, loading, error, refetch } = useApi(() => dashboardService.getDashboard());
   const [activeTab, setActiveTab] = useState('reading');
-
-  const fetchDashboard = useCallback(async () => {
-    setLoading(true);
-    setError(null);
-    try {
-      const res = await dashboardService.getDashboard();
-      setData(res.data);
-    } catch {
-      setError('Could not load dashboard data. Please try again.');
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => { fetchDashboard(); }, [fetchDashboard]);
 
   const renderSkeleton = () => (
     <div className="row g-3 mb-4">
@@ -75,8 +59,8 @@ function Dashboard() {
         <div className="container py-4">
           <div className="alert alert-danger d-flex align-items-center gap-3">
             <i className="fa-solid fa-triangle-exclamation fa-lg"></i>
-            <span>{error}</span>
-            <button className="btn btn-outline-danger btn-sm ms-auto" onClick={fetchDashboard}>
+            <span>{typeof error === 'string' ? error : 'Could not load dashboard data. Please try again.'}</span>
+            <button className="btn btn-outline-danger btn-sm ms-auto" onClick={refetch}>
               <i className="fa-solid fa-rotate me-1"></i> Retry
             </button>
           </div>
