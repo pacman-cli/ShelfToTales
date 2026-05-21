@@ -1,0 +1,13 @@
+'use client';
+
+import { useAppContext } from '../contexts/AppContext';
+
+/**
+ * Thin wrapper around AppContext's wishlist slice. Keeps component imports
+ * clean and decouples them from the context implementation.
+ */
+export function useWishlist() {
+  const { isWishlisted, toggleWishlist } = useAppContext();
+
+  return { isWishlisted, toggleWishlist };
+}
