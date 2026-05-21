@@ -6,6 +6,9 @@ import "swiper/css/effect-fade";
 import "./assets/css/style.css";
 import "./globals.css";
 
+import { AuthProvider } from "./contexts/AuthContext";
+import { AppProvider } from "./contexts/AppContext";
+import { CartProvider } from "./contexts/CartContext";
 import Header from "./components/layout/Header";
 import Footer from "./components/layout/Footer";
 import ScrollToTop from "./components/layout/ScrollToTop";
@@ -26,14 +29,20 @@ export default function RootLayout({ children }) {
         />
       </head>
       <body>
-        <div className="App">
-          <div className="page-wraper">
-            <Header />
-            {children}
-            <Footer footerChange="style-1" />
-          </div>
-          <ScrollToTop />
-        </div>
+        <AuthProvider>
+          <AppProvider>
+            <CartProvider>
+              <div className="App">
+                <div className="page-wraper">
+                  <Header />
+                  {children}
+                  <Footer footerChange="style-1" />
+                </div>
+                <ScrollToTop />
+              </div>
+            </CartProvider>
+          </AppProvider>
+        </AuthProvider>
       </body>
     </html>
   );
