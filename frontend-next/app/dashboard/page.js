@@ -1,213 +1,225 @@
 'use client';
 
-// Force fully-dynamic rendering — page reads localStorage/window at render time.
 export const dynamic = 'force-dynamic';
 
-import React, { useState } from 'react';
-import PageTitle from '../components/layout/PageTitle';
-import DashboardStatCard from '../components/dashboard/DashboardStatCard';
-import DashboardCurrentlyReading from '../components/dashboard/DashboardCurrentlyReading';
-import DashboardCategoryBreakdown from '../components/dashboard/DashboardCategoryBreakdown';
-import DashboardRecentActivity from '../components/dashboard/DashboardRecentActivity';
-import DashboardQuickActions from '../components/dashboard/DashboardQuickActions';
-import DashboardStreakWidget from '../components/dashboard/DashboardStreakWidget';
-import DashboardAchievements from '../components/dashboard/DashboardAchievements';
-import ProgressRing from '../components/dashboard/ProgressRing';
-import GradientStatCard from '../components/dashboard/GradientStatCard';
+import React from 'react';
+import Link from 'next/link';
 import { useApi } from '../hooks/useApi';
 import { dashboardService } from '../lib/api';
-import { FadeIn, StaggerContainer, StaggerItem } from '../components/common/AnimationUtils';
 import './Dashboard.css';
 
-const TABS = [
-  { key: 'reading', label: 'Reading', icon: 'fa-book-open' },
-  { key: 'library', label: 'Library', icon: 'fa-books' },
-  { key: 'shopping', label: 'Shopping', icon: 'fa-cart-shopping' },
-  { key: 'activity', label: 'Activity', icon: 'fa-clock' },
-];
+function GoalRing({ completed, goal }) {
+  const pct = Math.min((completed / goal) * 100, 100);
+  const r = 50, c = 2 * Math.PI * r;
+  const offset = c - (pct / 100) * c;
+  return (
+    <div className="dash-goal-ring">
+      <svg width="120" height="120" viewBox="0 0 120 120">
+        <defs>
+          <linearGradient id="goalGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stopColor="#eaa451" />
+            <stop offset="100%" stopColor="#e58c23" />
+          </linearGradient>
+        </defs>
+        <circle className="ring-bg" cx="60" cy="60" r={r} />
+        <circle className="ring-fill" cx="60" cy="60" r={r}
+          strokeDasharray={c} strokeDashoffset={offset} />
+      </svg>
+      <div className="dash-goal-text">
+        <div className="number">{completed}</div>
+        <div className="label">of {goal}</div>
+      </div>
+    </div>
+  );
+}
 
 function Dashboard() {
   const { data, loading, error, refetch } = useApi(() => dashboardService.getDashboard());
-  const [activeTab, setActiveTab] = useState('reading');
-
-  const renderSkeleton = () => (
-    <div className="row g-3 mb-4">
-      {[1, 2, 3, 4].map(i => (
-        <div className="col-md-3 col-6" key={i}>
-          <div className="card shadow-sm border-0">
-            <div className="card-body placeholder-glow d-flex align-items-center gap-3">
-              <div className="placeholder rounded-circle" style={{ width: '50px', height: '50px' }}></div>
-              <div>
-                <div className="placeholder col-8 mb-1"></div>
-                <div className="placeholder col-4"></div>
-              </div>
-            </div>
-          </div>
-        </div>
-      ))}
-    </div>
-  );
 
   if (loading) {
     return (
-      <div className="page-content bg-grey">
-        <PageTitle parentPage="User" childPage="Dashboard" />
-        <div className="container py-4">{renderSkeleton()}</div>
+      <div className="dashboard-page">
+        <div className="container" style={{ padding: '4rem 1rem' }}>
+          <div className="dash-stats">
+            {[1,2,3,4].map(i => (
+              <div key={i} className="dash-stat-card dash-animate">
+                <div style={{ width: 44, height: 44, borderRadius: 14, background: '#f0ede8' }} />
+                <div style={{ width: '60%', height: 28, borderRadius: 8, background: '#f0ede8', marginTop: 16 }} />
+                <div style={{ width: '40%', height: 12, borderRadius: 6, background: '#f0ede8', marginTop: 8 }} />
+              </div>
+            ))}
+          </div>
+        </div>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="page-content bg-grey">
-        <PageTitle parentPage="User" childPage="Dashboard" />
-        <div className="container py-4">
-          <div className="alert alert-danger d-flex align-items-center gap-3">
-            <i className="fa-solid fa-triangle-exclamation fa-lg"></i>
-            <span>{typeof error === 'string' ? error : 'Could not load dashboard data. Please try again.'}</span>
-            <button className="btn btn-outline-danger btn-sm ms-auto" onClick={refetch}>
-              <i className="fa-solid fa-rotate me-1"></i> Retry
-            </button>
-          </div>
+      <div className="dashboard-page">
+        <div className="container" style={{ padding: '4rem 1rem', textAlign: 'center' }}>
+          <h2 style={{ fontFamily: 'Playfair Display, serif', color: '#1a1a2e' }}>Something went wrong</h2>
+          <p style={{ color: '#8b8b9e' }}>Could not load your dashboard.</p>
+          <button onClick={refetch} className="dash-action-btn" style={{ display: 'inline-flex', margin: '0 auto' }}>
+            <i className="fa-solid fa-rotate"></i> Try Again
+          </button>
         </div>
       </div>
     );
   }
 
-  const statCards = {
-    reading: [
-      { icon: 'fa-book-open', label: 'Currently Reading', value: data.totalBooksReading, color: '#0d6efd' },
-      { icon: 'fa-check-circle', label: 'Books Completed', value: data.totalBooksCompleted, color: '#198754' },
-      { icon: 'fa-file-lines', label: 'Pages Read', value: data.totalPagesRead.toLocaleString(), color: '#6f42c1' },
-      { icon: 'fa-clock', label: 'Member Since', value: data.memberSince ? new Date(data.memberSince).getFullYear() : '-', color: '#fd7e14' },
-    ],
-    library: [
-      { icon: 'fa-books', label: 'Bookshelves', value: data.totalBookshelves, color: '#0d6efd' },
-      { icon: 'fa-book', label: 'Books Owned', value: data.totalBooksOwned, color: '#198754' },
-      { icon: 'fa-tags', label: 'Categories', value: data.totalCategoriesOwned, color: '#6f42c1' },
-      { icon: 'fa-layer-group', label: 'Avg per Shelf', value: data.totalBookshelves > 0 ? Math.round(data.totalBooksOwned / data.totalBookshelves) : 0, color: '#0dcaf0' },
-    ],
-    shopping: [
-      { icon: 'fa-cart-shopping', label: 'Cart Items', value: data.cartItemCount, color: '#0d6efd' },
-      { icon: 'fa-dollar-sign', label: 'Cart Value', value: data.cartTotalValue ? '$' + data.cartTotalValue : '$0', color: '#198754' },
-      { icon: 'fa-heart', label: 'Wishlist', value: data.wishlistCount, color: '#dc3545' },
-      { icon: 'fa-box', label: 'Orders', value: data.totalOrders, color: '#6f42c1' },
-    ],
-    activity: [
-      { icon: 'fa-clock', label: 'Recent Activity', value: data.recentActivities?.length || 0, color: '#0d6efd' },
-      { icon: 'fa-book-open', label: 'Currently Reading', value: data.totalBooksReading, color: '#198754' },
-      { icon: 'fa-check-circle', label: 'Completed', value: data.totalBooksCompleted, color: '#6f42c1' },
-      { icon: 'fa-dollar-sign', label: 'Total Spent', value: data.totalSpent ? '$' + data.totalSpent : '$0', color: '#fd7e14' },
-    ],
-  };
+  const user = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}') : {};
+  const isAdmin = user.role === 'ADMIN';
+  const firstName = (data.fullName || 'Reader').split(' ')[0];
+  const avatarUrl = data.profileImageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(data.fullName || 'U')}&background=eaa451&color=fff&size=72&bold=true`;
 
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case 'reading':
-        return (
-          <div>
-            <h5 className="fw-bold mb-3">Currently Reading</h5>
-            <DashboardCurrentlyReading books={data.currentlyReading} />
-          </div>
-        );
-      case 'library':
-        return (
-          <div>
-            <h5 className="fw-bold mb-3">Books by Category</h5>
-            <DashboardCategoryBreakdown categories={data.booksByCategory} />
-          </div>
-        );
-      case 'shopping':
-        return (
-          <div>
-            <h5 className="fw-bold mb-3">Quick Actions</h5>
-            <DashboardQuickActions />
-            {data.cartItemCount > 0 && (
-              <div className="alert alert-info mt-3">
-                <i className="fa-solid fa-info-circle me-2"></i>
-                You have {data.cartItemCount} item{data.cartItemCount !== 1 ? 's' : ''} in your cart worth ${data.cartTotalValue || '0.00'}.
-              </div>
-            )}
-          </div>
-        );
-      case 'activity':
-        return (
-          <div>
-            <h5 className="fw-bold mb-3">Recent Activity</h5>
-            <DashboardRecentActivity activities={data.recentActivities} />
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
+  const stats = [
+    { icon: 'fa-book-open', label: 'Reading', value: data.totalBooksReading || 0, color: '#3b82f6', bg: 'rgba(59,130,246,0.1)' },
+    { icon: 'fa-check-circle', label: 'Completed', value: data.totalBooksCompleted || 0, color: '#10b981', bg: 'rgba(16,185,129,0.1)' },
+    { icon: 'fa-heart', label: 'Wishlist', value: data.wishlistCount || 0, color: '#ef4444', bg: 'rgba(239,68,68,0.1)' },
+    { icon: 'fa-cart-shopping', label: 'Cart', value: data.cartItemCount || 0, color: '#8b5cf6', bg: 'rgba(139,92,246,0.1)' },
+  ];
 
   return (
-    <div className="page-content bg-grey">
-      <PageTitle parentPage="User" childPage="Dashboard" />
-      <FadeIn>
-      <div className="container py-4">
-        <div className="dashboard-welcome mb-4">
-          <div className="d-flex align-items-center gap-3">
-            <img src={data.profileImageUrl || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(data.fullName || 'User') + '&background=9cd2ef&color=fff&size=60'}
-                 alt="profile" className="rounded-circle"
-                 style={{ width: '60px', height: '60px', objectFit: 'cover' }} />
+    <div className="dashboard-page">
+      <div className="container" style={{ maxWidth: 1200, padding: '0 1.5rem' }}>
+
+        {/* Hero */}
+        <div className="dash-hero">
+          <div className="dash-hero-inner">
+            <img src={avatarUrl} alt="avatar" className="dash-avatar" />
             <div>
-              <h2 className="fw-bold mb-0">Welcome back, {(data.fullName || 'Reader').split(' ')[0]}!</h2>
-              <small className="text-muted">{data.email}</small>
+              <h1 className="dash-greeting">Welcome back, {firstName}</h1>
+              <p className="dash-subtitle">{data.email}</p>
+              <span className={`dash-role-badge ${isAdmin ? 'admin' : 'user'}`}>
+                <i className={`fa-solid ${isAdmin ? 'fa-shield-halved' : 'fa-user'}`}></i>
+                {isAdmin ? 'Admin' : 'Reader'}
+              </span>
             </div>
           </div>
         </div>
 
-        <div className="row g-3 mb-4">
-          {statCards[activeTab].map((stat, idx) => (
-            <div className="col-md-3 col-6" key={idx}>
-              <DashboardStatCard {...stat} />
+        {/* Admin Panel */}
+        {isAdmin && (
+          <div className="dash-admin-section dash-animate">
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <div>
+                <h3 style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.4rem', margin: 0 }}>Platform Overview</h3>
+                <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', margin: '4px 0 0' }}>Admin analytics at a glance</p>
+              </div>
+              <Link href="/admin/dashboard" className="dash-action-btn" style={{ background: 'rgba(255,255,255,0.1)', color: '#eaa451', border: '1px solid rgba(234,164,81,0.3)' }}>
+                <i className="fa-solid fa-arrow-right"></i> Full Panel
+              </Link>
+            </div>
+            <div className="dash-admin-stats">
+              <div className="dash-admin-stat"><div className="value">{data.totalBooksOwned || 0}</div><div className="label">Total Books</div></div>
+              <div className="dash-admin-stat"><div className="value">{data.totalOrders || 0}</div><div className="label">Orders</div></div>
+              <div className="dash-admin-stat"><div className="value">{data.totalCategoriesOwned || 0}</div><div className="label">Categories</div></div>
+              <div className="dash-admin-stat"><div className="value">{data.totalBookshelves || 0}</div><div className="label">Shelves</div></div>
+            </div>
+          </div>
+        )}
+
+        {/* Stats */}
+        <div className="dash-stats">
+          {stats.map((s, i) => (
+            <div key={i} className="dash-stat-card dash-animate" style={{ '--accent': s.color }}>
+              <div className="dash-stat-icon" style={{ background: s.bg, color: s.color }}>
+                <i className={`fa-solid ${s.icon}`}></i>
+              </div>
+              <div className="dash-stat-value">{s.value}</div>
+              <div className="dash-stat-label">{s.label}</div>
+              <div style={{ position: 'absolute', top: 0, right: 0, width: 80, height: 80, borderRadius: '0 20px 0 80px', background: s.color, opacity: 0.06 }} />
             </div>
           ))}
         </div>
 
-        {/* Streak + Progress Ring Row */}
-        <div className="row g-3 mb-4">
-          <div className="col-md-3">
-            <DashboardStreakWidget />
+        {/* Main Content */}
+        <div className="dash-content">
+          {/* Left Column */}
+          <div>
+            {/* Currently Reading */}
+            <div className="dash-card dash-animate">
+              <h3 className="dash-card-title">Currently Reading</h3>
+              {data.currentlyReading?.length > 0 ? (
+                data.currentlyReading.slice(0, 4).map((book, i) => (
+                  <div key={i} className="dash-reading-item">
+                    <img src={book.coverUrl || '/assets/images/book-placeholder.jpg'} alt={book.title} className="dash-reading-cover" />
+                    <div className="dash-reading-info" style={{ flex: 1 }}>
+                      <h6>{book.title}</h6>
+                      <p>{book.author}</p>
+                      <div className="dash-progress-bar">
+                        <div className="dash-progress-fill" style={{ width: `${book.progress || 30}%` }} />
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div style={{ textAlign: 'center', padding: '2rem', color: '#8b8b9e' }}>
+                  <i className="fa-solid fa-book-open" style={{ fontSize: '2rem', opacity: 0.3, marginBottom: 8 }}></i>
+                  <p style={{ margin: 0 }}>No books in progress</p>
+                  <Link href="/books-grid-view" className="dash-action-btn" style={{ display: 'inline-flex', marginTop: 12 }}>
+                    <i className="fa-solid fa-plus"></i> Browse Books
+                  </Link>
+                </div>
+              )}
+            </div>
+
+            {/* Recent Activity */}
+            <div className="dash-card dash-animate" style={{ marginTop: '1.5rem' }}>
+              <h3 className="dash-card-title">Recent Activity</h3>
+              {data.recentActivities?.length > 0 ? (
+                data.recentActivities.slice(0, 5).map((act, i) => (
+                  <div key={i} className="dash-activity-item">
+                    <div className="dash-activity-dot" style={{ background: ['#3b82f6','#10b981','#eaa451','#ef4444','#8b5cf6'][i % 5] }} />
+                    <span className="dash-activity-text">{act.description || act.activityType}</span>
+                    <span className="dash-activity-time">{act.timeAgo || ''}</span>
+                  </div>
+                ))
+              ) : (
+                <p style={{ color: '#8b8b9e', textAlign: 'center', padding: '1rem' }}>No recent activity</p>
+              )}
+            </div>
           </div>
-          <div className="col-md-3">
-            <div className="card border-0 shadow-sm h-100 d-flex align-items-center justify-content-center" style={{ borderRadius: 16 }}>
-              <div className="card-body text-center py-4">
-                <ProgressRing
-                  progress={data.totalBooksCompleted ? Math.min((data.totalBooksCompleted / 24) * 100, 100) : 0}
-                  size={100} color="#6f42c1"
-                  label="Annual Goal"
-                  sublabel={`${data.totalBooksCompleted || 0} / 24 books`}
-                />
+
+          {/* Right Column */}
+          <div>
+            {/* Streak */}
+            <div className="dash-streak-card dash-animate">
+              <div className="dash-streak-number">{data.currentStreak || 0}</div>
+              <div className="dash-streak-label">Day Streak 🔥</div>
+              <p style={{ color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', marginTop: 12, marginBottom: 0 }}>
+                {data.currentStreak > 0 ? 'Keep it going!' : 'Read today to start a streak'}
+              </p>
+            </div>
+
+            {/* Annual Goal */}
+            <div className="dash-goal-card dash-animate" style={{ marginTop: '1.5rem' }}>
+              <h4 style={{ fontFamily: 'Playfair Display, serif', fontSize: '1.1rem', color: '#1a1a2e', marginBottom: '1rem' }}>Annual Goal</h4>
+              <GoalRing completed={data.totalBooksCompleted || 0} goal={24} />
+              <p style={{ color: '#8b8b9e', fontSize: '0.8rem', marginTop: 8 }}>
+                {24 - (data.totalBooksCompleted || 0) > 0
+                  ? `${24 - (data.totalBooksCompleted || 0)} more to go!`
+                  : '🎉 Goal reached!'}
+              </p>
+            </div>
+
+            {/* Quick Actions */}
+            <div className="dash-card dash-animate" style={{ marginTop: '1.5rem' }}>
+              <h3 className="dash-card-title">Quick Actions</h3>
+              <div className="dash-actions">
+                <Link href="/books-grid-view" className="dash-action-btn"><i className="fa-solid fa-compass"></i> Explore</Link>
+                <Link href="/shop-cart" className="dash-action-btn"><i className="fa-solid fa-cart-shopping"></i> Cart</Link>
+                <Link href="/wishlist" className="dash-action-btn"><i className="fa-solid fa-heart"></i> Wishlist</Link>
+                <Link href="/my-profile" className="dash-action-btn"><i className="fa-solid fa-user"></i> Profile</Link>
+                {isAdmin && <Link href="/admin/books" className="dash-action-btn"><i className="fa-solid fa-plus"></i> Add Book</Link>}
+                {isAdmin && <Link href="/admin/categories" className="dash-action-btn"><i className="fa-solid fa-tags"></i> Categories</Link>}
               </div>
             </div>
           </div>
-          <div className="col-md-6">
-            <DashboardAchievements />
-          </div>
         </div>
 
-        <div className="card shadow-sm border-0">
-          <div className="card-header bg-white border-bottom px-0">
-            <ul className="nav nav-tabs dashboard-tabs border-0 px-3">
-              {TABS.map(tab => (
-                <li className="nav-item" key={tab.key}>
-                  <button className={'nav-link' + (activeTab === tab.key ? ' active' : '')}
-                          onClick={() => setActiveTab(tab.key)}>
-                    <i className={'fa-solid ' + tab.icon + ' me-2'}></i>{tab.label}
-                  </button>
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div className="card-body dashboard-tab-content">
-            {renderTabContent()}
-          </div>
-        </div>
       </div>
-      </FadeIn>
     </div>
   );
 }
