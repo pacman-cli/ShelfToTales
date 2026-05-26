@@ -229,4 +229,10 @@ export const checkoutService = {
   checkout: (data) => api.post('/checkout', data),
 };
 
+export const uploadService = {
+  image: (file) => { const fd = new FormData(); fd.append('file', file); return api.post('/upload/image', fd); },
+  cover: (file) => { const fd = new FormData(); fd.append('file', file); return api.post('/upload/cover', fd); },
+  pdf: (file) => { const fd = new FormData(); fd.append('file', file); return api.post('/upload/pdf', fd); },
+};
+
 export default api;
