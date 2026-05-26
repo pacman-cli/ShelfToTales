@@ -125,7 +125,7 @@ function ShopDetail(){
             await wishlistService.addToWishlist(id);
             Swal.fire({ icon: 'success', title: 'Added to wishlist', showConfirmButton: false, timer: 1500, toast: true, position: 'top-end' });
         } catch (error) {
-            Swal.fire('Error', 'Please login to add to wishlist', 'error');
+            Swal.fire('Error', error.response?.status === 401 ? 'Please login to add to wishlist' : (error.response?.data?.message || 'Failed to add to wishlist'), 'error');
         }
     };
 
@@ -134,7 +134,11 @@ function ShopDetail(){
             await cartService.addToCart(id, count);
             Swal.fire({ icon: 'success', title: 'Added to cart', showConfirmButton: false, timer: 1500, toast: true, position: 'top-end' });
         } catch (error) {
-            Swal.fire('Error', 'Please login to add to cart', 'error');
+            if (error.response?.status === 401) {
+                Swal.fire('Error', 'Please login to add to cart', 'error');
+            } else {
+                Swal.fire('Error', error.response?.data?.message || 'Failed to add to cart', 'error');
+            }
         }
     };
 
