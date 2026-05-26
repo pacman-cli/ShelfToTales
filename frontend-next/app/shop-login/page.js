@@ -48,8 +48,8 @@ function LoginInner(){
     const handleGoogleResponse = async (response) => {
         try {
             await googleAuth(response.credential);
-            Swal.fire('Success', 'Logged in with Google', 'success');
-            window.location.href = '/dashboard';
+            Swal.fire({ icon: 'success', title: 'Welcome!', showConfirmButton: false, timer: 800 });
+            setTimeout(() => { window.location.href = '/dashboard'; }, 800);
         } catch (error) {
             Swal.fire('Error', error.response?.data?.message || 'Google login failed', 'error');
         }
@@ -59,8 +59,8 @@ function LoginInner(){
         e.preventDefault();
         try {
             await login(email, password);
-            Swal.fire('Success', 'Logged in successfully', 'success');
-            window.location.href = '/dashboard';
+            Swal.fire({ icon: 'success', title: 'Welcome!', showConfirmButton: false, timer: 800 });
+            setTimeout(() => { window.location.href = '/dashboard'; }, 800);
         } catch (error) {
             Swal.fire('Error', error.response?.data?.message || 'Login failed', 'error');
         }
