@@ -89,6 +89,7 @@ function ShopDetail(){
     const [comment, setComment] = useState('');
     const [rating, setRating] = useState(5);
     const [isSpoiler, setIsSpoiler] = useState(false);
+    const [hideSpoilers, setHideSpoilers] = useState(false);
     const [similarBooks, setSimilarBooks] = useState([]);
 
     const fetchReviews = async () => {
@@ -273,10 +274,18 @@ function ShopDetail(){
                                             <Tab.Pane eventKey="review">
                                                 <div className="clear" id="comment-list">
                                                     <div className="post-comments comments-area style-1 clearfix">
-                                                        <h4 className="comments-title">{reviews.length} COMMENTS</h4>
+                                                        <div className="d-flex justify-content-between align-items-center mb-3">
+                                                            <h4 className="comments-title mb-0">{reviews.length} COMMENTS</h4>
+                                                            {reviews.some(r => r.isSpoiler) && (
+                                                                <label className="form-check d-flex align-items-center gap-2" style={{ cursor: 'pointer' }}>
+                                                                    <input type="checkbox" className="form-check-input" checked={hideSpoilers} onChange={() => setHideSpoilers(!hideSpoilers)}/>
+                                                                    <span className="small text-muted">Hide spoiler reviews ({reviews.filter(r => r.isSpoiler).length})</span>
+                                                                </label>
+                                                            )}
+                                                        </div>
                                                         <div id="comment">
                                                             <ol className="comment-list">
-                                                                {reviews.map((rev, index) => (
+                                                                {reviews.filter(r => !hideSpoilers || !r.isSpoiler).map((rev, index) => (
                                                                     <li key={index} className="comment even thread-even depth-1">
                                                                         <CommentBlog title={rev.user?.username || 'User'} comment={rev.comment} date={rev.createdAt} rating={rev.rating} avatar={rev.user?.profileImageUrl} isSpoiler={rev.isSpoiler} />
                                                                     </li>
