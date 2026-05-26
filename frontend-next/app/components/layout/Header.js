@@ -118,6 +118,24 @@ function Header(){
 														<span className="ms-2">Blog Management</span>
 													</div>
 												</Link>
+												<Link href={"/reading-room"} className="dropdown-item d-flex justify-content-between align-items-center ai-icon">
+													<div>
+														<i className="fa-solid fa-users-rectangle ms-1"></i>
+														<span className="ms-2">Reading Rooms</span>
+													</div>
+												</Link>
+												<Link href={"/reader-network"} className="dropdown-item d-flex justify-content-between align-items-center ai-icon">
+													<div>
+														<i className="fa-solid fa-people-arrows ms-1"></i>
+														<span className="ms-2">Reader Network</span>
+													</div>
+												</Link>
+												<Link href={"/reading-dashboard"} className="dropdown-item d-flex justify-content-between align-items-center ai-icon">
+													<div>
+														<i className="fa-solid fa-chart-line ms-1"></i>
+														<span className="ms-2">Reading Stats</span>
+													</div>
+												</Link>
 												{user?.role === 'ADMIN' && (
 													<>
 														<Link href={"/admin/books"} className="dropdown-item d-flex justify-content-between align-items-center ai-icon">
