@@ -59,9 +59,10 @@ function VirtualBookshelfInner() {
         }, 500);
     };
 
-    // Persist menu visibility and logo URL
+    // Persist menu visibility, logo URL, and theme
     useEffect(() => { localStorage.setItem('vbookshelf_menu', JSON.stringify(menuVisibility)); }, [menuVisibility]);
     useEffect(() => { localStorage.setItem('vbookshelf_logo', logoUrl); }, [logoUrl]);
+    useEffect(() => { if (activeShelf?.theme) localStorage.setItem('vbookshelf_theme', activeShelf.theme); }, [bookshelves, activeBookshelfId]);
 
     // Load books and shelves on mount
     useEffect(() => {
@@ -106,7 +107,7 @@ function VirtualBookshelfInner() {
                         setBookshelves([{ ...newShelf.data, isFolded: false, description: '' }]);
                         setActiveBookshelfId(newShelf.data.id);
                     } catch (_) {
-                        const fb = { id: Date.now(), name: 'Main Bookshelf', description: '', isFolded: false, theme: 'glass' };
+                        const fb = { id: Date.now(), name: 'Main Bookshelf', description: '', isFolded: false, theme: localStorage.getItem('vbookshelf_theme') || 'glass' };
                         setBookshelves([fb]);
                         setActiveBookshelfId(fb.id);
                     }
@@ -115,7 +116,7 @@ function VirtualBookshelfInner() {
                 setBooks(demoBooksList);
                 setOriginalBooks(demoBooksList);
                 setCurrentBook(demoBooksList[0]);
-                const fb = { id: Date.now(), name: 'Main Bookshelf', description: '', isFolded: false, theme: 'glass' };
+                const fb = { id: Date.now(), name: 'Main Bookshelf', description: '', isFolded: false, theme: localStorage.getItem('vbookshelf_theme') || 'glass' };
                 setBookshelves([fb]);
                 setActiveBookshelfId(fb.id);
             } finally {
@@ -161,12 +162,17 @@ function VirtualBookshelfInner() {
     };
 
     const moveBook = (index, direction) => {
-        const n = [...books];
+        const visible = books.filter(b => !b.hidden);
         const t = direction === 'up' ? index - 1 : index + 1;
-        if (t < 0 || t >= n.length) return;
-        [n[index], n[t]] = [n[t], n[index]];
-        setBooks(n); setOriginalBooks(n);
-        localStorage.setItem('vbookshelf_order', JSON.stringify(n.map(b => b.id)));
+        if (t < 0 || t >= visible.length) return;
+        // Swap in visible list
+        [visible[index], visible[t]] = [visible[t], visible[index]];
+        // Rebuild full list: visible in new order + hidden books at end
+        const hidden = books.filter(b => b.hidden);
+        const newBooks = [...visible, ...hidden];
+        setBooks(newBooks);
+        setOriginalBooks(newBooks);
+        localStorage.setItem('vbookshelf_order', JSON.stringify(newBooks.map(b => b.id)));
     };
 
     const addNewBookshelf = async () => {
