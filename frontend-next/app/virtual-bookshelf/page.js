@@ -42,6 +42,9 @@ function VirtualBookshelfInner() {
     const [bookSize, setBookSize] = useState(() => parseInt(localStorage.getItem('vbookshelf_booksize') || '100'));
     const [lighting, setLighting] = useState(() => localStorage.getItem('vbookshelf_lighting') || 'none');
     const [showLabels, setShowLabels] = useState(() => localStorage.getItem('vbookshelf_labels') !== 'false');
+    const [particles, setParticles] = useState(() => localStorage.getItem('vbookshelf_particles') || 'none');
+    const [ornaments, setOrnaments] = useState(() => { try { return JSON.parse(localStorage.getItem('vbookshelf_ornaments')) || []; } catch { return []; } });
+    const [seasonal, setSeasonal] = useState(() => localStorage.getItem('vbookshelf_seasonal') || 'none');
 
     const sidebarSections = [
         { id: 'info', title: 'Bookshelf info', icon: 'fa-solid fa-circle-info' },
@@ -76,6 +79,9 @@ function VirtualBookshelfInner() {
     useEffect(() => { localStorage.setItem('vbookshelf_booksize', bookSize.toString()); }, [bookSize]);
     useEffect(() => { localStorage.setItem('vbookshelf_lighting', lighting); }, [lighting]);
     useEffect(() => { localStorage.setItem('vbookshelf_labels', showLabels.toString()); }, [showLabels]);
+    useEffect(() => { localStorage.setItem('vbookshelf_particles', particles); }, [particles]);
+    useEffect(() => { localStorage.setItem('vbookshelf_ornaments', JSON.stringify(ornaments)); }, [ornaments]);
+    useEffect(() => { localStorage.setItem('vbookshelf_seasonal', seasonal); }, [seasonal]);
 
     // Load books and shelves on mount
     useEffect(() => {
@@ -241,6 +247,14 @@ function VirtualBookshelfInner() {
         const visibleBooks = books.filter(b => !b.hidden);
         if (visibleBooks.length === 0) return <div className="text-center p-5"><h3>No books visible</h3></div>;
         const totalRegularShelves = Math.max(2, Math.ceil((visibleBooks.length - 1) / 4));
+        const ornamentEmojis = {plant:'🪴',candle:'🕯️',globe:'🌍',clock:'🕰️',cat:'🐱',coffee:'☕',frame:'🖼️',lamp:'💡'};
+
+        return (
+            <div className="library-view animate__animated animate__fadeIn">
+                {/* Particle overlay */}
+                {particles !== 'none' && <div className={`particle-overlay particle-${particles}`}>{Array.from({length:20}).map((_,i) => <span key={i} className="particle" style={{left:`${Math.random()*100}%`,animationDelay:`${Math.random()*5}s`,animationDuration:`${3+Math.random()*4}s`}}/>)}</div>}
+                {/* Seasonal overlay */}
+                {seasonal !== 'none' && <div className={`seasonal-overlay seasonal-${seasonal}`}/>}
 
         return (
             <div className="library-view animate__animated animate__fadeIn">
@@ -264,7 +278,10 @@ function VirtualBookshelfInner() {
                                 {showLabels && <div className="book-top-info px-2 py-1 mb-2 small fw-bold" style={{maxWidth: '90px', fontSize: '0.7rem', color: '#333', textAlign: 'center', lineHeight: '1.2', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{b.title}</div>}
                                 <div className="bookshelf-book" style={{transform: `scale(${bookSize/100})`}} onClick={() => handleReadBook(b)}><img loading="lazy" decoding="async" src={b.imageUrl} alt="" /></div>
                             </div>
-                        ))}</div>
+                        ))}
+                        {/* Ornaments on this shelf */}
+                        {si < 2 && ornaments.length > 0 && <div className="shelf-ornament">{ornaments.slice(si*2, si*2+2).map((o,i) => <span key={i} className="ornament-item">{ornamentEmojis[o]}</span>)}</div>}
+                        </div>
                         <div className={`shelf ${activeShelf.theme}`}></div>
                     </div>
                 ))}
@@ -273,7 +290,7 @@ function VirtualBookshelfInner() {
     };
 
     return (
-        <div className={`bookshelf-container theme-${activeShelf.theme} wallpaper-${wallpaper} lighting-${lighting}`} style={{'--shelf-color': shelfColor, '--book-scale': bookSize/100}}>
+        <div className={`bookshelf-container theme-${activeShelf.theme} wallpaper-${wallpaper} lighting-${lighting} particles-${particles} seasonal-${seasonal}`} style={{'--shelf-color': shelfColor, '--book-scale': bookSize/100}}>
             <div className="bookshelf-sidebar">
                 <div className="sidebar-header-new">
                     <h5 className="text-white fw-bold mb-3">BOOKSHELVES</h5>
@@ -364,10 +381,34 @@ function VirtualBookshelfInner() {
                                                                     ))}
                                                                 </div>
                                                                 <label className="small text-white-50 mb-2 d-block">Lighting Effect</label>
-                                                                <div className="d-flex gap-2 flex-wrap">
+                                                                <div className="d-flex gap-2 flex-wrap mb-3">
                                                                     {[{id:'none',label:'Off',icon:'fa-circle-xmark'},{id:'warm',label:'Warm',icon:'fa-sun'},{id:'spotlight',label:'Spot',icon:'fa-lightbulb'},{id:'ambient',label:'Ambient',icon:'fa-moon'}].map(l => (
                                                                         <button key={l.id} onClick={() => setLighting(l.id)} className={`btn btn-sm ${lighting===l.id?'btn-warning':'btn-outline-secondary'} rounded-pill px-3`} style={{fontSize:'0.75rem'}}>
                                                                             <i className={`fa-solid ${l.icon} me-1`}/>{l.label}
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                                <label className="small text-white-50 mb-2 d-block">Floating Particles</label>
+                                                                <div className="d-flex gap-2 flex-wrap mb-3">
+                                                                    {[{id:'none',label:'Off'},{id:'dust',label:'✨ Dust'},{id:'fireflies',label:'🪲 Fireflies'},{id:'snow',label:'❄️ Snow'},{id:'leaves',label:'🍂 Leaves'},{id:'stars',label:'⭐ Stars'}].map(p => (
+                                                                        <button key={p.id} onClick={() => setParticles(p.id)} className={`btn btn-sm ${particles===p.id?'btn-warning':'btn-outline-secondary'} rounded-pill px-2`} style={{fontSize:'0.7rem'}}>
+                                                                            {p.label}
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                                <label className="small text-white-50 mb-2 d-block">Shelf Ornaments</label>
+                                                                <div className="d-flex gap-2 flex-wrap mb-3">
+                                                                    {[{id:'plant',emoji:'🪴'},{id:'candle',emoji:'🕯️'},{id:'globe',emoji:'🌍'},{id:'clock',emoji:'🕰️'},{id:'cat',emoji:'🐱'},{id:'coffee',emoji:'☕'},{id:'frame',emoji:'🖼️'},{id:'lamp',emoji:'💡'}].map(o => (
+                                                                        <button key={o.id} onClick={() => setOrnaments(prev => prev.includes(o.id) ? prev.filter(x=>x!==o.id) : [...prev, o.id])} className={`btn btn-sm ${ornaments.includes(o.id)?'btn-warning':'btn-outline-secondary'}`} style={{fontSize:'1.2rem',width:40,height:40,padding:0,borderRadius:10}}>
+                                                                            {o.emoji}
+                                                                        </button>
+                                                                    ))}
+                                                                </div>
+                                                                <label className="small text-white-50 mb-2 d-block">Seasonal Theme</label>
+                                                                <div className="d-flex gap-2 flex-wrap">
+                                                                    {[{id:'none',label:'None'},{id:'christmas',label:'🎄 Holiday'},{id:'halloween',label:'🎃 Spooky'},{id:'spring',label:'🌸 Spring'},{id:'cozyfall',label:'🍁 Autumn'}].map(s => (
+                                                                        <button key={s.id} onClick={() => setSeasonal(s.id)} className={`btn btn-sm ${seasonal===s.id?'btn-warning':'btn-outline-secondary'} rounded-pill px-2`} style={{fontSize:'0.7rem'}}>
+                                                                            {s.label}
                                                                         </button>
                                                                     ))}
                                                                 </div>
