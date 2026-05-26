@@ -35,4 +35,10 @@ public class SemanticSearchController {
                 .collect(Collectors.toList());
         return ResponseEntity.ok(SemanticSearchResponse.builder().query(q).results(searchResults).build());
     }
+
+    @PostMapping("/reindex")
+    public ResponseEntity<Map<String, Object>> reindex() {
+        int count = embeddingService.reindexAll();
+        return ResponseEntity.ok(Map.of("indexed", count, "message", "Embeddings generated for " + count + " books"));
+    }
 }
