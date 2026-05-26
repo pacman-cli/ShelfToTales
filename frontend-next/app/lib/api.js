@@ -127,7 +127,8 @@ export const socialService = {
   getFollowers: () => api.get('/social/followers'),
   getFollowing: () => api.get('/social/following'),
   search: (query) => api.get('/social/search', { params: { q: query } }),
-  getFeed: () => api.get('/social/feed'),
+  getFeed: () => api.get('/feed/following'),
+  getDiscoverFeed: () => api.get('/feed/discover'),
 };
 
 export const readingRoomService = {
