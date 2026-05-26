@@ -255,9 +255,6 @@ function VirtualBookshelfInner() {
                 {particles !== 'none' && <div className={`particle-overlay particle-${particles}`}>{Array.from({length:20}).map((_,i) => <span key={i} className="particle" style={{left:`${Math.random()*100}%`,animationDelay:`${Math.random()*5}s`,animationDuration:`${3+Math.random()*4}s`}}/>)}</div>}
                 {/* Seasonal overlay */}
                 {seasonal !== 'none' && <div className={`seasonal-overlay seasonal-${seasonal}`}/>}
-
-        return (
-            <div className="library-view animate__animated animate__fadeIn">
                 <div className="shelf-group hero-shelf-group">
                     <div className="hero-shelf-container">
                         <div className="hero-shelf-layout d-flex align-items-center justify-content-center gap-4 flex-wrap">
@@ -290,7 +287,7 @@ function VirtualBookshelfInner() {
     };
 
     return (
-        <div className={`bookshelf-container theme-${activeShelf.theme} wallpaper-${wallpaper} lighting-${lighting} particles-${particles} seasonal-${seasonal}`} style={{'--shelf-color': shelfColor, '--book-scale': bookSize/100}}>
+        <div className={`bookshelf-container theme-${activeShelf.theme} wallpaper-${wallpaper} lighting-${lighting} particles-${particles} seasonal-${seasonal}`} style={{'--shelf-color': shelfColor, '--book-scale': String(bookSize/100)}}>
             <div className="bookshelf-sidebar">
                 <div className="sidebar-header-new">
                     <h5 className="text-white fw-bold mb-3">BOOKSHELVES</h5>
