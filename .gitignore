@@ -45,3 +45,7 @@ target/
 .env
 .env.local
 .env.*.local
+
+# AI model files (downloaded via scripts/download-models.sh)
+*.onnx
+backend/shelfToTales/src/main/resources/models/

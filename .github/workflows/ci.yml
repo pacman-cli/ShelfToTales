@@ -1,0 +1,124 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+# Cancel any in-progress run on the same ref when a new push lands.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  backend:
+    name: Backend (Spring Boot)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend/shelfToTales
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+          cache: maven
+
+      - name: Make wrapper executable
+        run: chmod +x mvnw
+
+      - name: Compile
+        run: ./mvnw -B -ntp -DskipTests compile
+
+      - name: Test
+        run: ./mvnw -B -ntp test
+
+      - name: Package (skip tests, already ran)
+        run: ./mvnw -B -ntp -DskipTests package
+
+      - name: Upload backend jar
+        uses: actions/upload-artifact@v4
+        with:
+          name: backend-jar
+          path: backend/shelfToTales/target/*.jar
+          if-no-files-found: warn
+          retention-days: 7
+
+  frontend:
+    name: Frontend (React)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 18
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Install dependencies
+        # Use npm install instead of npm ci because the lockfile in this repo
+        # was committed with the React Scripts 5 dep tree; ci is stricter.
+        run: npm install --no-audit --no-fund
+
+      - name: Test
+        env:
+          CI: 'true'
+        run: npm test -- --watchAll=false --passWithNoTests
+
+      - name: Build
+        env:
+          CI: 'true'
+        run: npm run build
+
+      - name: Upload build artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-build
+          path: frontend/build
+          if-no-files-found: warn
+          retention-days: 7
+
+  frontend-next:
+    name: Frontend (Next.js)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend-next
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: npm
+          cache-dependency-path: frontend-next/package-lock.json
+
+      - name: Install dependencies
+        run: npm install --no-audit --no-fund
+
+      - name: Test (Vitest)
+        run: npm test
+
+      - name: Build
+        run: npm run build
+
+      - name: Upload .next artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: frontend-next-build
+          path: frontend-next/.next
+          if-no-files-found: warn
+          retention-days: 7
