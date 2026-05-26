@@ -60,7 +60,7 @@ function BooksGridViewSidebar() {
             await wishlistService.addToWishlist(bookId);
             Swal.fire({ icon: 'success', title: 'Added to wishlist', showConfirmButton: false, timer: 1500, toast: true, position: 'top-end' });
         } catch (error) {
-            Swal.fire('Error', 'Please login to add to wishlist', 'error');
+            Swal.fire('Error', error.response?.data?.message || 'Failed to add to wishlist', 'error');
         }
     }, []);
 
@@ -69,7 +69,7 @@ function BooksGridViewSidebar() {
             await cartService.addToCart(bookId, 1);
             Swal.fire({ icon: 'success', title: 'Added to cart', showConfirmButton: false, timer: 1500, toast: true, position: 'top-end' });
         } catch (error) {
-            Swal.fire('Error', 'Please login to add to cart', 'error');
+            Swal.fire('Error', error.response?.data?.message || 'Failed to add to cart', 'error');
         }
     }, []);
 
