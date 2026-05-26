@@ -19,16 +19,19 @@ const demoBooksList = [
 ];
 
 function VirtualBookshelfInner() {
+    // User-scoped localStorage keys
+    const uid = (() => { try { return JSON.parse(localStorage.getItem('user') || '{}').id || 'guest'; } catch { return 'guest'; } })();
+    const ukey = (k) => `${k}_${uid}`;
+
     const [view, setView] = useState('library');
     const [books, setBooks] = useState([]);
     const [originalBooks, setOriginalBooks] = useState([]);
     const [currentBook, setCurrentBook] = useState(null);
-    // TODO: wire up a search input that updates this state to enable book filtering
     const [searchQuery] = useState('');
-    const [isSortedNewest, setIsSortedNewest] = useState(() => localStorage.getItem('vbookshelf_sort') !== 'false');
-    const [logoUrl, setLogoUrl] = useState(() => localStorage.getItem('vbookshelf_logo') || logoImage);
+    const [isSortedNewest, setIsSortedNewest] = useState(() => localStorage.getItem(ukey('vbookshelf_sort')) !== 'false');
+    const [logoUrl, setLogoUrl] = useState(() => localStorage.getItem(ukey('vbookshelf_logo')) || logoImage);
     const [menuVisibility, setMenuVisibility] = useState(() => {
-        try { return JSON.parse(localStorage.getItem('vbookshelf_menu') || 'null') || { logo: true, title: true, search: true, share: true }; }
+        try { return JSON.parse(localStorage.getItem(ukey('vbookshelf_menu')) || 'null') || { logo: true, title: true, search: true, share: true }; }
         catch { return { logo: true, title: true, search: true, share: true }; }
     });
     const [activeSection, setActiveSection] = useState('info');
@@ -37,14 +40,14 @@ function VirtualBookshelfInner() {
     const [loadingShelves, setLoadingShelves] = useState(true);
 
     // Decor state
-    const [wallpaper, setWallpaper] = useState(() => localStorage.getItem('vbookshelf_wallpaper') || 'none');
-    const [shelfColor, setShelfColor] = useState(() => localStorage.getItem('vbookshelf_shelfcolor') || '#8B4513');
-    const [bookSize, setBookSize] = useState(() => parseInt(localStorage.getItem('vbookshelf_booksize') || '100'));
-    const [lighting, setLighting] = useState(() => localStorage.getItem('vbookshelf_lighting') || 'none');
-    const [showLabels, setShowLabels] = useState(() => localStorage.getItem('vbookshelf_labels') !== 'false');
-    const [particles, setParticles] = useState(() => localStorage.getItem('vbookshelf_particles') || 'none');
-    const [ornaments, setOrnaments] = useState(() => { try { return JSON.parse(localStorage.getItem('vbookshelf_ornaments')) || []; } catch { return []; } });
-    const [seasonal, setSeasonal] = useState(() => localStorage.getItem('vbookshelf_seasonal') || 'none');
+    const [wallpaper, setWallpaper] = useState(() => localStorage.getItem(ukey('vbookshelf_wallpaper')) || 'none');
+    const [shelfColor, setShelfColor] = useState(() => localStorage.getItem(ukey('vbookshelf_shelfcolor')) || '#8B4513');
+    const [bookSize, setBookSize] = useState(() => parseInt(localStorage.getItem(ukey('vbookshelf_booksize')) || '100'));
+    const [lighting, setLighting] = useState(() => localStorage.getItem(ukey('vbookshelf_lighting')) || 'none');
+    const [showLabels, setShowLabels] = useState(() => localStorage.getItem(ukey('vbookshelf_labels')) !== 'false');
+    const [particles, setParticles] = useState(() => localStorage.getItem(ukey('vbookshelf_particles')) || 'none');
+    const [ornaments, setOrnaments] = useState(() => { try { return JSON.parse(localStorage.getItem(ukey('vbookshelf_ornaments'))) || []; } catch { return []; } });
+    const [seasonal, setSeasonal] = useState(() => localStorage.getItem(ukey('vbookshelf_seasonal')) || 'none');
 
     const sidebarSections = [
         { id: 'info', title: 'Bookshelf info', icon: 'fa-solid fa-circle-info' },
@@ -71,17 +74,17 @@ function VirtualBookshelfInner() {
     };
 
     // Persist menu visibility, logo URL, and theme
-    useEffect(() => { localStorage.setItem('vbookshelf_menu', JSON.stringify(menuVisibility)); }, [menuVisibility]);
-    useEffect(() => { localStorage.setItem('vbookshelf_logo', logoUrl); }, [logoUrl]);
-    useEffect(() => { if (activeShelf?.theme) localStorage.setItem('vbookshelf_theme', activeShelf.theme); }, [bookshelves, activeBookshelfId]);
-    useEffect(() => { localStorage.setItem('vbookshelf_wallpaper', wallpaper); }, [wallpaper]);
-    useEffect(() => { localStorage.setItem('vbookshelf_shelfcolor', shelfColor); }, [shelfColor]);
-    useEffect(() => { localStorage.setItem('vbookshelf_booksize', bookSize.toString()); }, [bookSize]);
-    useEffect(() => { localStorage.setItem('vbookshelf_lighting', lighting); }, [lighting]);
-    useEffect(() => { localStorage.setItem('vbookshelf_labels', showLabels.toString()); }, [showLabels]);
-    useEffect(() => { localStorage.setItem('vbookshelf_particles', particles); }, [particles]);
-    useEffect(() => { localStorage.setItem('vbookshelf_ornaments', JSON.stringify(ornaments)); }, [ornaments]);
-    useEffect(() => { localStorage.setItem('vbookshelf_seasonal', seasonal); }, [seasonal]);
+    useEffect(() => { localStorage.setItem(ukey('vbookshelf_menu'), JSON.stringify(menuVisibility)); }, [menuVisibility]);
+    useEffect(() => { localStorage.setItem(ukey('vbookshelf_logo'), logoUrl); }, [logoUrl]);
+    useEffect(() => { if (activeShelf?.theme) localStorage.setItem(ukey('vbookshelf_theme'), activeShelf.theme); }, [bookshelves, activeBookshelfId]);
+    useEffect(() => { localStorage.setItem(ukey('vbookshelf_wallpaper'), wallpaper); }, [wallpaper]);
+    useEffect(() => { localStorage.setItem(ukey('vbookshelf_shelfcolor'), shelfColor); }, [shelfColor]);
+    useEffect(() => { localStorage.setItem(ukey('vbookshelf_booksize'), bookSize.toString()); }, [bookSize]);
+    useEffect(() => { localStorage.setItem(ukey('vbookshelf_lighting'), lighting); }, [lighting]);
+    useEffect(() => { localStorage.setItem(ukey('vbookshelf_labels'), showLabels.toString()); }, [showLabels]);
+    useEffect(() => { localStorage.setItem(ukey('vbookshelf_particles'), particles); }, [particles]);
+    useEffect(() => { localStorage.setItem(ukey('vbookshelf_ornaments'), JSON.stringify(ornaments)); }, [ornaments]);
+    useEffect(() => { localStorage.setItem(ukey('vbookshelf_seasonal'), seasonal); }, [seasonal]);
 
     // Load books and shelves on mount
     useEffect(() => {
@@ -94,7 +97,7 @@ function VirtualBookshelfInner() {
                 const data = booksRes.data?.content || booksRes.data || [];
                 let fetchedBooks = data.length > 0 ? data.map(b => {
                     const bid = b.id?.toString() || Math.random().toString();
-                    const stored = localStorage.getItem(`vbookshelf_hide_${bid}`);
+                    const stored = localStorage.getItem(ukey(`vbookshelf_hide_${bid}`));
                     return {
                         id: bid, title: b.title || 'Untitled', author: b.author || 'Unknown',
                         imageUrl: b.coverUrl || `${FALLBACK_IMG}/${(b.title || 'book').replace(/\s+/g, '-')}/250/350`,
@@ -105,7 +108,7 @@ function VirtualBookshelfInner() {
 
                 // Restore saved book order
                 try {
-                    const savedOrder = JSON.parse(localStorage.getItem('vbookshelf_order'));
+                    const savedOrder = JSON.parse(localStorage.getItem(ukey('vbookshelf_order')));
                     if (savedOrder && savedOrder.length === fetchedBooks.length) {
                         const bookMap = new Map(fetchedBooks.map(b => [b.id, b]));
                         fetchedBooks = savedOrder.map(id => bookMap.get(id)).filter(Boolean);
@@ -126,7 +129,7 @@ function VirtualBookshelfInner() {
                         setBookshelves([{ ...newShelf.data, isFolded: false, description: '' }]);
                         setActiveBookshelfId(newShelf.data.id);
                     } catch (_) {
-                        const fb = { id: Date.now(), name: 'Main Bookshelf', description: '', isFolded: false, theme: localStorage.getItem('vbookshelf_theme') || 'glass' };
+                        const fb = { id: Date.now(), name: 'Main Bookshelf', description: '', isFolded: false, theme: localStorage.getItem(ukey('vbookshelf_theme')) || 'glass' };
                         setBookshelves([fb]);
                         setActiveBookshelfId(fb.id);
                     }
@@ -135,7 +138,7 @@ function VirtualBookshelfInner() {
                 setBooks(demoBooksList);
                 setOriginalBooks(demoBooksList);
                 setCurrentBook(demoBooksList[0]);
-                const fb = { id: Date.now(), name: 'Main Bookshelf', description: '', isFolded: false, theme: localStorage.getItem('vbookshelf_theme') || 'glass' };
+                const fb = { id: Date.now(), name: 'Main Bookshelf', description: '', isFolded: false, theme: localStorage.getItem(ukey('vbookshelf_theme')) || 'glass' };
                 setBookshelves([fb]);
                 setActiveBookshelfId(fb.id);
             } finally {
@@ -164,7 +167,7 @@ function VirtualBookshelfInner() {
         setView('reader');
     };
 
-    const toggleSort = () => { const n = !isSortedNewest; setIsSortedNewest(n); localStorage.setItem('vbookshelf_sort', n); applyFilters(searchQuery, n); };
+    const toggleSort = () => { const n = !isSortedNewest; setIsSortedNewest(n); localStorage.setItem(ukey('vbookshelf_sort'), n); applyFilters(searchQuery, n); };
     const applyFilters = (query, newestFirst) => {
         let filtered = [...originalBooks];
         if (query) filtered = filtered.filter(b => b.title.toLowerCase().includes(query.toLowerCase()));
@@ -174,7 +177,7 @@ function VirtualBookshelfInner() {
 
     const toggleVisibility = (id) => {
         const nextHidden = !originalBooks.find(b => b.id === id)?.hidden;
-        localStorage.setItem(`vbookshelf_hide_${id}`, nextHidden);
+        localStorage.setItem(ukey(`vbookshelf_hide_${id}`), nextHidden);
         const up = originalBooks.map(b => b.id === id ? { ...b, hidden: nextHidden } : b);
         setOriginalBooks(up);
         setBooks(up);
@@ -191,7 +194,7 @@ function VirtualBookshelfInner() {
         const newBooks = [...visible, ...hidden];
         setBooks(newBooks);
         setOriginalBooks(newBooks);
-        localStorage.setItem('vbookshelf_order', JSON.stringify(newBooks.map(b => b.id)));
+        localStorage.setItem(ukey('vbookshelf_order'), JSON.stringify(newBooks.map(b => b.id)));
     };
 
     const addNewBookshelf = async () => {

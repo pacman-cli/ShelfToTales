@@ -22,9 +22,15 @@ function BlogManagement() {
   const [feedPosts, setFeedPosts] = useState([]);
   const [feedLoading, setFeedLoading] = useState(false);
 
+  // User-scoped storage key
+  const getStorageKey = () => {
+    try { const u = JSON.parse(localStorage.getItem('user') || '{}'); return `shelftotales_blogs_${u.id || 'guest'}`; }
+    catch { return 'shelftotales_blogs_guest'; }
+  };
+
   // Load from localStorage on mount
   useEffect(() => {
-    const saved = localStorage.getItem('shelftotales_blogs');
+    const saved = localStorage.getItem(getStorageKey());
     if (saved) {
       try { setBlogs(JSON.parse(saved)); } catch { setBlogs(DEFAULT_BLOGS); }
     } else {
@@ -34,7 +40,7 @@ function BlogManagement() {
 
   // Persist to localStorage
   useEffect(() => {
-    if (blogs.length > 0) localStorage.setItem('shelftotales_blogs', JSON.stringify(blogs));
+    if (blogs.length > 0) localStorage.setItem(getStorageKey(), JSON.stringify(blogs));
   }, [blogs]);
 
   // Fetch community feed
