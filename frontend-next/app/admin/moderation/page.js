@@ -133,6 +133,7 @@ export default function AdminModerationPage() {
       case 'REVIEW': return 'badge-review';
       case 'BLOG_POST': return 'badge-blog';
       case 'EXCHANGE_LISTING': return 'badge-listing';
+      case 'REVIEW_COMMENT': return 'badge-review';
       default: return 'bg-secondary';
     }
   };
