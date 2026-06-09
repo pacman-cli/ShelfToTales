@@ -38,4 +38,42 @@ public class ActivityFeedItem {
 
     @PrePersist
     protected void onCreate() { createdAt = LocalDateTime.now(); }
+
+    @Transient
+    @com.fasterxml.jackson.annotation.JsonProperty("content")
+    public String getContent() {
+        if (activityType == null) return "";
+        try {
+            if (metadata != null && !metadata.isBlank()) {
+                if (activityType.equals("FINISHED_BOOK")) {
+                    String title = extractFromJson(metadata, "bookTitle");
+                    return "completed reading \"" + title + "\"";
+                } else if (activityType.equals("POSTED_REVIEW")) {
+                    String title = extractFromJson(metadata, "bookTitle");
+                    return "posted a review on \"" + title + "\"";
+                } else if (activityType.equals("EXCHANGE_COMPLETED")) {
+                    String type = extractFromJson(metadata, "type");
+                    return "completed a book exchange (" + type + ")";
+                } else if (activityType.equals("SHARE_QUOTE")) {
+                    String title = extractFromJson(metadata, "bookTitle");
+                    String text = extractFromJson(metadata, "quoteText");
+                    return "shared a quote from \"" + title + "\": \"" + text + "\"";
+                }
+            }
+        } catch (Exception e) {}
+        return activityType.replace("_", " ").toLowerCase();
+    }
+
+    private String extractFromJson(String json, String key) {
+        String search = "\"" + key + "\":\"";
+        int start = json.indexOf(search);
+        if (start != -1) {
+            start += search.length();
+            int end = json.indexOf("\"", start);
+            if (end != -1) {
+                return json.substring(start, end);
+            }
+        }
+        return "";
+    }
 }

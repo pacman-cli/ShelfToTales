@@ -1,15 +1,33 @@
 'use client';
 export const dynamic = 'force-dynamic';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { bookService } from '../../lib/api';
+import { bookService, quoteService } from '../../lib/api';
+import Swal from 'sweetalert2';
+import ClientOnly from '../../components/ClientOnly';
 
-export default function ReadBookPage() {
+function ReadBookInner() {
   const { bookId } = useParams();
   const router = useRouter();
   const [book, setBook] = useState(null);
   const [loading, setLoading] = useState(true);
+
+  const [selectedText, setSelectedText] = useState('');
+  const [tooltipPos, setTooltipPos] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [explanation, setExplanation] = useState('');
+  const [themeStyle, setThemeStyle] = useState('sunset');
+  const [submitting, setSubmitting] = useState(false);
+
+  const containerRef = useRef(null);
+
+  const THEMES = {
+    sunset: 'linear-gradient(135deg, #ff5e62, #ff9966)',
+    midnight: 'linear-gradient(135deg, #2c3e50, #000000)',
+    forest: 'linear-gradient(135deg, #11998e, #38ef7d)',
+    paper: '#fcf8f2'
+  };
 
   useEffect(() => {
     if (!bookId) return;
@@ -19,11 +37,56 @@ export default function ReadBookPage() {
       .finally(() => setLoading(false));
   }, [bookId, router]);
 
+  const handleMouseUp = () => {
+    const selection = window.getSelection();
+    const text = selection.toString().trim();
+
+    if (text && text.length > 5) {
+      const range = selection.getRangeAt(0);
+      const rect = range.getBoundingClientRect();
+
+      setSelectedText(text);
+      setTooltipPos({
+        top: rect.top + window.scrollY - 40,
+        left: rect.left + window.scrollX + (rect.width / 2) - 60
+      });
+    } else {
+      setSelectedText('');
+      setTooltipPos(null);
+    }
+  };
+
+  const handleShareClick = () => {
+    setShowModal(true);
+    setTooltipPos(null);
+  };
+
+  const handleFormSubmit = async (e) => {
+    e.preventDefault();
+    setSubmitting(true);
+    try {
+      await quoteService.share(bookId, {
+        quoteText: selectedText,
+        explanation: explanation.trim(),
+        themeStyle: themeStyle
+      });
+      setShowModal(false);
+      setExplanation('');
+      setSelectedText('');
+      window.getSelection()?.removeAllRanges();
+      Swal.fire({ icon: 'success', title: 'Quote Shared!', text: 'Quote card posted to the feed.', timer: 2000, showConfirmButton: false });
+    } catch (err) {
+      Swal.fire('Error', err.response?.data?.message || 'Failed to share quote', 'error');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
   if (loading) return <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', background: '#faf8f5' }}><div className="spinner-border text-secondary"/></div>;
   if (!book) return null;
 
   return (
-    <div style={{ minHeight: '100vh', background: '#faf8f5', padding: '2rem 1rem' }}>
+    <div style={{ minHeight: '100vh', background: '#faf8f5', padding: '2rem 1rem' }} ref={containerRef} onMouseUp={handleMouseUp}>
       <div style={{ maxWidth: 800, margin: '0 auto' }}>
         {/* Header */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '2rem' }}>
@@ -39,8 +102,37 @@ export default function ReadBookPage() {
           <img src={book.coverUrl} alt={book.title} style={{ maxWidth: 280, borderRadius: 12, boxShadow: '0 12px 40px rgba(0,0,0,0.15)' }}/>
         </div>
 
-        {/* Book Info */}
-        <div style={{ background: '#fff', borderRadius: 20, padding: '2rem', boxShadow: '0 4px 20px rgba(0,0,0,0.04)' }}>
+        {/* Selection Tooltip */}
+        {tooltipPos && (
+          <button
+            type="button"
+            onClick={handleShareClick}
+            style={{
+              position: 'absolute',
+              top: tooltipPos.top,
+              left: tooltipPos.left,
+              background: '#eaa451',
+              color: '#fff',
+              border: 'none',
+              padding: '6px 12px',
+              borderRadius: '20px',
+              fontSize: '0.8rem',
+              fontWeight: 'bold',
+              cursor: 'pointer',
+              boxShadow: '0 4px 12px rgba(0,0,0,0.15)',
+              zIndex: 1000,
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '4px'
+            }}
+          >
+            <i className="fa-solid fa-share-nodes"/> Create Quote Card
+          </button>
+        )}
+
+        {/* Book Content */}
+        <div style={{ background: '#fff', borderRadius: 20, padding: '2rem', boxShadow: '0 4px 20px rgba(0,0,0,0.04)', position: 'relative' }}>
+          {/* Book Info Grid */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', gap: '1.5rem', marginBottom: '1.5rem' }}>
             {book.categoryName && <div><small style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.5px' }}>Category</small><p style={{ margin: '4px 0 0', fontWeight: 600 }}>{book.categoryName}</p></div>}
             {book.publishedDate && <div><small style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.5px' }}>Published</small><p style={{ margin: '4px 0 0', fontWeight: 600 }}>{new Date(book.publishedDate).getFullYear()}</p></div>}
@@ -48,22 +140,109 @@ export default function ReadBookPage() {
             {book.moodTags && <div><small style={{ color: '#888', textTransform: 'uppercase', fontSize: '0.7rem', letterSpacing: '0.5px' }}>Mood</small><p style={{ margin: '4px 0 0', fontWeight: 600 }}>{book.moodTags}</p></div>}
           </div>
 
+          <p className="text-muted small mb-2"><i className="fa-solid fa-info-circle"/> Highlight text below to share quotes with your network</p>
+
           {book.description && (
             <div style={{ borderTop: '1px solid #f0ede8', paddingTop: '1.5rem' }}>
               <h5 style={{ fontFamily: 'Playfair Display, serif', marginBottom: '0.8rem' }}>About this book</h5>
-              <p style={{ color: '#555', lineHeight: 1.8, fontSize: '0.95rem' }}>{book.description}</p>
+              <div style={{ color: '#333', lineHeight: 1.8, fontSize: '1.1rem', background: '#fcfcfc', border: '1px solid #f0ede8', padding: '1.5rem', borderRadius: '12px' }}>
+                {book.description}
+              </div>
             </div>
           )}
 
           {book.pdfUrl && (
             <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #f0ede8' }}>
               <a href={book.pdfUrl} target="_blank" rel="noopener noreferrer" style={{ display: 'inline-flex', alignItems: 'center', gap: 8, background: 'linear-gradient(135deg, #eaa451, #e58c23)', color: '#fff', padding: '12px 24px', borderRadius: 12, textDecoration: 'none', fontWeight: 600, fontSize: '0.9rem' }}>
-                <i className="fa-solid fa-book-open"/> Read PDF
+                <i className="fa-solid fa-book-open"/> Read PDF in browser
               </a>
             </div>
           )}
         </div>
       </div>
+
+      {/* Modal for styled Card creation */}
+      {showModal && (
+        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 1100 }}>
+          <div className="card border-0 shadow-lg p-4" style={{ maxWidth: '500px', width: '90%', borderRadius: '16px' }}>
+            <h4 className="fw-bold mb-3" style={{ fontFamily: 'Playfair Display, serif' }}>Create Quote Card</h4>
+
+            {/* Live Preview Card */}
+            <div style={{
+              background: THEMES[themeStyle],
+              color: themeStyle === 'paper' ? '#333' : '#fff',
+              padding: '2rem',
+              borderRadius: '12px',
+              marginBottom: '1rem',
+              minHeight: '150px',
+              display: 'flex',
+              flexDirection: 'column',
+              justifyContent: 'center',
+              boxShadow: '0 8px 20px rgba(0,0,0,0.1)',
+              transition: 'all 0.3s ease'
+            }}>
+              <span style={{ fontSize: '1.5rem', opacity: 0.5, lineHeight: 1 }}><i className="fa-solid fa-quote-left"/></span>
+              <p style={{ fontSize: '1.05rem', fontStyle: 'italic', fontWeight: 500, margin: '8px 0', fontFamily: 'Playfair Display, serif' }}>{selectedText}</p>
+              <div style={{ display: 'flex', justifyContent: 'flex-end', fontSize: '0.8rem', opacity: 0.8, marginTop: '8px' }}>
+                — {book.title}
+              </div>
+            </div>
+
+            <form onSubmit={handleFormSubmit}>
+              {/* Theme presets picker */}
+              <div className="mb-3">
+                <label className="form-label fw-bold small">Choose Background</label>
+                <div className="d-flex gap-2">
+                  {Object.keys(THEMES).map((key) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => setThemeStyle(key)}
+                      style={{
+                        width: '32px',
+                        height: '32px',
+                        borderRadius: '50%',
+                        background: THEMES[key],
+                        border: themeStyle === key ? '2px solid #000' : '1px solid #ccc',
+                        boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
+                      }}
+                      aria-label={`Style ${key}`}
+                    />
+                  ))}
+                </div>
+              </div>
+
+              <div className="mb-3">
+                <label htmlFor="explanation" className="form-label fw-bold small">Explanation / Thoughts</label>
+                <textarea
+                  id="explanation"
+                  className="form-control"
+                  placeholder="Add your own commentary to this quote…"
+                  rows="3"
+                  value={explanation}
+                  onChange={(e) => setExplanation(e.target.value)}
+                  autoComplete="off"
+                />
+              </div>
+
+              <div className="d-flex justify-content-end gap-2">
+                <button type="button" className="btn btn-light" onClick={() => setShowModal(false)} disabled={submitting}>Cancel</button>
+                <button type="submit" className="btn btn-primary" disabled={submitting}>
+                  {submitting ? 'Sharing…' : 'Share to Feed'}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
     </div>
+  );
+}
+
+export default function ReadBookPage() {
+  return (
+    <ClientOnly>
+      <ReadBookInner />
+    </ClientOnly>
   );
 }

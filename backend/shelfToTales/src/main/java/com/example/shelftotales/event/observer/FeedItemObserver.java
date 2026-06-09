@@ -1,6 +1,7 @@
 package com.example.shelftotales.event.observer;
 
 import com.example.shelftotales.event.BookCompletedEvent;
+import com.example.shelftotales.event.QuoteSharedEvent;
 import com.example.shelftotales.exchange.domain.ExchangeCompletedEvent;
 import com.example.shelftotales.event.ReviewPostedEvent;
 import com.example.shelftotales.social.domain.ActivityFeedItem;
@@ -50,6 +51,20 @@ public class FeedItemObserver {
                 .referenceId(event.getRequestId())
                 .referenceType("EXCHANGE")
                 .metadata("{\"type\":\"" + event.getListingType() + "\"}")
+                .visibility("PUBLIC")
+                .build());
+    }
+
+    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    public void onQuoteShared(QuoteSharedEvent event) {
+        String escapedQuoteText = event.getQuoteText() != null ? event.getQuoteText().replace("\"", "\\\"").replace("\n", "\\n").replace("\r", "") : "";
+        String escapedBookTitle = event.getBookTitle() != null ? event.getBookTitle().replace("\"", "\\\"") : "";
+        feedRepository.save(ActivityFeedItem.builder()
+                .user(userRepository.getReferenceById(event.getActorId()))
+                .activityType("SHARE_QUOTE")
+                .referenceId(event.getQuoteId())
+                .referenceType("QUOTE")
+                .metadata("{\"bookTitle\":\"" + escapedBookTitle + "\",\"quoteText\":\"" + escapedQuoteText + "\",\"themeStyle\":\"" + event.getThemeStyle() + "\"}")
                 .visibility("PUBLIC")
                 .build());
     }

@@ -226,24 +226,76 @@ const ReadingDashboard = () => {
                                     <p className="small text-muted text-center py-3">No recent activities in your network.</p>
                                 ) : (
                                     <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                                        {feed.map(activity => (
-                                            <div key={activity.id} className="d-flex align-items-start gap-2 mb-3 border-bottom pb-2">
-                                                <img
-                                                    src={activity.user.profileImageUrl || `https://api.dicebear.com/7.x/adventurer/svg?seed=${activity.user.email}`}
-                                                    alt=""
-                                                    className="rounded-circle border"
-                                                    style={{ width: '28px', height: '28px', objectFit: 'cover' }}
-                                                />
-                                                <div>
-                                                    <p className="mb-0 small" style={{ lineHeight: '1.3' }}>
-                                                        <span className="fw-bold">{activity.user.fullName}</span>: {activity.content}
-                                                    </p>
-                                                    <small className="text-muted" style={{ fontSize: '0.7rem' }}>
-                                                        {new Date(activity.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                                                    </small>
+                                        {feed.map(activity => {
+                                            const isQuote = activity.activityType === "SHARE_QUOTE";
+
+                                            let quoteText = '';
+                                            let bookTitle = '';
+                                            let themeStyle = 'sunset';
+
+                                            if (isQuote && activity.metadata) {
+                                                try {
+                                                    const meta = JSON.parse(activity.metadata);
+                                                    quoteText = meta.quoteText || '';
+                                                    bookTitle = meta.bookTitle || '';
+                                                    themeStyle = meta.themeStyle || 'sunset';
+                                                } catch(e) {
+                                                    const matchText = activity.metadata.match(/"quoteText":"([^"]+)"/);
+                                                    const matchTitle = activity.metadata.match(/"bookTitle":"([^"]+)"/);
+                                                    if (matchText) quoteText = matchText[1];
+                                                    if (matchTitle) bookTitle = matchTitle[1];
+                                                }
+                                            }
+
+                                            const THEMES = {
+                                                sunset: 'linear-gradient(135deg, #ff5e62, #ff9966)',
+                                                midnight: 'linear-gradient(135deg, #2c3e50, #000000)',
+                                                forest: 'linear-gradient(135deg, #11998e, #38ef7d)',
+                                                paper: '#fcf8f2'
+                                            };
+
+                                            return (
+                                                <div key={activity.id} className="d-flex align-items-start gap-2 mb-3 border-bottom pb-3">
+                                                    <img
+                                                        src={activity.user.profileImageUrl || `https://api.dicebear.com/7.x/adventurer/svg?seed=${activity.user.email}`}
+                                                        alt=""
+                                                        className="rounded-circle border"
+                                                        style={{ width: '28px', height: '28px', objectFit: 'cover' }}
+                                                    />
+                                                    <div className="flex-grow-1">
+                                                        <div className="d-flex justify-content-between">
+                                                            <span className="fw-bold small">{activity.user.fullName}</span>
+                                                            <small className="text-muted" style={{ fontSize: '0.7rem' }}>
+                                                                {new Date(activity.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                            </small>
+                                                        </div>
+
+                                                        {isQuote ? (
+                                                            <div className="mt-2">
+                                                                <div style={{
+                                                                    background: THEMES[themeStyle] || THEMES.sunset,
+                                                                    color: themeStyle === 'paper' ? '#333' : '#fff',
+                                                                    padding: '1.25rem',
+                                                                    borderRadius: '8px',
+                                                                    position: 'relative',
+                                                                    fontSize: '0.9rem',
+                                                                    boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
+                                                                    fontFamily: 'Playfair Display, Georgia, serif'
+                                                                }}>
+                                                                    <span style={{ fontSize: '1.2rem', opacity: 0.4, display: 'block' }}><i className="fa-solid fa-quote-left"/></span>
+                                                                    <p className="mb-2" style={{ fontStyle: 'italic', fontWeight: 500 }}>{quoteText}</p>
+                                                                    <div className="text-end fw-bold" style={{ fontSize: '0.75rem', opacity: 0.8 }}>— {bookTitle}</div>
+                                                                </div>
+                                                            </div>
+                                                        ) : (
+                                                            <p className="mb-0 small" style={{ lineHeight: '1.3' }}>
+                                                                {activity.content}
+                                                            </p>
+                                                        )}
+                                                    </div>
                                                 </div>
-                                            </div>
-                                        ))}
+                                            );
+                                        })}
                                     </div>
                                 )}
                             </div>

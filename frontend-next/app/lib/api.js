@@ -284,5 +284,11 @@ export const reviewCommentService = {
   delete: (commentId) => api.delete(`/reviews/comments/${commentId}`),
 };
 
+export const quoteService = {
+  share: (bookId, payload) => api.post(`/books/${bookId}/quotes`, payload),
+  getByBookId: (bookId) => api.get(`/books/${bookId}/quotes`),
+};
+
 export default api;
+
 
