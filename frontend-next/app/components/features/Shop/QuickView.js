@@ -1,10 +1,15 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Modal } from 'react-bootstrap';
 import Link from 'next/link';
+import Swal from 'sweetalert2';
+import { useCart } from '../../../hooks/useCart';
 
 function QuickView({ show, onHide, book }) {
+    const { addToCart } = useCart();
+    const [quantity, setQuantity] = useState(1);
+
     if (!book) return null;
 
     return (
@@ -41,11 +46,38 @@ function QuickView({ show, onHide, book }) {
 
                             <div className="d-flex gap-3">
                                 <div className="input-group" style={{ width: '120px' }}>
-                                    <button className="btn btn-outline-secondary btn-sm" type="button">-</button>
-                                    <input type="text" className="form-control form-control-sm text-center" defaultValue="1" />
-                                    <button className="btn btn-outline-secondary btn-sm" type="button">+</button>
+                                    <button className="btn btn-outline-secondary btn-sm" type="button" onClick={() => setQuantity(q => Math.max(1, q - 1))}>-</button>
+                                    <input 
+                                        type="text" 
+                                        className="form-control form-control-sm text-center" 
+                                        value={quantity} 
+                                        onChange={(e) => {
+                                            const val = parseInt(e.target.value, 10);
+                                            if (!isNaN(val) && val >= 1) setQuantity(val);
+                                        }} 
+                                    />
+                                    <button className="btn btn-outline-secondary btn-sm" type="button" onClick={() => setQuantity(q => q + 1)}>+</button>
                                 </div>
-                                <button className="btn btn-primary btnhover flex-fill">Add to Cart</button>
+                                <button 
+                                    className="btn btn-primary btnhover flex-fill"
+                                    onClick={async () => {
+                                        try {
+                                            await addToCart(book.id, quantity);
+                                            Swal.fire({
+                                                icon: 'success',
+                                                title: 'Added to Cart',
+                                                text: `${book.title} has been added to your cart.`,
+                                                timer: 1500,
+                                                showConfirmButton: false,
+                                            });
+                                            onHide();
+                                        } catch (err) {
+                                            Swal.fire('Error', err.response?.data?.message || 'Failed to add to cart', 'error');
+                                        }
+                                    }}
+                                >
+                                    Add to Cart
+                                </button>
                             </div>
                             <div className="mt-4">
                                 <Link href={`/books-detail/${book.id}`} className="btn btn-link p-0 text-primary" onClick={onHide}>View Full Details</Link>
