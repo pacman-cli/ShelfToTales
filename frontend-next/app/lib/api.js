@@ -278,5 +278,11 @@ export const reportService = {
   action: (id) => api.post(`/admin/reports/${id}/action`),
 };
 
+export const reviewCommentService = {
+  getByReviewId: (reviewId) => api.get(`/reviews/${reviewId}/comments`),
+  create: (reviewId, data) => api.post(`/reviews/${reviewId}/comments`, data),
+  delete: (commentId) => api.delete(`/reviews/comments/${commentId}`),
+};
+
 export default api;
 
