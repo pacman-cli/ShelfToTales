@@ -18,6 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
+
 @RestController
 @RequestMapping("/api/books")
 @RequiredArgsConstructor
@@ -33,6 +35,12 @@ public class BookController {
             @RequestParam(required = false) String q,
             @Parameter(description = "Filter by category ID")
             @RequestParam(required = false) Long categoryId,
+            @Parameter(description = "Minimum price")
+            @RequestParam(required = false) BigDecimal minPrice,
+            @Parameter(description = "Maximum price")
+            @RequestParam(required = false) BigDecimal maxPrice,
+            @Parameter(description = "Only show books with stock greater than zero")
+            @RequestParam(defaultValue = "false") boolean inStockOnly,
             @Parameter(description = "Page number (0-based)")
             @RequestParam(defaultValue = "0") @Min(value = 0, message = "Page must be >= 0") int page,
             @Parameter(description = "Page size (max 100)")
@@ -43,7 +51,7 @@ public class BookController {
             @RequestParam(defaultValue = "title") String sortBy,
             @Parameter(description = "Sort direction: asc or desc")
             @RequestParam(defaultValue = "asc") String sortDir) {
-        return bookService.getBooks(q, categoryId, page, size, sortBy, sortDir);
+        return bookService.getBooks(q, categoryId, minPrice, maxPrice, inStockOnly, page, size, sortBy, sortDir);
     }
 
     @GetMapping("/{id}")

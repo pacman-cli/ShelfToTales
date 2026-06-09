@@ -29,11 +29,20 @@ function BooksGridViewSidebar() {
 
   useEffect(() => {
     setLoading(true);
-    bookService.getAll({ page, size, q: search || undefined, categoryId: activeCategory || undefined, sortBy })
+    bookService.getAll({
+      page,
+      size,
+      q: search || undefined,
+      categoryId: activeCategory || undefined,
+      sortBy,
+      minPrice: priceMin || undefined,
+      maxPrice: priceMax || undefined,
+      inStockOnly: inStockOnly || undefined,
+    })
       .then(res => { setBooks(res.data.content || []); setTotalPages(res.data.totalPages || 0); setTotalElements(res.data.totalElements || 0); })
       .catch(() => {})
       .finally(() => setLoading(false));
-  }, [page, search, activeCategory, sortBy]);
+  }, [page, search, activeCategory, sortBy, priceMin, priceMax, inStockOnly]);
 
   const handleAddToWishlist = useCallback(async (bookId) => {
     try { await wishlistService.addToWishlist(bookId); Swal.fire({ icon:'success', title:'Added to wishlist', showConfirmButton:false, timer:1200, toast:true, position:'top-end' }); }
@@ -61,7 +70,7 @@ function BooksGridViewSidebar() {
           <p className="bgs-hero-sub">Explore our curated collection of {totalElements} titles</p>
           <form onSubmit={e => { e.preventDefault(); setPage(0); }} className="bgs-search-form">
             <i className="fa-solid fa-search"/>
-            <input type="text" placeholder="Search by title, author, or ISBN..." value={search} onChange={e => setSearch(e.target.value)}/>
+            <input type="text" placeholder="Search by title, author, or ISBN..." value={search} onChange={e => { setSearch(e.target.value); setPage(0); }}/>
             {search && <button type="button" className="bgs-search-clear" onClick={() => setSearch('')}><i className="fa-solid fa-xmark"/></button>}
           </form>
         </div>
@@ -93,12 +102,12 @@ function BooksGridViewSidebar() {
           <div className="bgs-sidebar-section">
             <h4 className="bgs-sidebar-title">Price Range</h4>
             <div className="d-flex gap-2 align-items-center mb-2">
-              <input type="number" className="form-control form-control-sm" placeholder="Min" value={priceMin} onChange={e => setPriceMin(e.target.value)} style={{ borderRadius: 8, fontSize: '0.8rem' }}/>
+              <input type="number" className="form-control form-control-sm" placeholder="Min" value={priceMin} onChange={e => { setPriceMin(e.target.value); setPage(0); }} style={{ borderRadius: 8, fontSize: '0.8rem' }}/>
               <span style={{ color: '#aaa' }}>—</span>
-              <input type="number" className="form-control form-control-sm" placeholder="Max" value={priceMax} onChange={e => setPriceMax(e.target.value)} style={{ borderRadius: 8, fontSize: '0.8rem' }}/>
+              <input type="number" className="form-control form-control-sm" placeholder="Max" value={priceMax} onChange={e => { setPriceMax(e.target.value); setPage(0); }} style={{ borderRadius: 8, fontSize: '0.8rem' }}/>
             </div>
             <div className="form-check mt-2">
-              <input className="form-check-input" type="checkbox" checked={inStockOnly} onChange={() => setInStockOnly(!inStockOnly)} id="stockFilter"/>
+              <input className="form-check-input" type="checkbox" checked={inStockOnly} onChange={() => { setInStockOnly(!inStockOnly); setPage(0); }} id="stockFilter"/>
               <label className="form-check-label small" htmlFor="stockFilter" style={{ color: '#666' }}>In stock only</label>
             </div>
           </div>
@@ -125,14 +134,9 @@ function BooksGridViewSidebar() {
             <div className="bgs-grid">
               {[1,2,3,4,5,6].map(i => <div key={i} className="bgs-card bgs-skeleton"><div className="bgs-skel-img"/><div className="bgs-skel-text"/><div className="bgs-skel-text short"/></div>)}
             </div>
-          ) : (() => {
-            let filtered = books;
-            if (priceMin) filtered = filtered.filter(b => (b.price || 0) >= parseFloat(priceMin));
-            if (priceMax) filtered = filtered.filter(b => (b.price || 0) <= parseFloat(priceMax));
-            if (inStockOnly) filtered = filtered.filter(b => b.stock > 0);
-            return filtered.length > 0 ? (
+          ) : books.length > 0 ? (
             <div className="bgs-grid">
-              {filtered.map((book, i) => (
+              {books.map((book, i) => (
                 <div key={book.id} className="bgs-card" style={{animationDelay: `${i * 0.05}s`}}>
                   <div className="bgs-card-img">
                     <Link href={`/shop-detail/${book.id}`}>
@@ -158,8 +162,7 @@ function BooksGridViewSidebar() {
               <h3>No books found</h3>
               <p>Try adjusting your search or filters</p>
             </div>
-          );
-          })()}
+          )}
 
           {/* Pagination */}
           {totalPages > 1 && (

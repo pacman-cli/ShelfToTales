@@ -28,6 +28,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Optional;
+import java.math.BigDecimal;
 
 @Service
 @RequiredArgsConstructor
@@ -38,11 +39,11 @@ public class BookService {
     private final AIService aiService;
     private final EmbeddingService embeddingService;
 
-    @Cacheable(value = "books", key = "#query + ':' + #categoryId + ':' + #page + ':' + #size + ':' + #sortBy + ':' + #sortDir")
-    public PagedResponse<BookResponse> getBooks(String query, Long categoryId, int page, int size, String sortBy, String sortDir) {
+    @Cacheable(value = "books", key = "#query + ':' + #categoryId + ':' + #minPrice + ':' + #maxPrice + ':' + #inStockOnly + ':' + #page + ':' + #size + ':' + #sortBy + ':' + #sortDir")
+    public PagedResponse<BookResponse> getBooks(String query, Long categoryId, BigDecimal minPrice, BigDecimal maxPrice, boolean inStockOnly, int page, int size, String sortBy, String sortDir) {
         Sort sort = "desc".equalsIgnoreCase(sortDir) ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
         Pageable pageable = PageRequest.of(page, size, sort);
-        Page<Book> bookPage = bookRepository.searchBooks(query, categoryId, pageable);
+        Page<Book> bookPage = bookRepository.searchBooks(query, categoryId, minPrice, maxPrice, inStockOnly, pageable);
 
         return PagedResponse.<BookResponse>builder()
                 .content(bookPage.map(this::toResponse).getContent())
@@ -169,8 +170,11 @@ public class BookService {
         BookEmbedding targetEmbedding = bookEmbeddingRepository.findById(bookId).orElse(null);
         if (targetEmbedding == null) {
             // No embedding yet — fall back to same-category books
-            return bookRepository.searchBooks(null, 
+            return bookRepository.searchBooks(null,
                     targetBook.getCategory() != null ? targetBook.getCategory().getId() : null,
+                    null,
+                    null,
+                    false,
                     PageRequest.of(0, limit))
                     .stream()
                     .filter(b -> !b.getId().equals(bookId))

@@ -41,9 +41,65 @@ class BookRepositoryTest {
                 .category(category)
                 .build());
 
-        Page<Book> byIsbn = bookRepository.searchBooks("9780306406157", null, PageRequest.of(0, 10));
+        Page<Book> byIsbn = bookRepository.searchBooks("9780306406157", null, null, null, false, PageRequest.of(0, 10));
 
         assertEquals(1, byIsbn.getTotalElements());
         assertEquals("9780306406157", byIsbn.getContent().get(0).getIsbn());
+    }
+
+    @Test
+    void searchBooks_filtersPriceAndStockServerSide() {
+        Category category = categoryRepository.save(Category.builder()
+                .name("Science")
+                .description("Science books")
+                .build());
+
+        bookRepository.save(Book.builder()
+                .title("In Stock Midrange")
+                .author("Author One")
+                .isbn("1111111111")
+                .description("Matches price and stock")
+                .coverUrl("https://example.com/1.jpg")
+                .publishedDate(LocalDate.of(2024, 1, 1))
+                .price(BigDecimal.valueOf(15.00))
+                .stock(5)
+                .category(category)
+                .build());
+
+        bookRepository.save(Book.builder()
+                .title("Out of Stock")
+                .author("Author Two")
+                .isbn("2222222222")
+                .description("Same price but unavailable")
+                .coverUrl("https://example.com/2.jpg")
+                .publishedDate(LocalDate.of(2024, 1, 1))
+                .price(BigDecimal.valueOf(16.00))
+                .stock(0)
+                .category(category)
+                .build());
+
+        bookRepository.save(Book.builder()
+                .title("Too Expensive")
+                .author("Author Three")
+                .isbn("3333333333")
+                .description("Outside the price range")
+                .coverUrl("https://example.com/3.jpg")
+                .publishedDate(LocalDate.of(2024, 1, 1))
+                .price(BigDecimal.valueOf(30.00))
+                .stock(4)
+                .category(category)
+                .build());
+
+        Page<Book> filtered = bookRepository.searchBooks(
+                null,
+                null,
+                BigDecimal.valueOf(10.00),
+                BigDecimal.valueOf(20.00),
+                true,
+                PageRequest.of(0, 10)
+        );
+
+        assertEquals(1, filtered.getTotalElements());
+        assertEquals("In Stock Midrange", filtered.getContent().get(0).getTitle());
     }
 }
