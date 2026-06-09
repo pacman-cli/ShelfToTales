@@ -7,7 +7,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
 import { Nav, Tab } from 'react-bootstrap';
-import { bookService, wishlistService, cartService, reviewService } from '../../lib/api';
+import { bookService, wishlistService, cartService, reviewService, reviewCommentService } from '../../lib/api';
 import Swal from 'sweetalert2';
 import { FadeIn } from '../../components/common/AnimationUtils';
 
@@ -17,6 +17,207 @@ import ReportButton from '../../components/features/ReportButton';
 
 //Images
 const profile2 = '/assets/images/profile2.jpg';
+
+function ReviewCommentsThread({ reviewId }) {
+    const [comments, setComments] = useState([]);
+    const [expanded, setExpanded] = useState(false);
+    const [loading, setLoading] = useState(false);
+    const [replyingToId, setReplyingToId] = useState(null);
+    const [replyContent, setReplyContent] = useState('');
+    const [submitting, setSubmitting] = useState(false);
+    const [token, setToken] = useState(null);
+    const [currentUserId, setCurrentUserId] = useState(null);
+    const [isAdmin, setIsAdmin] = useState(false);
+
+    useEffect(() => {
+        if (typeof window !== 'undefined') {
+            setToken(localStorage.getItem('token'));
+            setIsAdmin(localStorage.getItem('role') === 'ADMIN');
+            const profile = localStorage.getItem('profile');
+            if (profile) {
+                try {
+                    const parsed = JSON.parse(profile);
+                    setCurrentUserId(parsed.id);
+                } catch (e) {}
+            }
+        }
+    }, []);
+
+    const fetchComments = async () => {
+        setLoading(true);
+        try {
+            const res = await reviewCommentService.getByReviewId(reviewId);
+            setComments(res.data || []);
+        } catch (e) {
+            console.error('Failed to load review comments', e);
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const handleToggleExpand = () => {
+        if (!expanded) {
+            fetchComments();
+        }
+        setExpanded(!expanded);
+    };
+
+    const handlePostComment = async (e, parentId) => {
+        e.preventDefault();
+        if (!replyContent.trim()) return;
+        setSubmitting(true);
+        try {
+            await reviewCommentService.create(reviewId, {
+                parentCommentId: parentId,
+                content: replyContent.trim()
+            });
+            setReplyContent('');
+            setReplyingToId(null);
+            await fetchComments();
+            Swal.fire({ icon: 'success', title: 'Reply posted', timer: 1000, showConfirmButton: false });
+        } catch (err) {
+            Swal.fire('Error', err.response?.data?.message || 'Failed to post reply', 'error');
+        } finally {
+            setSubmitting(false);
+        }
+    };
+
+    const handleDeleteComment = async (commentId) => {
+        const confirm = await Swal.fire({
+            title: 'Delete Reply?',
+            text: 'Are you sure you want to remove this reply?',
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonText: 'Yes, Delete',
+            confirmButtonColor: '#ef4444'
+        });
+        if (!confirm.isConfirmed) return;
+        try {
+            await reviewCommentService.delete(commentId);
+            await fetchComments();
+            Swal.fire({ icon: 'success', title: 'Deleted', timer: 1000, showConfirmButton: false });
+        } catch (err) {
+            Swal.fire('Error', err.response?.data?.message || 'Failed to delete reply', 'error');
+        }
+    };
+
+    const renderNode = (node, depth = 0) => {
+        const isAuthor = currentUserId === node.user?.id;
+        const isReplying = replyingToId === node.id;
+
+        return (
+            <div key={node.id} style={{ marginLeft: depth > 0 ? '1.5rem' : '0', borderLeft: depth > 0 ? '2px solid #e5e7eb' : 'none', paddingLeft: depth > 0 ? '1rem' : '0', marginTop: '0.75rem' }}>
+                <div className="d-flex justify-content-between align-items-start">
+                    <div className="d-flex align-items-center gap-2">
+                        <img 
+                            src={node.user?.profileImageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(node.user?.username || 'U')}&size=24&background=eaa451&color=fff`} 
+                            alt="" 
+                            style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} 
+                        />
+                        <strong style={{ fontSize: '0.85rem' }}>{node.user?.username || 'User'}</strong>
+                        <span style={{ fontSize: '0.75rem', color: '#6b7280', fontVariantNumeric: 'tabular-nums' }}>
+                            {new Date(node.createdAt).toLocaleString()}
+                        </span>
+                    </div>
+                    <div className="d-flex gap-2">
+                        {token && (
+                            <button 
+                                type="button" 
+                                className="btn btn-link p-0 text-decoration-none small text-muted" 
+                                style={{ fontSize: '0.75rem' }}
+                                onClick={() => { setReplyingToId(isReplying ? null : node.id); setReplyContent(''); }}
+                            >
+                                Reply
+                            </button>
+                        )}
+                        {(isAuthor || isAdmin) && (
+                            <button 
+                                type="button" 
+                                className="btn btn-link p-0 text-decoration-none small text-danger" 
+                                style={{ fontSize: '0.75rem' }}
+                                onClick={() => handleDeleteComment(node.id)}
+                            >
+                                Delete
+                            </button>
+                        )}
+                        <ReportButton targetType="REVIEW_COMMENT" targetId={node.id} className="btn btn-link p-0 text-decoration-none small text-muted" />
+                    </div>
+                </div>
+                <p style={{ fontSize: '0.875rem', margin: '0.25rem 0 0.5rem 2rem', color: '#374151' }}>{node.content}</p>
+
+                {isReplying && (
+                    <form onSubmit={(e) => handlePostComment(e, node.id)} style={{ marginLeft: '2rem', marginBottom: '1rem' }}>
+                        <textarea
+                            id={`comment-${node.id}-textarea`}
+                            className="form-control form-control-sm mb-2"
+                            placeholder="Write a reply…"
+                            rows="2"
+                            value={replyContent}
+                            onChange={(e) => setReplyContent(e.target.value)}
+                            required
+                            autoComplete="off"
+                            style={{ fontSize: '0.825rem', outline: 'none' }}
+                        />
+                        <div className="d-flex gap-2 justify-content-end">
+                            <button type="button" className="btn btn-light btn-sm" onClick={() => setReplyingToId(null)}>Cancel</button>
+                            <button type="submit" className="btn btn-primary btn-sm" disabled={submitting}>
+                                {submitting ? 'Loading…' : 'Submit'}
+                            </button>
+                        </div>
+                    </form>
+                )}
+
+                {node.replies && node.replies.map(reply => renderNode(reply, depth + 1))}
+            </div>
+        );
+    };
+
+    return (
+        <div style={{ marginTop: '0.75rem', borderTop: '1px solid #f3f4f6', paddingTop: '0.5rem' }}>
+            <button 
+                type="button" 
+                className="btn btn-link p-0 text-decoration-none text-muted small" 
+                style={{ fontSize: '0.8rem', display: 'inline-flex', alignItems: 'center', gap: '0.25rem' }}
+                onClick={handleToggleExpand}
+            >
+                <i className={`fa-solid ${expanded ? 'fa-chevron-up' : 'fa-chevron-down'}`} />
+                <span>{expanded ? 'Hide Replies' : 'Show / Write Replies'}</span>
+            </button>
+
+            {expanded && (
+                <div style={{ paddingLeft: '1rem', marginTop: '0.5rem' }}>
+                    {loading ? (
+                        <div className="text-center py-2" style={{ fontSize: '0.8rem', color: '#6b7280' }}>Loading replies…</div>
+                    ) : (
+                        <>
+                            {comments.map(node => renderNode(node, 0))}
+                            {token && replyingToId === null && (
+                                <form onSubmit={(e) => handlePostComment(e, null)} style={{ marginTop: '1rem' }}>
+                                    <textarea
+                                        id={`review-${reviewId}-reply-textarea`}
+                                        className="form-control form-control-sm mb-2"
+                                        placeholder="Write a reply to this review…"
+                                        rows="2"
+                                        value={replyContent}
+                                        onChange={(e) => setReplyContent(e.target.value)}
+                                        required
+                                        autoComplete="off"
+                                        style={{ fontSize: '0.825rem', outline: 'none' }}
+                                    />
+                                    <div className="d-flex justify-content-end">
+                                        <button type="submit" className="btn btn-primary btn-sm" disabled={submitting}>
+                                            {submitting ? 'Loading…' : 'Post Reply'}
+                                        </button>
+                                    </div>
+                                </form>
+                            )}
+                        </>
+                    )}
+                </div>
+            )}
+        </div>
+    );
+}
 
 function CommentBlog({id, title, comment, date, rating, avatar, isSpoiler}){
     const [reveal, setReveal] = useState(false);
@@ -79,6 +280,7 @@ function CommentBlog({id, title, comment, date, rating, avatar, isSpoiler}){
                     </div>
                 </div>
             </div>
+            {id && <ReviewCommentsThread reviewId={id} />}
         </>
     )
 }
