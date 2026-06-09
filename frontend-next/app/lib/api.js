@@ -83,6 +83,13 @@ export const wishlistService = {
   removeFromWishlist: (bookId) => api.delete(`/wishlist/${bookId}`),
 };
 
+export const comparisonService = {
+  getComparisonList: () => api.get('/comparison'),
+  addToComparison: (bookId) => api.post(`/comparison/${bookId}`),
+  removeFromComparison: (bookId) => api.delete(`/comparison/${bookId}`),
+  clearComparison: () => api.delete('/comparison'),
+};
+
 export const userService = {
   getProfile: () => api.get('/profile'),
   updateProfile: (profileData) => api.put('/profile', profileData),

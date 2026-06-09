@@ -6,50 +6,101 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import PageTitle from '../components/layout/PageTitle';
-import { bookService } from '../lib/api';
+import { bookService, comparisonService } from '../lib/api';
 import { FadeIn } from '../components/common/AnimationUtils';
 
 function ProductComparisonInner() {
     const [comparisonList, setComparisonList] = useState([]);
     const [availableBooks, setAvailableBooks] = useState([]);
+    const [token, setToken] = useState(null);
 
     useEffect(() => {
         const fetchBooks = async () => {
             try {
                 const response = await bookService.getAll();
-                setAvailableBooks(response.data);
+                setAvailableBooks(response.data.content || response.data || []);
             } catch (error) {
                 console.error('Error fetching books:', error);
             }
         };
         fetchBooks();
 
-        const storedComparison = JSON.parse(localStorage.getItem('comparisonList') || '[]');
-        setComparisonList(storedComparison);
+        const storedToken = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        setToken(storedToken);
+
+        const fetchComparison = async () => {
+            if (storedToken) {
+                try {
+                    const response = await comparisonService.getComparisonList();
+                    setComparisonList(response.data || []);
+                } catch (error) {
+                    console.error('Error fetching backend comparison list:', error);
+                    // fallback
+                    const storedComparison = JSON.parse(localStorage.getItem('comparisonList') || '[]');
+                    setComparisonList(storedComparison);
+                }
+            } else {
+                const storedComparison = JSON.parse(localStorage.getItem('comparisonList') || '[]');
+                setComparisonList(storedComparison);
+            }
+        };
+        fetchComparison();
     }, []);
 
-    const addToComparison = (bookId) => {
+    const addToComparison = async (bookId) => {
         if (comparisonList.length >= 4) {
             alert('You can only compare up to 4 books at a time.');
             return;
         }
-        const bookToAdd = availableBooks.find(b => b.id === parseInt(bookId));
-        if (bookToAdd && !comparisonList.find(b => b.id === bookToAdd.id)) {
-            const newList = [...comparisonList, bookToAdd];
+        
+        const bookToAdd = availableBooks.find(b => b.id === parseInt(bookId, 10));
+        if (!bookToAdd) return;
+
+        if (token) {
+            try {
+                await comparisonService.addToComparison(bookId);
+                const response = await comparisonService.getComparisonList();
+                setComparisonList(response.data || []);
+            } catch (error) {
+                alert(error.response?.data?.message || 'Failed to add book to comparison list.');
+            }
+        } else {
+            if (!comparisonList.find(b => b.id === bookToAdd.id)) {
+                const newList = [...comparisonList, bookToAdd];
+                setComparisonList(newList);
+                localStorage.setItem('comparisonList', JSON.stringify(newList));
+            }
+        }
+    };
+
+    const removeFromComparison = async (id) => {
+        if (token) {
+            try {
+                await comparisonService.removeFromComparison(id);
+                const response = await comparisonService.getComparisonList();
+                setComparisonList(response.data || []);
+            } catch (error) {
+                console.error('Error removing from comparison:', error);
+            }
+        } else {
+            const newList = comparisonList.filter(item => item.id !== id);
             setComparisonList(newList);
             localStorage.setItem('comparisonList', JSON.stringify(newList));
         }
     };
 
-    const removeFromComparison = (id) => {
-        const newList = comparisonList.filter(item => item.id !== id);
-        setComparisonList(newList);
-        localStorage.setItem('comparisonList', JSON.stringify(newList));
-    };
-
-    const clearComparison = () => {
-        setComparisonList([]);
-        localStorage.setItem('comparisonList', JSON.stringify([]));
+    const clearComparison = async () => {
+        if (token) {
+            try {
+                await comparisonService.clearComparison();
+                setComparisonList([]);
+            } catch (error) {
+                console.error('Error clearing comparison:', error);
+            }
+        } else {
+            setComparisonList([]);
+            localStorage.setItem('comparisonList', JSON.stringify([]));
+        }
     };
 
     return (
@@ -102,7 +153,7 @@ function ProductComparisonInner() {
                                 </tr>
                                 <tr>
                                     <td className="bg-light font-weight-bold">Category</td>
-                                    {comparisonList.map(book => <td key={book.id} className="text-center">{book.category?.name}</td>)}
+                                    {comparisonList.map(book => <td key={book.id} className="text-center">{book.category?.name || book.categoryName}</td>)}
                                 </tr>
                                 <tr>
                                     <td className="bg-light font-weight-bold">Description</td>
@@ -137,7 +188,7 @@ function ProductComparisonInner() {
                                     <button 
                                         className="btn btn-outline-primary btn-sm mt-2"
                                         onClick={() => addToComparison(book.id)}
-                                        disabled={comparisonList.find(b => b.id === book.id)}
+                                        disabled={!!comparisonList.find(b => b.id === book.id)}
                                     >
                                         {comparisonList.find(b => b.id === book.id) ? 'Added' : 'Add to Compare'}
                                     </button>
@@ -156,5 +207,3 @@ import ClientOnly from '../components/ClientOnly';
 export default function ProductComparison() {
   return <ClientOnly><ProductComparisonInner /></ClientOnly>;
 }
-
-
