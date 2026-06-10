@@ -49,4 +49,14 @@ public class ShelfBookController {
             @RequestParam String status) {
         return ResponseEntity.ok(shelfBookService.updateReadingStatus(shelfId, bookId, status));
     }
+
+    @PatchMapping("/{bookId}/notes")
+    @Operation(summary = "Update notes of a book on a shelf")
+    public ResponseEntity<ShelfBookResponse> updateNotes(
+            @PathVariable Long shelfId,
+            @PathVariable Long bookId,
+            @RequestBody java.util.Map<String, String> payload) {
+        String notes = payload.get("notes");
+        return ResponseEntity.ok(shelfBookService.updateNotes(shelfId, bookId, notes));
+    }
 }

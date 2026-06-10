@@ -86,6 +86,16 @@ public class ShelfBookService {
         return toResponse(saved);
     }
 
+    @Transactional
+    public ShelfBookResponse updateNotes(Long shelfId, Long bookId, String notes) {
+        getOwnedShelf(shelfId);
+        ShelfBook shelfBook = shelfBookRepository.findByBookshelfIdAndBookId(shelfId, bookId)
+                .orElseThrow(() -> new IllegalArgumentException("Book not found in this shelf"));
+        shelfBook.setNotes(notes);
+        ShelfBook saved = shelfBookRepository.save(shelfBook);
+        return toResponse(saved);
+    }
+
     private ShelfBookResponse toResponse(ShelfBook shelfBook) {
         return ShelfBookResponse.builder()
                 .id(shelfBook.getId()).bookId(shelfBook.getBook().getId())

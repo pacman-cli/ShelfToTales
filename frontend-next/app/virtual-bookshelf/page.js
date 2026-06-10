@@ -45,8 +45,14 @@ function VirtualBookshelfInner() {
         const seconds = Math.floor(timeInSeconds % 60);
         return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
     };
+
     const [books, setBooks] = useState([]);
     const [originalBooks, setOriginalBooks] = useState([]);
+    const [allCatalogBooks, setAllCatalogBooks] = useState([]);
+    const [activeTab, setActiveTab] = useState('ALL');
+    const [selectedBookForModal, setSelectedBookForModal] = useState(null);
+    const [modalStatus, setModalStatus] = useState('NOT_STARTED');
+    const [modalNotes, setModalNotes] = useState('');
     const [currentBook, setCurrentBook] = useState(null);
     const [searchQuery] = useState('');
     const [isSortedNewest, setIsSortedNewest] = useState(() => localStorage.getItem(ukey('vbookshelf_sort')) !== 'false');
@@ -107,42 +113,50 @@ function VirtualBookshelfInner() {
     useEffect(() => { localStorage.setItem(ukey('vbookshelf_ornaments'), JSON.stringify(ornaments)); }, [ornaments]);
     useEffect(() => { localStorage.setItem(ukey('vbookshelf_seasonal'), seasonal); }, [seasonal]);
 
-    // Load books and shelves on mount
+    const fetchShelfBooks = async (shelfId) => {
+        if (!shelfId) return;
+        try {
+            const res = await bookshelfService.getBooks(shelfId);
+            const shelfData = res.data || [];
+            const mapped = shelfData.map(b => ({
+                id: b.id?.toString() || Math.random().toString(),
+                bookId: b.bookId,
+                title: b.title || 'Untitled',
+                author: b.author || 'Unknown',
+                imageUrl: b.coverUrl || `${FALLBACK_IMG}/${(b.title || 'book').replace(/\s+/g, '-')}/250/350`,
+                readingStatus: b.readingStatus || 'NOT_STARTED',
+                notes: b.notes || '',
+                createdAt: b.addedAt || new Date().toISOString(),
+                hidden: false
+            }));
+            setOriginalBooks(mapped);
+            if (mapped.length > 0 && !currentBook) {
+                setCurrentBook(mapped[0]);
+            }
+        } catch (err) {
+            console.error('Failed to fetch shelf books:', err);
+        }
+    };
+
+    // Load catalog books and bookshelves on mount
     useEffect(() => {
-        const fetchBooks = async () => {
+        const initializeBookshelf = async () => {
             try {
-                const [booksRes, shelvesRes] = await Promise.all([
-                    bookService.getMyBooks(),
-                    bookshelfService.getAll().catch(() => ({ data: [] }))
-                ]);
-                const data = booksRes.data?.content || booksRes.data || [];
-                let fetchedBooks = data.length > 0 ? data.map(b => {
-                    const bid = b.id?.toString() || Math.random().toString();
-                    const stored = localStorage.getItem(ukey(`vbookshelf_hide_${bid}`));
-                    return {
-                        id: bid, title: b.title || 'Untitled', author: b.author || 'Unknown',
-                        imageUrl: b.coverUrl || `${FALLBACK_IMG}/${(b.title || 'book').replace(/\s+/g, '-')}/250/350`,
-                        createdAt: b.publishedDate || new Date().toISOString().split('T')[0],
-                        hidden: stored === 'true' || false,
-                    };
-                }) : demoBooksList;
+                // Fetch catalog books
+                const catalogRes = await bookService.getMyBooks().catch(() => ({ data: { content: [] } }));
+                const catalogData = catalogRes.data?.content || catalogRes.data || [];
+                setAllCatalogBooks(catalogData.map(b => ({
+                    id: b.id,
+                    title: b.title || 'Untitled',
+                    author: b.author || 'Unknown',
+                    imageUrl: b.coverUrl || `${FALLBACK_IMG}/${(b.title || 'book').replace(/\s+/g, '-')}/250/350`
+                })));
 
-                // Restore saved book order
-                try {
-                    const savedOrder = JSON.parse(localStorage.getItem(ukey('vbookshelf_order')));
-                    if (savedOrder && savedOrder.length === fetchedBooks.length) {
-                        const bookMap = new Map(fetchedBooks.map(b => [b.id, b]));
-                        fetchedBooks = savedOrder.map(id => bookMap.get(id)).filter(Boolean);
-                    }
-                } catch (_) {}
-
-                setBooks(fetchedBooks);
-                setOriginalBooks(fetchedBooks);
-                if (fetchedBooks.length > 0) setCurrentBook(fetchedBooks[0]);
-
+                // Fetch shelves
+                const shelvesRes = await bookshelfService.getAll().catch(() => ({ data: [] }));
                 const shelfData = shelvesRes.data || [];
                 if (shelfData.length > 0) {
-                    setBookshelves(shelfData.map(s => ({ ...s, isFolded: false, description: '' })));
+                    setBookshelves(shelfData.map(s => ({ ...s, isFolded: false, description: s.description || '' })));
                     setActiveBookshelfId(shelfData[0].id);
                 } else {
                     try {
@@ -156,9 +170,8 @@ function VirtualBookshelfInner() {
                     }
                 }
             } catch (error) {
-                setBooks(demoBooksList);
-                setOriginalBooks(demoBooksList);
-                setCurrentBook(demoBooksList[0]);
+                console.error('Initialize error:', error);
+                setAllCatalogBooks([]);
                 const fb = { id: Date.now(), name: 'Main Bookshelf', description: '', isFolded: false, theme: localStorage.getItem(ukey('vbookshelf_theme')) || 'glass' };
                 setBookshelves([fb]);
                 setActiveBookshelfId(fb.id);
@@ -166,8 +179,28 @@ function VirtualBookshelfInner() {
                 setLoadingShelves(false);
             }
         };
-        fetchBooks();
+        initializeBookshelf();
     }, []);
+
+    // Fetch shelf books when activeBookshelfId changes
+    useEffect(() => {
+        if (activeBookshelfId) {
+            fetchShelfBooks(activeBookshelfId);
+        }
+    }, [activeBookshelfId]);
+
+    // Reactive filtering and sorting
+    useEffect(() => {
+        let filtered = [...originalBooks];
+        if (searchQuery) {
+            filtered = filtered.filter(b => b.title.toLowerCase().includes(searchQuery.toLowerCase()));
+        }
+        if (activeTab && activeTab !== 'ALL') {
+            filtered = filtered.filter(b => b.readingStatus === activeTab);
+        }
+        filtered.sort((a, b) => isSortedNewest ? new Date(b.createdAt) - new Date(a.createdAt) : new Date(a.createdAt) - new Date(b.createdAt));
+        setBooks(filtered);
+    }, [originalBooks, searchQuery, isSortedNewest, activeTab]);
 
     // Cleanup saveShelf debounce on unmount
     useEffect(() => {
@@ -188,31 +221,37 @@ function VirtualBookshelfInner() {
         setView('reader');
     };
 
-    const toggleSort = () => { const n = !isSortedNewest; setIsSortedNewest(n); localStorage.setItem(ukey('vbookshelf_sort'), n); applyFilters(searchQuery, n); };
-    const applyFilters = (query, newestFirst) => {
-        let filtered = [...originalBooks];
-        if (query) filtered = filtered.filter(b => b.title.toLowerCase().includes(query.toLowerCase()));
-        filtered.sort((a, b) => newestFirst ? new Date(b.createdAt) - new Date(a.createdAt) : new Date(a.createdAt) - new Date(b.createdAt));
-        setBooks(filtered);
+    const toggleSort = () => {
+        const n = !isSortedNewest;
+        setIsSortedNewest(n);
+        localStorage.setItem(ukey('vbookshelf_sort'), n);
     };
 
-    const toggleVisibility = (id) => {
-        const nextHidden = !originalBooks.find(b => b.id === id)?.hidden;
-        localStorage.setItem(ukey(`vbookshelf_hide_${id}`), nextHidden);
-        const up = originalBooks.map(b => b.id === id ? { ...b, hidden: nextHidden } : b);
-        setOriginalBooks(up);
-        setBooks(up);
+    const toggleBookOnShelf = async (bookId) => {
+        if (!activeBookshelfId) return;
+        const exists = originalBooks.find(ob => ob.bookId === bookId);
+        if (exists) {
+            try {
+                await bookshelfService.removeBook(activeBookshelfId, bookId);
+                fetchShelfBooks(activeBookshelfId);
+            } catch (err) {
+                Swal.fire('Error', 'Failed to remove book from bookshelf', 'error');
+            }
+        } else {
+            try {
+                await bookshelfService.addBook(activeBookshelfId, bookId);
+                fetchShelfBooks(activeBookshelfId);
+            } catch (err) {
+                Swal.fire('Error', 'Failed to add book to bookshelf', 'error');
+            }
+        }
     };
 
     const moveBook = (index, direction) => {
-        const visible = books.filter(b => !b.hidden);
         const t = direction === 'up' ? index - 1 : index + 1;
-        if (t < 0 || t >= visible.length) return;
-        // Swap in visible list
-        [visible[index], visible[t]] = [visible[t], visible[index]];
-        // Rebuild full list: visible in new order + hidden books at end
-        const hidden = books.filter(b => b.hidden);
-        const newBooks = [...visible, ...hidden];
+        if (t < 0 || t >= books.length) return;
+        const newBooks = [...books];
+        [newBooks[index], newBooks[t]] = [newBooks[t], newBooks[index]];
         setBooks(newBooks);
         setOriginalBooks(newBooks);
         localStorage.setItem(ukey('vbookshelf_order'), JSON.stringify(newBooks.map(b => b.id)));
@@ -240,7 +279,6 @@ function VirtualBookshelfInner() {
                     if (activeBookshelfId === id) setActiveBookshelfId(n[0].id);
                 } catch (err) {
                     console.error('Delete bookshelf error (removing locally):', err.response?.data || err.message);
-                    // Remove from local state even if backend fails (shelf may not exist there)
                     const n = bookshelves.filter(s => s.id !== id);
                     setBookshelves(n);
                     if (activeBookshelfId === id) setActiveBookshelfId(n[0]?.id || null);
@@ -256,6 +294,41 @@ function VirtualBookshelfInner() {
 
     const activeShelf = bookshelves.find(s => s.id === activeBookshelfId) || bookshelves[0] || { theme: 'glass', name: 'Bookshelf' };
 
+    const handleOpenModal = (book) => {
+        setSelectedBookForModal(book);
+        setModalStatus(book.readingStatus || 'NOT_STARTED');
+        setModalNotes(book.notes || '');
+    };
+
+    const handleSaveModal = async () => {
+        if (!selectedBookForModal || !activeBookshelfId) return;
+        try {
+            await Promise.all([
+                bookshelfService.updateBookStatus(activeBookshelfId, selectedBookForModal.bookId, modalStatus),
+                bookshelfService.updateBookNotes(activeBookshelfId, selectedBookForModal.bookId, modalNotes)
+            ]);
+            Swal.fire({
+                icon: 'success',
+                title: 'Book updated successfully',
+                toast: true,
+                position: 'top-end',
+                timer: 2000,
+                showConfirmButton: false
+            });
+            setSelectedBookForModal(null);
+            fetchShelfBooks(activeBookshelfId);
+        } catch (err) {
+            Swal.fire('Error', 'Failed to update book details', 'error');
+        }
+    };
+
+    const statusTabs = [
+        { id: 'ALL', label: 'All' },
+        { id: 'WANT_TO_READ', label: 'Want Next' },
+        { id: 'IN_PROGRESS', label: 'Reading' },
+        { id: 'COMPLETED', label: 'Completed' }
+    ];
+
     if (loadingShelves) {
         return (
             <div className="bookshelf-container theme-glass d-flex align-items-center justify-content-center" style={{minHeight: '100vh'}}>
@@ -268,8 +341,8 @@ function VirtualBookshelfInner() {
     }
 
     const renderLibrary = () => {
-        const visibleBooks = books.filter(b => !b.hidden);
-        if (visibleBooks.length === 0) return <div className="text-center p-5"><h3>No books visible</h3></div>;
+        const visibleBooks = books;
+        if (visibleBooks.length === 0) return <div className="text-center p-5"><h3 style={{color: '#fff'}}>No books visible</h3></div>;
         const totalRegularShelves = Math.max(2, Math.ceil((visibleBooks.length - 1) / 4));
         const ornamentEmojis = {plant:'🪴',candle:'🕯️',globe:'🌍',clock:'🕰️',cat:'🐱',coffee:'☕',frame:'🖼️',lamp:'💡'};
 
@@ -285,9 +358,9 @@ function VirtualBookshelfInner() {
                             <div className="hero-text text-start" style={{minWidth: '200px', maxWidth: '350px'}}>
                                 <h2 className="hero-book-title fw-bold" style={{wordBreak: 'break-word', fontSize: '1.5rem'}}><i className="fa-solid fa-bookmark me-3 opacity-25"></i>{visibleBooks[0].title}</h2>
                                 <p className="text-muted small mb-1">by {visibleBooks[0].author}</p>
-                                <button className="btn btn-sm btn-outline-primary mt-2 px-3 rounded-pill" onClick={() => handleReadBook(visibleBooks[0])}>Read</button>
+                                <button className="btn btn-sm btn-outline-primary mt-2 px-3 rounded-pill" onClick={() => handleOpenModal(visibleBooks[0])}>View Details</button>
                             </div>
-                            <div className="bookshelf-book hero-book-main" onClick={() => handleReadBook(visibleBooks[0])}><img loading="lazy" decoding="async" src={visibleBooks[0].imageUrl} alt="" /></div>
+                            <div className="bookshelf-book hero-book-main" onClick={() => handleOpenModal(visibleBooks[0])}><img loading="lazy" decoding="async" src={visibleBooks[0].imageUrl} alt="" /></div>
                         </div>
                     </div>
                     <div className={`shelf ${activeShelf.theme}`}></div>
@@ -297,7 +370,7 @@ function VirtualBookshelfInner() {
                         <div className="book-row">{visibleBooks.slice(1 + si * 4, 1 + (si + 1) * 4).map(b => (
                             <div key={b.id} className="book-with-header">
                                 {showLabels && <div className="book-top-info px-2 py-1 mb-2 small fw-bold" style={{maxWidth: '90px', fontSize: '0.7rem', color: '#333', textAlign: 'center', lineHeight: '1.2', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap'}}>{b.title}</div>}
-                                <div className="bookshelf-book" style={{transform: `scale(${bookSize/100})`}} onClick={() => handleReadBook(b)}><img loading="lazy" decoding="async" src={b.imageUrl} alt="" /></div>
+                                <div className="bookshelf-book" style={{transform: `scale(${bookSize/100})`}} onClick={() => handleOpenModal(b)}><img loading="lazy" decoding="async" src={b.imageUrl} alt="" /></div>
                             </div>
                         ))}
                         {/* Ornaments on this shelf */}
@@ -339,7 +412,7 @@ function VirtualBookshelfInner() {
                                                         {section.id === 'info' && (
                                                             <>
                                                                 <input type="text" className="form-control form-control-sm bg-dark text-white border-secondary mb-2" value={shelf.name} onChange={(e) => updateActiveShelf({name: e.target.value})} />
-                                                                <textarea className="form-control form-control-sm bg-dark text-white border-secondary" rows="2" value={shelf.description} onChange={(e) => updateActiveShelf({description: e.target.value})} />
+                                                                <textarea className="form-control form-control-sm bg-dark text-white border-secondary" rows="2" value={shelf.description || ''} onChange={(e) => updateActiveShelf({description: e.target.value})} />
                                                             </>
                                                         )}
                                                         {section.id === 'manage' && (
@@ -348,18 +421,21 @@ function VirtualBookshelfInner() {
                                                                     <input className="form-check-input" type="checkbox" checked={isSortedNewest} onChange={toggleSort} /><label className="form-check-label text-white fw-bold ms-2">Newest first</label>
                                                                 </div>
                                                                 <div className="mini-book-list" style={{maxHeight: '180px', overflowY: 'auto'}}>
-                                                                    {books.map(b => (
-                                                                        <div key={b.id} className="d-flex align-items-center justify-content-between mb-3 px-1 border-bottom border-secondary pb-2">
-                                                                            <span className="small text-truncate flex-grow-1" style={{fontSize: '0.8rem', color: '#fff'}}>{b.title}</span>
-                                                                            <input className="form-check-input" type="checkbox" checked={!b.hidden} onChange={() => toggleVisibility(b.id)} />
-                                                                        </div>
-                                                                    ))}
+                                                                    {allCatalogBooks.map(cb => {
+                                                                        const isChecked = originalBooks.some(ob => ob.bookId === cb.id);
+                                                                        return (
+                                                                            <div key={cb.id} className="d-flex align-items-center justify-content-between mb-3 px-1 border-bottom border-secondary pb-2">
+                                                                                <span className="small text-truncate flex-grow-1" style={{fontSize: '0.8rem', color: '#fff'}}>{cb.title}</span>
+                                                                                <input className="form-check-input" type="checkbox" checked={isChecked} onChange={() => toggleBookOnShelf(cb.id)} />
+                                                                            </div>
+                                                                        );
+                                                                    })}
                                                                 </div>
                                                             </>
                                                         )}
                                                         {section.id === 'position' && (
                                                             <div className="mini-book-list" style={{maxHeight: '180px', overflowY: 'auto'}}>
-                                                                {books.filter(b => !b.hidden).map((b, i) => (
+                                                                {books.map((b, i) => (
                                                                     <div key={b.id} className="d-flex align-items-center justify-content-between mb-3 px-1 border-bottom border-secondary pb-2">
                                                                         <span className="small text-truncate flex-grow-1" style={{fontSize: '0.8rem', color: '#fff'}}>{b.title}</span>
                                                                         <div className="d-flex gap-3">
@@ -462,7 +538,28 @@ function VirtualBookshelfInner() {
                         {menuVisibility.share && <i className="fa-solid fa-share-nodes cursor-pointer"></i>}
                     </div>
                 </header>
-                {view === 'library' ? renderLibrary() : (
+                {view === 'library' ? (
+                    <>
+                        <div className="status-tabs-container mb-4 d-flex justify-content-center gap-2">
+                            {statusTabs.map(tab => (
+                                <button
+                                    key={tab.id}
+                                    className={`btn btn-sm rounded-pill px-3 py-2 ${activeTab === tab.id ? 'btn-primary active-tab' : 'btn-outline-light'}`}
+                                    style={{
+                                        border: activeTab === tab.id ? 'none' : '1px solid rgba(255, 255, 255, 0.3)',
+                                        color: activeTab === tab.id ? '#fff' : 'rgba(255, 255, 255, 0.7)',
+                                        backgroundColor: activeTab === tab.id ? '#EAA451' : 'transparent',
+                                        transition: 'all 0.2s'
+                                    }}
+                                    onClick={() => setActiveTab(tab.id)}
+                                >
+                                    {tab.label}
+                                </button>
+                            ))}
+                        </div>
+                        {renderLibrary()}
+                    </>
+                ) : (
                     <div className="reader-view-layout-wrapper animate__animated animate__fadeIn">
                         {/* Middle Part: Reader Content */}
                         <div className="reader-content-area" style={{ background: '#ffffff', color: '#000000', minHeight: '100%' }}>
@@ -548,6 +645,75 @@ function VirtualBookshelfInner() {
                     </div>
                 )}
             </main>
+
+            {selectedBookForModal && (
+                <div className="modal-overlay d-flex align-items-center justify-content-center animate__animated animate__fadeIn" style={{
+                    position: 'fixed',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    backgroundColor: 'rgba(0, 0, 0, 0.75)',
+                    zIndex: 1000,
+                    backdropFilter: 'blur(5px)'
+                }}>
+                    <div className="modal-content-custom bg-dark text-white p-4 rounded-4 shadow-lg border border-secondary" style={{
+                        maxWidth: '500px',
+                        width: '95%',
+                        maxHeight: '90vh',
+                        overflowY: 'auto'
+                    }}>
+                        <div className="d-flex justify-content-between align-items-start mb-3">
+                            <h4 className="fw-bold mb-0 text-white">Book Details</h4>
+                            <button type="button" className="btn-close btn-close-white" onClick={() => setSelectedBookForModal(null)} aria-label="Close" style={{ filter: 'invert(1)' }}></button>
+                        </div>
+                        
+                        <div className="text-center mb-4">
+                            <img 
+                                src={selectedBookForModal.imageUrl} 
+                                alt={selectedBookForModal.title} 
+                                className="img-fluid rounded shadow" 
+                                style={{ maxHeight: '180px', objectFit: 'cover' }} 
+                            />
+                        </div>
+                        
+                        <h5 className="fw-bold text-center text-white mb-1">{selectedBookForModal.title}</h5>
+                        <p className="text-muted text-center small mb-3">by {selectedBookForModal.author}</p>
+                        
+                        <div className="mb-3">
+                            <label className="form-label small text-white-50">Reading Status</label>
+                            <select 
+                                className="form-select bg-dark text-white border-secondary"
+                                value={modalStatus} 
+                                onChange={(e) => setModalStatus(e.target.value)}
+                            >
+                                <option value="NOT_STARTED">Not Started</option>
+                                <option value="WANT_TO_READ">Want to Read</option>
+                                <option value="IN_PROGRESS">In Progress</option>
+                                <option value="COMPLETED">Completed</option>
+                                <option value="PAUSED">Paused</option>
+                            </select>
+                        </div>
+                        
+                        <div className="mb-4">
+                            <label className="form-label small text-white-50">Personal Notes</label>
+                            <textarea 
+                                className="form-control bg-dark text-white border-secondary" 
+                                rows="4" 
+                                placeholder="Add your thoughts or notes..." 
+                                value={modalNotes} 
+                                onChange={(e) => setModalNotes(e.target.value)}
+                            />
+                        </div>
+                        
+                        <div className="d-flex justify-content-end gap-2">
+                            <button className="btn btn-outline-secondary rounded-pill px-3" onClick={() => setSelectedBookForModal(null)}>Cancel</button>
+                            <button className="btn btn-primary rounded-pill px-3" onClick={() => { handleReadBook(selectedBookForModal); setSelectedBookForModal(null); }}>Read Book</button>
+                            <button className="btn btn-warning rounded-pill px-4 fw-bold" style={{ backgroundColor: '#EAA451', borderColor: '#EAA451', color: '#000' }} onClick={handleSaveModal}>Save Changes</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }

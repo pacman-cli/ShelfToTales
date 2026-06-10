@@ -105,6 +105,8 @@ export const bookshelfService = {
   addBook: (shelfId, bookId) => api.post(`/bookshelves/${shelfId}/books/${bookId}`),
   removeBook: (shelfId, bookId) =>
     api.delete(`/bookshelves/${shelfId}/books/${bookId}`),
+  updateBookStatus: (shelfId, bookId, status) => api.patch(`/bookshelves/${shelfId}/books/${bookId}/status`, null, { params: { status } }),
+  updateBookNotes: (shelfId, bookId, notes) => api.patch(`/bookshelves/${shelfId}/books/${bookId}/notes`, { notes }),
 };
 
 export const cartService = {
@@ -115,7 +117,7 @@ export const cartService = {
 };
 
 export const orderService = {
-  checkout: (orderData) => api.post('/orders', orderData),
+  checkout: (orderData) => api.post('/checkout', orderData),
   getUserOrders: () => api.get('/orders'),
   getHistory: () => api.get('/orders/history'),
   getById: (id) => api.get(`/orders/${id}`),
