@@ -501,21 +501,38 @@ npm test
 
 ---
 
-## 🎯 Feature Roadmap
+## 🎯 Feature Status
 
-| Feature | Status |
-|---------|--------|
-| Book catalog & search | ✅ Done |
-| JWT + Google OAuth2 auth | ✅ Done |
-| Wishlist & Cart | ✅ Done |
-| Virtual Bookshelf | ✅ Done |
-| Reading Dashboard | ✅ Done |
-| Reader Network | ✅ Done |
-| Reading Room | ✅ Done |
-| AI Image Search | 🔮 Planned |
-| Mood-based Suggestions | 🔮 Planned |
-| Book Exchange/Donation | 🔮 Planned |
-| Reading Challenges | 🔮 Planned |
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Shopping Cart | ✅ Done | Add/remove/update quantity works |
+| Checkout System | ⚠️ Partial | Real checkout exists; UI still needs fuller payment UX |
+| Product Catalog | ✅ Done | Listings, details, category views |
+| Order Management | ✅ Done | History, detail, admin status updates |
+| User Accounts & Auth | ✅ Done | Register, login, JWT, Google OAuth2 |
+| Wishlist / Favorites | ✅ Done | Add, remove, list |
+| Product Comparison | ✅ Done | Compare list built in |
+| Quick View | ✅ Done | Modal-based quick view exists |
+| Blog / Content System | ✅ Done | Create, read, update, delete posts |
+| Books by Category | ✅ Done | Category browsing wired |
+| Search | ✅ Done | Title, author, ISBN, semantic search |
+| Product Filtering | ✅ Done | Price, genre, stock, rating filters |
+| Blog Management | ⚠️ Partial | User-scoped CRUD exists; admin blog CRUD not separate |
+| Rich Blog Posts | ❌ Missing | No gallery/video embed editor found |
+| AI Image Search | ❌ Missing | No cover-image upload search pipeline |
+| Mood-Based Suggestions | ✅ Done | Mood-to-book recommendations in place |
+| Full Checkout Flow | ⚠️ Partial | Cart → payment → confirmation improved, still room for polish |
+| Virtual Bookshelves | ✅ Done | Read / reading / want-to-read shelves |
+| Spoiler-Free Zones | ⚠️ Partial | Reported spoilers and review-level handling, not broad feed filter |
+| Virtual Reading Rooms | ✅ Done | Real-time co-reading + chat + lofi |
+| Peer Book Exchange | ✅ Done | Listings, requests, accept/reject flow |
+| Donation System | ✅ Done | Donate and request books |
+| Reading Challenges | ✅ Done | Goals and challenge tracking |
+| Smart Annotations | ✅ Done | Quote sharing to feed from reader |
+| Moderation Tools | ⚠️ Partial | Reports + admin actions exist; coverage still uneven |
+| Analytics Dashboard | ⚠️ Partial | Real stats now; some visuals still basic |
+| Real-Time Security Monitoring | ✅ Done | Security summary and events endpoint |
+| Secure User Management | ✅ Done | Admin roles, moderation roles, user controls |
 
 ---
 
