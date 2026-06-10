@@ -23,4 +23,6 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     @Query("SELECT COALESCE(SUM(o.totalAmount), 0) FROM Order o WHERE o.user.id = :userId")
     BigDecimal sumTotalAmountByUserId(Long userId);
+
+    boolean existsByUserIdAndItemsBookId(Long userId, Long bookId);
 }

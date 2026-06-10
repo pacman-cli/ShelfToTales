@@ -15,6 +15,8 @@ import jakarta.validation.constraints.Max;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -65,8 +67,25 @@ public class BookController {
     }
 
     @GetMapping("/{id}/read")
-    @Operation(summary = "Get PDF reading info for a book")
-    public ResponseEntity<ReadBookResponse> getReadBookInfo(@PathVariable Long id) {
+    @Operation(summary = "Get PDF reading info for a book (requires purchase or preview)")
+    public ResponseEntity<ReadBookResponse> getReadBookInfo(
+            @PathVariable Long id,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal(expression = "this") Object principal) {
+
+        Long userId = null;
+        if (principal instanceof com.example.shelftotales.auth.domain.User) {
+            userId = ((com.example.shelftotales.auth.domain.User) principal).getId();
+        } else {
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.getPrincipal() instanceof com.example.shelftotales.auth.domain.User) {
+                userId = ((com.example.shelftotales.auth.domain.User) auth.getPrincipal()).getId();
+            }
+        }
+
+        if (!bookService.canUserReadBook(userId, id)) {
+            return ResponseEntity.status(403).build();
+        }
+
         return bookService.getReadBookInfo(id)
                 .map(ResponseEntity::ok)
                 .orElse(ResponseEntity.notFound().build());

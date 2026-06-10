@@ -17,6 +17,7 @@ import com.example.shelftotales.ai.application.EmbeddingService;
 import com.example.shelftotales.catalog.infrastructure.CategoryRepository;
 import com.example.shelftotales.catalog.infrastructure.BookEmbeddingRepository;
 import com.example.shelftotales.catalog.infrastructure.ImageHashService;
+import com.example.shelftotales.commerce.infrastructure.OrderRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -40,6 +41,7 @@ public class BookService {
     private final AIService aiService;
     private final EmbeddingService embeddingService;
     private final ImageHashService imageHashService;
+    private final OrderRepository orderRepository;
 
     @Cacheable(value = "books", key = "#query + ':' + #categoryId + ':' + #minPrice + ':' + #maxPrice + ':' + #inStockOnly + ':' + #minRating + ':' + #page + ':' + #size + ':' + #sortBy + ':' + #sortDir")
     public PagedResponse<BookResponse> getBooks(String query, Long categoryId, BigDecimal minPrice, BigDecimal maxPrice, boolean inStockOnly, Double minRating, int page, int size, String sortBy, String sortDir) {
@@ -62,6 +64,14 @@ public class BookService {
     @Cacheable(value = "bookById", key = "#id")
     public Optional<BookResponse> getBookById(Long id) {
         return bookRepository.findById(id).map(this::toResponse);
+    }
+
+    public boolean canUserReadBook(Long userId, Long bookId) {
+        Book book = bookRepository.findById(bookId).orElse(null);
+        if (book == null) return false;
+        if (book.isPreviewAvailable()) return true;
+        if (userId == null) return false;
+        return orderRepository.existsByUserIdAndItemsBookId(userId, bookId);
     }
 
     public Optional<ReadBookResponse> getReadBookInfo(Long id) {
