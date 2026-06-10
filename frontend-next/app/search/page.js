@@ -16,6 +16,9 @@ function SearchResults() {
   const [semanticResults, setSemanticResults] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('all');
+  const [imageSearchLoading, setImageSearchLoading] = useState(false);
+  const [imageResults, setImageResults] = useState([]);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     if (!query.trim()) {
@@ -74,6 +77,22 @@ function SearchResults() {
       setLoading(false)
     );
   }, [query]);
+
+  const handleImageSearch = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setSelectedImage(URL.createObjectURL(file));
+    setImageSearchLoading(true);
+    setActiveTab('image');
+    try {
+      const res = await searchService.imageSearch(file);
+      setImageResults(res.data.results || []);
+    } catch {
+      setImageResults([]);
+    } finally {
+      setImageSearchLoading(false);
+    }
+  };
 
   const mergedResults = useMemo(() => {
     const map = new Map();
@@ -142,7 +161,66 @@ function SearchResults() {
           >
             Semantic ({semanticResults.length})
           </button>
+          <button
+            className={`sr-tab ${activeTab === 'image' ? 'active' : ''}`}
+            onClick={() => setActiveTab('image')}
+          >
+            <i className="fa-solid fa-camera me-1" /> Image
+          </button>
         </div>
+
+        {activeTab === 'image' && (
+          <div className="sr-image-upload-section text-center py-5">
+            {selectedImage ? (
+              <div className="mb-3">
+                <img src={selectedImage} alt="Search reference" style={{ maxHeight: '200px', borderRadius: '8px' }} />
+              </div>
+            ) : (
+              <div className="mb-3">
+                <i className="fa-solid fa-cloud-arrow-up fa-3x text-muted mb-3" />
+                <p className="text-muted">Upload a book cover to find similar books</p>
+              </div>
+            )}
+            <label className="btn btn-outline-primary">
+              <i className="fa-solid fa-camera me-2" />
+              {selectedImage ? 'Upload Different Image' : 'Choose Image'}
+              <input
+                type="file"
+                accept="image/*"
+                className="d-none"
+                onChange={handleImageSearch}
+              />
+            </label>
+          </div>
+        )}
+
+        {activeTab === 'image' && imageSearchLoading && (
+          <div className="text-center py-5">
+            <div className="spinner-border text-primary" />
+            <p className="mt-2 text-muted">Finding similar books...</p>
+          </div>
+        )}
+
+        {activeTab === 'image' && !imageSearchLoading && imageResults.length > 0 && (
+          <div className="sr-results-section">
+            <h5 className="mb-3">Similar Books ({imageResults.length})</h5>
+            <div className="row g-3">
+              {imageResults.map((book) => (
+                <div key={book.bookId} className="col-md-6 col-lg-4">
+                  <div className="card sr-result-card h-100">
+                    <div className="card-body">
+                      <h6 className="card-title">{book.title}</h6>
+                      <p className="text-muted small mb-1">{book.author}</p>
+                      <p className="small mb-0">
+                        <span className="badge bg-light text-dark">Distance: {book.distance}</span>
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {loading ? (
           <div className="sr-grid">

@@ -239,6 +239,14 @@ export const aiService = {
 export const searchService = {
   textSearch: (params) => api.get('/books', { params }),
   semanticSearch: (query, limit = 10) => api.get('/search/semantic', { params: { q: query, limit } }),
+  imageSearch: (file, limit = 10) => {
+    const formData = new FormData();
+    formData.append('file', file);
+    return api.post('/search/image', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' },
+      params: { limit },
+    });
+  },
 };
 
 export const addressService = {
