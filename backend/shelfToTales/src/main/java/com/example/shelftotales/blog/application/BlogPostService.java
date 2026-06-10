@@ -44,6 +44,7 @@ public class BlogPostService {
                 .author(author)
                 .title(request.getTitle())
                 .content(request.getContent())
+                .coverImage(request.getCoverImage())
                 .status(request.getStatus() != null ? request.getStatus() : "PUBLISHED")
                 .build();
         return mapToResponse(blogPostRepository.save(post));
@@ -58,6 +59,7 @@ public class BlogPostService {
         }
         post.setTitle(request.getTitle());
         post.setContent(request.getContent());
+        post.setCoverImage(request.getCoverImage());
         if (request.getStatus() != null) {
             post.setStatus(request.getStatus());
         }
@@ -89,6 +91,7 @@ public class BlogPostService {
                 .authorName(post.getAuthor().getFullName())
                 .title(post.getTitle())
                 .content(post.getContent())
+                .coverImage(post.getCoverImage())
                 .status(post.getStatus())
                 .viewsCount(post.getViewsCount())
                 .likesCount(post.getLikesCount())
