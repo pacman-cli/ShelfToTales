@@ -236,6 +236,11 @@ export const aiService = {
   semanticSearch: (query, limit) => api.get('/search/semantic', { params: { q: query, limit } }),
 };
 
+export const searchService = {
+  textSearch: (params) => api.get('/books', { params }),
+  semanticSearch: (query, limit = 10) => api.get('/search/semantic', { params: { q: query, limit } }),
+};
+
 export const addressService = {
   getAll: () => api.get('/addresses'),
   create: (data) => api.post('/addresses', data),
