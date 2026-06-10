@@ -16,6 +16,7 @@ import com.example.shelftotales.ai.application.AIService;
 import com.example.shelftotales.ai.application.EmbeddingService;
 import com.example.shelftotales.catalog.infrastructure.CategoryRepository;
 import com.example.shelftotales.catalog.infrastructure.BookEmbeddingRepository;
+import com.example.shelftotales.catalog.infrastructure.ImageHashService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -38,6 +39,7 @@ public class BookService {
     private final BookEmbeddingRepository bookEmbeddingRepository;
     private final AIService aiService;
     private final EmbeddingService embeddingService;
+    private final ImageHashService imageHashService;
 
     @Cacheable(value = "books", key = "#query + ':' + #categoryId + ':' + #minPrice + ':' + #maxPrice + ':' + #inStockOnly + ':' + #minRating + ':' + #page + ':' + #size + ':' + #sortBy + ':' + #sortDir")
     public PagedResponse<BookResponse> getBooks(String query, Long categoryId, BigDecimal minPrice, BigDecimal maxPrice, boolean inStockOnly, Double minRating, int page, int size, String sortBy, String sortDir) {
@@ -93,6 +95,22 @@ public class BookService {
                 .category(category)
                 .moodTags(request.getMoodTags())
                 .build();
+
+        if (request.getCoverUrl() != null && !request.getCoverUrl().isEmpty()) {
+            try {
+                var coverUrl = request.getCoverUrl();
+                var resource = new org.springframework.core.io.UrlResource(coverUrl);
+                var tempFile = java.io.File.createTempFile("cover", ".jpg");
+                java.nio.file.Files.copy(resource.getInputStream(), tempFile.toPath());
+                var multipartFile = new org.springframework.mock.web.MockMultipartFile(
+                    "file", tempFile.getName(), "image/jpeg", java.nio.file.Files.newInputStream(tempFile.toPath()));
+                book.setCoverHash(imageHashService.computeDHash(multipartFile));
+                tempFile.delete();
+            } catch (Exception e) {
+                // Log and continue without hash
+            }
+        }
+
         return toResponse(bookRepository.save(book));
     }
 
@@ -122,6 +140,22 @@ public class BookService {
         }
         book.setCategory(category);
         book.setMoodTags(request.getMoodTags());
+
+        if (request.getCoverUrl() != null && !request.getCoverUrl().isEmpty()) {
+            try {
+                var coverUrl = request.getCoverUrl();
+                var resource = new org.springframework.core.io.UrlResource(coverUrl);
+                var tempFile = java.io.File.createTempFile("cover", ".jpg");
+                java.nio.file.Files.copy(resource.getInputStream(), tempFile.toPath());
+                var multipartFile = new org.springframework.mock.web.MockMultipartFile(
+                    "file", tempFile.getName(), "image/jpeg", java.nio.file.Files.newInputStream(tempFile.toPath()));
+                book.setCoverHash(imageHashService.computeDHash(multipartFile));
+                tempFile.delete();
+            } catch (Exception e) {
+                // Log and continue without hash
+            }
+        }
+
         return toResponse(bookRepository.save(book));
     }
 
