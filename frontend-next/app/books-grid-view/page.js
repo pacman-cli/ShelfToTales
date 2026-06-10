@@ -21,18 +21,40 @@ function BooksGridView() {
     const [selectBtn, setSelectBtn] = useState('Newest');
     const [showQuickView, setShowQuickView] = useState(false);
     const [selectedBook, setSelectedBook] = useState(null);
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
+    const [sortBy, setSortBy] = useState('createdAt');
+    const [sortDir, setSortDir] = useState('desc');
+
+    const sortMap = {
+        'Newest': { sortBy: 'createdAt', sortDir: 'desc' },
+        'Oldest': { sortBy: 'createdAt', sortDir: 'asc' },
+        'Price Low': { sortBy: 'price', sortDir: 'asc' },
+        'Price High': { sortBy: 'price', sortDir: 'desc' },
+    };
 
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const response = await bookService.getAll();
+                const response = await bookService.getAll({ page: currentPage, size: 20, sortBy, sortDir });
                 setBooks(response.data.content || response.data || []);
+                setTotalPages(response.data.totalPages || 1);
             } catch (error) {
                 console.error('Error fetching books:', error);
             }
         };
         fetchBooks();
-    }, []);
+    }, [currentPage, sortBy, sortDir]);
+
+    const handleSortChange = (label) => {
+        setSelectBtn(label);
+        const s = sortMap[label];
+        if (s) {
+            setSortBy(s.sortBy);
+            setSortDir(s.sortDir);
+        }
+        setCurrentPage(0);
+    };
 
     const handleAddToWishlist = useCallback(async (bookId) => {
         try {
@@ -119,10 +141,10 @@ function BooksGridView() {
                                     <Dropdown>
                                         <Dropdown.Toggle  className="i-false">{selectBtn} <i className="ms-4 font-14 fa-solid fa-caret-down" /></Dropdown.Toggle>
                                         <Dropdown.Menu>
-                                            <Dropdown.Item onClick={()=>setSelectBtn('Newest')}>Newest</Dropdown.Item>
-                                            <Dropdown.Item onClick={()=>setSelectBtn('Oldest')}>Oldest</Dropdown.Item>
-                                            <Dropdown.Item onClick={()=>setSelectBtn('Price Low')}>Price Low</Dropdown.Item>
-                                            <Dropdown.Item onClick={()=>setSelectBtn('Price High')}>Price High</Dropdown.Item>
+                                            <Dropdown.Item onClick={()=>handleSortChange('Newest')}>Newest</Dropdown.Item>
+                                            <Dropdown.Item onClick={()=>handleSortChange('Oldest')}>Oldest</Dropdown.Item>
+                                            <Dropdown.Item onClick={()=>handleSortChange('Price Low')}>Price Low</Dropdown.Item>
+                                            <Dropdown.Item onClick={()=>handleSortChange('Price High')}>Price High</Dropdown.Item>
                                         </Dropdown.Menu>
                                     </Dropdown>
                                 </div>
@@ -142,6 +164,28 @@ function BooksGridView() {
                                 </StaggerItem>
                             ))}
                         </StaggerContainer>
+
+                        {totalPages > 1 && (
+                            <div className="row align-items-center mt-4">
+                                <div className="col-12">
+                                    <nav aria-label="Page navigation">
+                                        <ul className="pagination justify-content-center mb-0 gap-2">
+                                            <li className={`page-item ${currentPage === 0 ? 'disabled' : ''}`}>
+                                                <button className="page-link border-0 bg-light rounded text-dark px-3 py-2" onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 0}>Prev</button>
+                                            </li>
+                                            {Array.from({ length: totalPages }, (_, i) => (
+                                                <li key={i} className={`page-item ${currentPage === i ? 'active' : ''}`}>
+                                                    <button className={`page-link border-0 rounded px-3 py-2 ${currentPage === i ? 'text-white' : 'bg-light text-dark'}`} style={currentPage === i ? { backgroundColor: '#1A162E' } : {}} onClick={() => setCurrentPage(i)}>{i + 1}</button>
+                                                </li>
+                                            ))}
+                                            <li className={`page-item ${currentPage >= totalPages - 1 ? 'disabled' : ''}`}>
+                                                <button className="page-link border-0 bg-light rounded text-dark px-3 py-2" onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage >= totalPages - 1}>Next</button>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        )}
                         </div>
                         </div>
                     </div>

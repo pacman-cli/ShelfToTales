@@ -18,12 +18,15 @@ import { FadeIn } from '../components/common/AnimationUtils';
 function BookListPage() {
     const [books, setBooks] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
 
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const response = await bookService.getAll();
+                const response = await bookService.getAll({ page: currentPage, size: 20 });
                 setBooks(response.data.content || response.data || []);
+                setTotalPages(response.data.totalPages || 1);
                 setLoading(false);
             } catch (error) {
                 console.error('Error fetching books:', error);
@@ -31,7 +34,7 @@ function BookListPage() {
             }
         };
         fetchBooks();
-    }, []);
+    }, [currentPage]);
 
     const handleAddToWishlist = async (bookId) => {
         try {
@@ -154,22 +157,27 @@ function BookListPage() {
                     </div>
 
                     {/* Pagination Section */}
-                    <div className="row align-items-center mt-5">
-                        <div className="col-md-6">
-                            <p className="mb-0 text-muted fw-bold">Showing {books.length} from 50 data</p>
+                    {totalPages > 1 && (
+                        <div className="row align-items-center mt-5">
+                            <div className="col-12">
+                                <nav aria-label="Page navigation">
+                                    <ul className="pagination justify-content-center mb-0 gap-2 border-0">
+                                        <li className={`page-item ${currentPage === 0 ? 'disabled' : ''}`}>
+                                            <button className="page-link border-0 bg-light rounded text-dark px-3 py-2" onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 0}>Prev</button>
+                                        </li>
+                                        {Array.from({ length: totalPages }, (_, i) => (
+                                            <li key={i} className={`page-item ${currentPage === i ? 'active' : ''}`}>
+                                                <button className={`page-link border-0 rounded px-3 py-2 ${currentPage === i ? 'text-white' : 'bg-light text-dark'}`} style={currentPage === i ? { backgroundColor: '#1A162E' } : {}} onClick={() => setCurrentPage(i)}>{i + 1}</button>
+                                            </li>
+                                        ))}
+                                        <li className={`page-item ${currentPage >= totalPages - 1 ? 'disabled' : ''}`}>
+                                            <button className="page-link border-0 bg-light rounded text-dark px-3 py-2" onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage >= totalPages - 1}>Next</button>
+                                        </li>
+                                    </ul>
+                                </nav>
+                            </div>
                         </div>
-                        <div className="col-md-6">
-                            <nav aria-label="Page navigation">
-                                <ul className="pagination justify-content-end mb-0 gap-2 border-0">
-                                    <li className="page-item"><Link className="page-link border-0 bg-light rounded text-dark px-3 py-2" to="#">Prev</Link></li>
-                                    <li className="page-item active"><Link className="page-link border-0 rounded text-white px-3 py-2" style={{ backgroundColor: '#1A162E' }} to="#">1</Link></li>
-                                    <li className="page-item"><Link className="page-link border-0 bg-light rounded text-dark px-3 py-2" to="#">2</Link></li>
-                                    <li className="page-item"><Link className="page-link border-0 bg-light rounded text-dark px-3 py-2" to="#">3</Link></li>
-                                    <li className="page-item"><Link className="page-link border-0 bg-light rounded text-dark px-3 py-2" to="#">Next</Link></li>
-                                </ul>
-                            </nav>
-                        </div>
-                    </div>
+                    )}
                 </div>
             </section>
 

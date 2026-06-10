@@ -16,18 +16,21 @@ function ShopList(){
     const [books, setBooks] = useState([]);
     const [accordBtn, setAccordBtn] = useState();
     const [selectBtn, setSelectBtn] = useState('Newest');
+    const [currentPage, setCurrentPage] = useState(0);
+    const [totalPages, setTotalPages] = useState(1);
 
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const response = await bookService.getAll();
+                const response = await bookService.getAll({ page: currentPage, size: 20 });
                 setBooks(response.data.content || response.data || []);
+                setTotalPages(response.data.totalPages || 1);
             } catch (error) {
                 console.error('Error fetching books:', error);
             }
         };
         fetchBooks();
-    }, []);
+    }, [currentPage]);
 
     return(
         <>
@@ -147,6 +150,28 @@ function ShopList(){
                             ))}   
                              
                         </div>
+
+                        {totalPages > 1 && (
+                            <div className="row align-items-center mt-4">
+                                <div className="col-12">
+                                    <nav aria-label="Page navigation">
+                                        <ul className="pagination justify-content-center mb-0 gap-2">
+                                            <li className={`page-item ${currentPage === 0 ? 'disabled' : ''}`}>
+                                                <button className="page-link border-0 bg-light rounded text-dark px-3 py-2" onClick={() => setCurrentPage(p => p - 1)} disabled={currentPage === 0}>Prev</button>
+                                            </li>
+                                            {Array.from({ length: totalPages }, (_, i) => (
+                                                <li key={i} className={`page-item ${currentPage === i ? 'active' : ''}`}>
+                                                    <button className={`page-link border-0 rounded px-3 py-2 ${currentPage === i ? 'text-white' : 'bg-light text-dark'}`} style={currentPage === i ? { backgroundColor: '#1A162E' } : {}} onClick={() => setCurrentPage(i)}>{i + 1}</button>
+                                                </li>
+                                            ))}
+                                            <li className={`page-item ${currentPage >= totalPages - 1 ? 'disabled' : ''}`}>
+                                                <button className="page-link border-0 bg-light rounded text-dark px-3 py-2" onClick={() => setCurrentPage(p => p + 1)} disabled={currentPage >= totalPages - 1}>Next</button>
+                                            </li>
+                                        </ul>
+                                    </nav>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </section>
                 </FadeIn>
