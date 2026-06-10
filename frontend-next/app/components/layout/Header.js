@@ -1,6 +1,7 @@
 'use client';
 
 import React,{useEffect, useState} from 'react';
+import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import {Dropdown} from 'react-bootstrap';
 import { useAuth } from '../../hooks/useAuth';
@@ -16,6 +17,15 @@ function Header(){
 	const [selectBtn, setSelectBtn] = useState('Category');
 	const [active, setActive] = useState(null);
 	const [headerFix, setheaderFix] = React.useState(false);
+	const router = useRouter();
+	const [searchQuery, setSearchQuery] = useState('');
+
+	const handleSearch = (e) => {
+		e.preventDefault();
+		if (searchQuery.trim()) {
+			router.push(`/search?q=${encodeURIComponent(searchQuery.trim())}`);
+		}
+	};
 
 	const handleMenuActive = (title) => {
 		setActive(active === title ? null : title);
@@ -199,33 +209,19 @@ function Header(){
 					
 					{/* <!-- header search nav --> */}
 					<div className="header-search-nav">
-						<form className="header-item-search">
-							<div className="input-group search-input">								
-								<Dropdown className="dropdown bootstrap-select default-select drop-head">
-									<Dropdown.Toggle  as="div" className="i-false">{selectBtn} 										
-									 	<i className="ms-4 font-10 fa-solid fa-chevron-down"></i>
-									</Dropdown.Toggle>
-									<Dropdown.Menu>
-										<Dropdown.Item onClick={()=>setSelectBtn('Category')}>Category</Dropdown.Item>
-										<Dropdown.Item onClick={()=>setSelectBtn('Photography')}>Photography</Dropdown.Item>
-										<Dropdown.Item onClick={()=>setSelectBtn('Arts')}>Arts</Dropdown.Item>
-										<Dropdown.Item onClick={()=>setSelectBtn('Adventure')}>Adventure</Dropdown.Item>
-										<Dropdown.Item onClick={()=>setSelectBtn('Action')}>Action</Dropdown.Item>
-										<Dropdown.Item onClick={()=>setSelectBtn('Games')}>Games</Dropdown.Item>
-										<Dropdown.Item onClick={()=>setSelectBtn('Movies')}>Movies</Dropdown.Item>
-										<Dropdown.Item onClick={()=>setSelectBtn('Comics')}>Comics</Dropdown.Item>
-										<Dropdown.Item onClick={()=>setSelectBtn('Biographies')}>Biographies</Dropdown.Item>
-										<Dropdown.Item onClick={()=>setSelectBtn('Children’s Books')}>Children’s Books</Dropdown.Item>
-										<Dropdown.Item onClick={()=>setSelectBtn('Historical')}>Historical</Dropdown.Item>
-										<Dropdown.Item onClick={()=>setSelectBtn('Contemporary')}>Contemporary</Dropdown.Item>
-										<Dropdown.Item onClick={()=>setSelectBtn('Classics')}>Classics</Dropdown.Item>
-										<Dropdown.Item onClick={()=>setSelectBtn('Education')}>Education</Dropdown.Item>
-									</Dropdown.Menu>
-								</Dropdown>
-								<input type="text" className="form-control" aria-label="Text input with dropdown button" placeholder="Search Books Here" />
-								<button className="btn" type="button"><i className="flaticon-loupe"></i></button>
-							</div>
-						</form>
+					<form className="header-item-search" onSubmit={handleSearch}>
+						<div className="input-group search-input">
+							<input
+								type="text"
+								className="form-control"
+								aria-label="Search books"
+								placeholder="Search by title, author, ISBN..."
+								value={searchQuery}
+								onChange={(e) => setSearchQuery(e.target.value)}
+							/>
+							<button className="btn" type="submit"><i className="flaticon-loupe"></i></button>
+						</div>
+					</form>
 					</div>
 				</div>
 			</div>
@@ -260,12 +256,19 @@ function Header(){
 							<div className="logo-header logo-dark">
 								<Link href={"#"}><img loading="lazy" decoding="async" src={logo} alt="" /></Link>
 							</div>
-							<form className="search-input">
-								<div className="input-group">
-									<input type="text" className="form-control" aria-label="Text input with dropdown button" placeholder="Search Books Here" />
-									<button className="btn" type="button"><i className="flaticon-loupe"></i></button>
-								</div>
-							</form>
+						<form className="search-input" onSubmit={handleSearch}>
+							<div className="input-group">
+								<input
+									type="text"
+									className="form-control"
+									aria-label="Search books"
+									placeholder="Search by title, author, ISBN..."
+									value={searchQuery}
+									onChange={(e) => setSearchQuery(e.target.value)}
+								/>
+								<button className="btn" type="submit"><i className="flaticon-loupe"></i></button>
+							</div>
+						</form>
 							<ul className="nav navbar-nav">
 								{MenuListArray2.map((data,index) => {										
 									return(
