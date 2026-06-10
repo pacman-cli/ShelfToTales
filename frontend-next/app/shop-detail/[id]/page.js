@@ -384,7 +384,7 @@ function ShopDetail(){
                             <div className="col">
                                 <div className="dz-box">
                                     <div className="dz-media">
-                                        <img loading="lazy" decoding="async" src={book.coverUrl} alt="book" style={{maxWidth: '300px'}} />
+                                        <img loading="lazy" decoding="async" src={book.coverUrl || '/images/book-default.jpg'} alt={book.title || 'Book cover'} style={{maxWidth: '300px'}} onError={(e) => { e.target.src = '/images/book-default.jpg'; }} />
                                     </div>
                                     <div className="dz-content">
                                         <div className="dz-header">
