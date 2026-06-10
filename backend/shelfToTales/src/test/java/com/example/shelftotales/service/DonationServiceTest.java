@@ -326,4 +326,33 @@ public class DonationServiceTest {
             assertEquals(100L, response.get(0).getId());
         }
     }
+
+    @Test
+    void requestDonation_mapsDonorNameAndEmail() {
+        User donor = User.builder().id(1L).fullName("Alice Smith").email("alice@test.com").build();
+        User recipient = User.builder().id(2L).fullName("Bob Jones").email("bob@test.com").build();
+        Donation donation = Donation.builder()
+                .id(10L)
+                .donor(donor)
+                .status("AVAILABLE")
+                .condition("Good")
+                .build();
+
+        try (MockedStatic<AuthUtils> auth = mockStatic(AuthUtils.class)) {
+            auth.when(() -> AuthUtils.getCurrentUser(userRepository)).thenReturn(recipient);
+            when(donationRepository.findById(10L)).thenReturn(Optional.of(donation));
+            when(requestRepository.findByDonationIdAndRecipientId(10L, 2L)).thenReturn(Optional.empty());
+            when(requestRepository.save(any(DonationRequest.class))).thenAnswer(i -> {
+                DonationRequest r = i.getArgument(0);
+                r.setId(100L);
+                return r;
+            });
+
+            DonationRequestResponseDto result = donationService.requestDonation(10L, "I want to read this book");
+
+            assertNotNull(result);
+            assertEquals("Alice Smith", result.getDonorName());
+            assertEquals("alice@test.com", result.getDonorEmail());
+        }
+    }
 }

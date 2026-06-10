@@ -35,6 +35,7 @@ import com.example.shelftotales.shared.util.*;
 import com.example.shelftotales.auth.presentation.*;
 import com.example.shelftotales.shared.dto.*;
 
+import com.example.shelftotales.admin.application.SecurityMonitoringService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
 import jakarta.servlet.FilterChain;
@@ -57,7 +58,8 @@ class RateLimitingFilterTest {
 
     @BeforeEach
     void setUp() {
-        filter = new RateLimitingFilter(new ObjectMapper().registerModule(new JavaTimeModule()));
+        SecurityMonitoringService monitoringService = mock(SecurityMonitoringService.class);
+        filter = new RateLimitingFilter(new ObjectMapper().registerModule(new JavaTimeModule()), monitoringService);
         chain = mock(FilterChain.class);
     }
 
