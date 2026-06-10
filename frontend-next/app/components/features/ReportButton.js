@@ -9,6 +9,30 @@ import { reportService } from '@/lib/api';
  * Opens a SweetAlert2 modal with a form that adheres to Vercel Web Interface Guidelines.
  */
 export default function ReportButton({ targetType, targetId, className }) {
+  const normalizeTargetType = (type) => {
+    if (!type) return type;
+    if (type === 'BLOG') return 'BLOG_POST';
+    if (type === 'LISTING') return 'EXCHANGE_LISTING';
+    return type;
+  };
+
+  const getLabel = (type) => {
+    switch (type) {
+      case 'REVIEW':
+        return 'review';
+      case 'REVIEW_COMMENT':
+        return 'review comment';
+      case 'BLOG':
+      case 'BLOG_POST':
+        return 'blog post';
+      case 'EXCHANGE_LISTING':
+      case 'LISTING':
+        return 'listing';
+      default:
+        return 'content';
+    }
+  };
+
   const handleReportClick = async (e) => {
     e.preventDefault();
     e.stopPropagation();
@@ -102,7 +126,7 @@ export default function ReportButton({ targetType, targetId, className }) {
 
         try {
           const response = await reportService.create({
-            targetType,
+            targetType: normalizeTargetType(targetType),
             targetId: parseInt(targetId, 10),
             reason,
             explanation: explanation.trim(),
@@ -139,7 +163,7 @@ export default function ReportButton({ targetType, targetId, className }) {
       onClick={handleReportClick}
       className={className || "btn btn-link p-0 text-decoration-none text-muted"}
       style={buttonStyle}
-      aria-label={`Report this ${targetType.toLowerCase()}`}
+      aria-label={`Report this ${getLabel(targetType)}`}
     >
       <svg
         xmlns="http://www.w3.org/2000/svg"

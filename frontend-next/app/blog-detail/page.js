@@ -108,7 +108,7 @@ function BlogDetail() {
                 <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4 pt-3 border-top">
                   <div className="d-flex gap-3">
                     <button className="btn btn-outline-dark rounded-pill" onClick={handleLike}><i className="fa-regular fa-heart me-2"/>{blog.likesCount ?? 0} Likes</button>
-                    <ReportButton targetType="BLOG" targetId={blog.id} className="btn btn-outline-danger rounded-pill d-inline-flex align-items-center gap-2" />
+                    <ReportButton targetType="BLOG_POST" targetId={blog.id} className="btn btn-outline-danger rounded-pill d-inline-flex align-items-center gap-2" />
                   </div>
                   <Link href="/blog-management" className="btn btn-outline-secondary rounded-pill"><i className="fa-solid fa-arrow-left me-2"/>Back to Posts</Link>
                 </div>

@@ -44,22 +44,24 @@ export default function AdminDashboardPage() {
     { icon: 'fa-trophy', label: 'Challenges', value: stats.totalChallenges || 0, gradient: 'linear-gradient(135deg, #a18cd1, #fbc2eb)' },
   ];
 
-  // Mock chart data (in production, fetch from a time-series endpoint)
+  const weeklyOrders = stats.weeklyOrders || {};
+  const monthlyUsers = stats.monthlyUsers || {};
+
   const revenueChart = {
-    labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+    labels: weeklyOrders.labels || ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
     datasets: [{
       label: 'Orders',
-      data: [12, 19, 8, 15, 22, 30, 18],
+      data: weeklyOrders.data || [12, 19, 8, 15, 22, 30, 18],
       backgroundColor: 'rgba(79, 172, 254, 0.6)',
       borderRadius: 8,
     }]
   };
 
   const usersChart = {
-    labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+    labels: monthlyUsers.labels || ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
     datasets: [{
       label: 'New Users',
-      data: [30, 45, 60, 80, 120, 150],
+      data: monthlyUsers.data || [30, 45, 60, 80, 120, 150],
       borderColor: '#667eea',
       backgroundColor: 'rgba(102, 126, 234, 0.1)',
       fill: true,

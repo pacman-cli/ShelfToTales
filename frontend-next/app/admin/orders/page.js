@@ -8,6 +8,7 @@ import Swal from 'sweetalert2';
 export default function AdminOrdersPage() {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const orderAmount = (order) => Math.max(0, Number(order.totalAmount || 0) - Number(order.discountAmount || 0));
 
   useEffect(() => {
     orderService.getHistory().then(r => setOrders(r.data || [])).catch(() => {}).finally(() => setLoading(false));
@@ -38,7 +39,7 @@ export default function AdminOrdersPage() {
                     <span className={`badge bg-${statusColors[order.status] || 'secondary'} rounded-pill`}>{order.status}</span>
                   </div>
                   <p className="text-muted small mb-1">{order.orderDate ? new Date(order.orderDate).toLocaleDateString() : ''}</p>
-                  <p className="fw-bold mb-2">${order.totalAmount?.toFixed(2)}</p>
+                  <p className="fw-bold mb-2">${orderAmount(order).toFixed(2)}</p>
                   <div className="d-flex gap-1 flex-wrap">
                     {['CONFIRMED','SHIPPED','DELIVERED','CANCELLED'].filter(s => s !== order.status).map(s => (
                       <button key={s} className={`btn btn-sm btn-outline-${statusColors[s]} rounded-pill`} onClick={() => updateStatus(order.id, s)}>{s}</button>
