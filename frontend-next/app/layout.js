@@ -33,8 +33,32 @@ const dmSans = DM_Sans({
 });
 
 export const metadata = {
-  title: "Shelf To Tales — Book Store",
-  description: "Shelf To Tales — Book React Store Ecommerce Website",
+  title: {
+    default: 'ShelfToTales — Community Bookstore',
+    template: '%s | ShelfToTales',
+  },
+  description: 'Discover, read, and share books with a community of passionate readers.',
+  keywords: ['books', 'reading', 'bookstore', 'community', 'reviews'],
+  openGraph: {
+    title: 'ShelfToTales',
+    description: 'Discover books, read with purpose, and discuss with fellow book lovers.',
+    type: 'website',
+    url: 'https://shelftotales.com',
+    siteName: 'ShelfToTales',
+    images: [
+      {
+        url: '/og-image.png',
+        width: 1200,
+        height: 630,
+        alt: 'ShelfToTales — Bookstore & Reader Community',
+      },
+    ],
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'ShelfToTales',
+    description: 'Discover books, read with purpose, and discuss with fellow book lovers.',
+  },
 };
 
 export default function RootLayout({ children }) {

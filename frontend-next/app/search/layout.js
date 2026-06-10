@@ -1,5 +1,5 @@
 export const metadata = {
-  title: 'Search Books | Shelf To Tales',
+  title: 'Search Books',
   description: 'Search for books by title, author, ISBN, or get AI-powered semantic recommendations.',
 };
 
