@@ -12,12 +12,16 @@ import CounterSection from '../components/common/CounterSection';
 import NewsLetter from '../components/features/NewsLetter';
 import { FadeIn } from '../components/common/AnimationUtils';
 const bg2 = '/assets/images/background/bg2.jpg';
+
+const EMAILJS_SERVICE_ID = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || '';
+const EMAILJS_TEMPLATE_ID = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || '';
+const EMAILJS_PUBLIC_KEY = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || '';
+
 const ContactUs = () =>{
     const form = useRef();
 	const sendEmail = (e) => {
 		e.preventDefault();
-		//emailjs.sendForm('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', form.current, 'YOUR_USER_ID')
-		emailjs.sendForm('service_gfykn6i', 'template_iy1pb0b', e.target, 'HccoOtZS6GHw-N-m6')
+		emailjs.sendForm(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, e.target, EMAILJS_PUBLIC_KEY)
 		  .then((result) => {
 			  console.log(result.text);
 		  }, (error) => {

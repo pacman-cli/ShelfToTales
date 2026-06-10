@@ -1,38 +1,37 @@
 'use client';
 
-import { useEffect } from 'react';
-
-/**
- * Root error boundary. Next.js renders this when an uncaught error
- * propagates out of a route segment. We log to the console (in dev)
- * and offer a reset action.
- */
 export default function GlobalError({ error, reset }) {
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.error('Route-level error:', error);
-  }, [error]);
-
   return (
-    <div
-      style={{
-        padding: '60px 24px',
-        textAlign: 'center',
-        maxWidth: 720,
-        margin: '60px auto',
-      }}
-    >
-      <h1 style={{ marginBottom: 12 }}>Something went wrong</h1>
-      <p style={{ color: '#666', marginBottom: 24 }}>
-        {error?.message || 'An unexpected error occurred while rendering this page.'}
-      </p>
-      <button
-        type="button"
-        onClick={() => reset()}
-        className="btn btn-primary btnhover"
-      >
-        Try again
-      </button>
+    <div style={{
+      minHeight: '100vh',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      background: '#faf8f5',
+      fontFamily: 'Playfair Display, serif'
+    }}>
+      <div className="text-center" style={{ maxWidth: 500, padding: '2rem' }}>
+        <i className="fa-solid fa-triangle-exclamation" style={{ fontSize: '3rem', color: '#eaa451', marginBottom: '1rem' }} />
+        <h2 style={{ color: '#1a1a2e', marginBottom: '1rem' }}>Something went wrong</h2>
+        <p style={{ color: '#888', marginBottom: '2rem' }}>
+          {error?.message || 'An unexpected error occurred. Please try again.'}
+        </p>
+        <button
+          onClick={reset}
+          style={{
+            background: 'linear-gradient(135deg, #eaa451, #e58c23)',
+            color: '#fff',
+            padding: '12px 24px',
+            borderRadius: 12,
+            border: 'none',
+            fontWeight: 600,
+            cursor: 'pointer',
+            fontSize: '1rem'
+          }}
+        >
+          <i className="fa-solid fa-rotate-right me-2" /> Try Again
+        </button>
+      </div>
     </div>
   );
 }
