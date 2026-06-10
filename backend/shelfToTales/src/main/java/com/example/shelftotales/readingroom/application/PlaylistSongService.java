@@ -21,6 +21,7 @@ public class PlaylistSongService {
     private final PlaylistSongRepository playlistSongRepository;
     private final StorageService storageService;
 
+    @Transactional(readOnly = true)
     public List<PlaylistSongResponse> getAllSongs() {
         return playlistSongRepository.findAllByOrderBySortOrderAscCreatedAtAsc()
                 .stream()
@@ -31,6 +32,12 @@ public class PlaylistSongService {
     @Transactional
     public PlaylistSongResponse addSong(MultipartFile file, String title, String artist,
                                          Integer sortOrder, User addedBy) {
+        if (file == null || file.isEmpty()) {
+            throw new IllegalArgumentException("Audio file is required");
+        }
+        if (title == null || title.isBlank()) {
+            throw new IllegalArgumentException("Song title is required");
+        }
         String url = storageService.upload(file, "playlist");
 
         PlaylistSong song = PlaylistSong.builder()
@@ -49,7 +56,7 @@ public class PlaylistSongService {
     @Transactional
     public PlaylistSongResponse updateSong(Long id, PlaylistSongRequest request) {
         PlaylistSong song = playlistSongRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Song not found: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Song not found: " + id));
 
         if (request.getTitle() != null) song.setTitle(request.getTitle());
         if (request.getArtist() != null) song.setArtist(request.getArtist());
@@ -62,7 +69,7 @@ public class PlaylistSongService {
     @Transactional
     public void deleteSong(Long id) {
         if (!playlistSongRepository.existsById(id)) {
-            throw new RuntimeException("Song not found: " + id);
+            throw new IllegalArgumentException("Song not found: " + id);
         }
         playlistSongRepository.deleteById(id);
         log.info("Deleted playlist song: {}", id);
