@@ -342,3 +342,32 @@
   border-radius: 50%;
   animation: donate-spin 0.6s linear infinite;
 }
+
+.donate-type-selector {
+  display: flex;
+  gap: 8px;
+  background: #f1ede9;
+  padding: 6px;
+  border-radius: 12px;
+  margin-top: 4px;
+}
+
+.donate-type-btn {
+  flex: 1;
+  border: none;
+  background: none;
+  padding: 10px 14px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: #666;
+}
+
+.donate-type-btn.active {
+  background: #fff;
+  color: #1a1a2e;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+

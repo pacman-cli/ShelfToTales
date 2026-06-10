@@ -4,13 +4,22 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { bookService, donationService } from '../../lib/api';
+import { bookService, donationService, exchangeService } from '../../lib/api';
 import Swal from 'sweetalert2';
 import ClientOnly from '../../components/ClientOnly';
 import './Donate.css';
 
+const conditionMap = {
+  'New': 'LIKE_NEW',
+  'Like New': 'LIKE_NEW',
+  'Good': 'GOOD',
+  'Fair': 'FAIR',
+  'Poor': 'WORN'
+};
+
 function DonateBookInner() {
   const router = useRouter();
+  const [type, setType] = useState('DONATION'); // 'DONATION', 'SWAP', 'LEND'
   const [isManual, setIsManual] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [searchResults, setSearchResults] = useState([]);
@@ -22,12 +31,12 @@ function DonateBookInner() {
   const [customAuthor, setCustomAuthor] = useState('');
   const [description, setDescription] = useState('');
   const [condition, setCondition] = useState('Good');
+  const [location, setLocation] = useState('');
   
   const [submitting, setSubmitting] = useState(false);
   const searchTimeoutRef = useRef(null);
   const dropdownRef = useRef(null);
 
-  // Close autocomplete dropdown when clicking outside
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -38,7 +47,6 @@ function DonateBookInner() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Autocomplete catalog search
   useEffect(() => {
     if (isManual || searchQuery.trim().length < 2) {
       setSearchResults([]);
@@ -81,36 +89,58 @@ function DonateBookInner() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!isManual && !selectedBook) {
-      Swal.fire('Warning', 'Please select a book from the catalog or toggle manual entry.', 'warning');
-      return;
-    }
-
-    if (isManual && (!customTitle.trim() || !customAuthor.trim())) {
-      Swal.fire('Warning', 'Please enter custom book title and author.', 'warning');
-      return;
+    if (type === 'DONATION') {
+      if (!isManual && !selectedBook) {
+        Swal.fire('Warning', 'Please select a book from the catalog or toggle manual entry.', 'warning');
+        return;
+      }
+      if (isManual && (!customTitle.trim() || !customAuthor.trim())) {
+        Swal.fire('Warning', 'Please enter custom book title and author.', 'warning');
+        return;
+      }
+    } else {
+      if (!selectedBook) {
+        Swal.fire('Warning', 'Please select a book from the catalog. Swaps/Lends require a catalog book.', 'warning');
+        return;
+      }
+      if (!location.trim()) {
+        Swal.fire('Warning', 'Please enter location.', 'warning');
+        return;
+      }
     }
 
     setSubmitting(true);
-    const payload = {
-      bookId: isManual ? null : selectedBook.id,
-      customTitle: isManual ? customTitle : null,
-      customAuthor: isManual ? customAuthor : null,
-      description: description,
-      condition: condition,
-    };
 
     try {
-      await donationService.create(payload);
+      if (type === 'DONATION') {
+        const payload = {
+          bookId: isManual ? null : selectedBook.id,
+          customTitle: isManual ? customTitle : null,
+          customAuthor: isManual ? customAuthor : null,
+          description: description,
+          condition: condition,
+        };
+        await donationService.create(payload);
+      } else {
+        const payload = {
+          bookId: selectedBook.id.toString(),
+          type: type,
+          condition: conditionMap[condition] || 'GOOD',
+          description: description,
+          location: location,
+        };
+        await exchangeService.createListing(payload);
+      }
+
       await Swal.fire({
         icon: 'success',
-        title: 'Donation Listed!',
-        text: 'Your book has been successfully listed for donation.',
+        title: 'Listing Created!',
+        text: `Successfully listed for ${type.toLowerCase()}!`,
         confirmButtonColor: '#eaa451',
       });
       router.push('/donations');
     } catch (err) {
-      Swal.fire('Error', err.response?.data?.message || 'Failed to list donation', 'error');
+      Swal.fire('Error', err.response?.data?.message || 'Failed to submit listing', 'error');
     } finally {
       setSubmitting(false);
     }
@@ -125,21 +155,51 @@ function DonateBookInner() {
 
           <form onSubmit={handleSubmit} className="donate-form">
             
-            {/* Toggle Switch */}
-            <div className="donate-toggle-container" onClick={() => {
-              setIsManual(!isManual);
-              setSelectedBook(null);
-            }}>
-              <input
-                type="checkbox"
-                id="isManual"
-                checked={isManual}
-                onChange={() => {}}
-                className="donate-toggle-input"
-              />
-              <div className="donate-toggle-switch" />
-              <span className="donate-toggle-text">Book is not in the store catalog (Enter details manually)</span>
+            {/* Type Selection */}
+            <div className="donate-group">
+              <label className="donate-label">Listing Purpose *</label>
+              <div className="donate-type-selector">
+                <button
+                  type="button"
+                  className={`donate-type-btn ${type === 'DONATION' ? 'active' : ''}`}
+                  onClick={() => { setType('DONATION'); setIsManual(false); }}
+                >
+                  Donation (Free)
+                </button>
+                <button
+                  type="button"
+                  className={`donate-type-btn ${type === 'SWAP' ? 'active' : ''}`}
+                  onClick={() => { setType('SWAP'); setIsManual(false); }}
+                >
+                  Swap (Peer Exchange)
+                </button>
+                <button
+                  type="button"
+                  className={`donate-type-btn ${type === 'LEND' ? 'active' : ''}`}
+                  onClick={() => { setType('LEND'); setIsManual(false); }}
+                >
+                  Lend (Borrowing)
+                </button>
+              </div>
             </div>
+
+            {/* Toggle Switch - Donations only */}
+            {type === 'DONATION' && (
+              <div className="donate-toggle-container" onClick={() => {
+                setIsManual(!isManual);
+                setSelectedBook(null);
+              }}>
+                <input
+                  type="checkbox"
+                  id="isManual"
+                  checked={isManual}
+                  onChange={() => {}}
+                  className="donate-toggle-input"
+                />
+                <div className="donate-toggle-switch" />
+                <span className="donate-toggle-text">Book is not in the store catalog (Enter details manually)</span>
+              </div>
+            )}
 
             {/* Catalog Book Search (Autocomplete) */}
             {!isManual && !selectedBook && (
@@ -246,6 +306,23 @@ function DonateBookInner() {
               </>
             )}
 
+            {/* Location Input - Swaps only */}
+            {type !== 'DONATION' && (
+              <div className="donate-group">
+                <label htmlFor="location" className="donate-label">Location / Drop-off *</label>
+                <input
+                  type="text"
+                  id="location"
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="e.g. Sector 5, Uttara, Dhaka or Postal Code…"
+                  className="donate-input"
+                  autoComplete="off"
+                  required
+                />
+              </div>
+            )}
+
             {/* Condition Field */}
             <div className="donate-group">
               <label htmlFor="condition" className="donate-label">Book Condition *</label>
@@ -294,7 +371,7 @@ function DonateBookInner() {
                     <span>Listing…</span>
                   </>
                 ) : (
-                  <span>List for Donation</span>
+                  <span>List Book</span>
                 )}
               </button>
             </div>
