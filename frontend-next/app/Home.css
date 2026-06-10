@@ -853,3 +853,81 @@
     .stt-section-header h2 { font-size: 1.7rem; }
     .stt-how-it-works, .stt-trending, .stt-community, .stt-newsletter { padding: 70px 0; }
 }
+
+/* ============================================
+   Accessibility: Respect prefers-reduced-motion
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  /* Keyframes for reduced motion */
+  @keyframes pulseGlow {
+    0%, 100% { transform: none; opacity: 0.6; }
+    50% { opacity: 1; }
+  }
+  
+  /* Reduce all animations globally */
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* ============================================
+   Keyboard Accessibility: Focus States
+   ============================================ */
+
+/* Primary buttons */
+.btn-hero-primary,
+.btn-hero-secondary,
+.stt-view-all {
+  outline: none;
+}
+
+.btn-hero-primary:focus-visible,
+.btn-hero-secondary:focus-visible,
+.stt-view-all:focus-visible {
+  outline: 2px solid #EAA451;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Wishlist button */
+.wishlist-btn:focus-visible {
+  outline: 2px solid #ff6b6b;
+  outline-offset: 2px;
+  border-radius: 50%;
+}
+
+/* Book cards */
+.stt-book-card:focus-within {
+  outline: 2px solid #029e76;
+  outline-offset: 4px;
+}
+
+/* Room cards */
+.stt-room-card:focus-within {
+  outline: 2px solid #3a32b8;
+  outline-offset: 2px;
+}
+
+/* ============================================
+   Keyboard Accessibility: Skip Link
+   ============================================ */
+
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #029e76;
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  z-index: 1000;
+  border-radius: 0 0 4px 0;
+  font-weight: 600;
+}
+
+.skip-link:focus {
+  top: 0;
+}

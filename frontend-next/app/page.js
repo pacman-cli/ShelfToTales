@@ -55,6 +55,22 @@ const staggerContainer = {
   visible: { transition: { staggerChildren: 0.15 } },
 };
 
+// --- Hook: Respect prefers-reduced-motion ---
+function usePrefersReducedMotion() {
+  const [prefersReduced, setPrefersReduced] = React.useState(false);
+  
+  useEffect(() => {
+    const mediaQuery = window.matchMedia('(prefers-reduced-motion: reduce)');
+    setPrefersReduced(mediaQuery.matches);
+    
+    const listener = (e) => setPrefersReduced(e.matches);
+    mediaQuery.addEventListener('change', listener);
+    return () => mediaQuery.removeEventListener('change', listener);
+  }, []);
+  
+  return prefersReduced;
+}
+
 // --- Animated Section Wrapper ---
 function AnimatedSection({ children, className, variants = fadeUp, ...props }) {
   const ref = useRef(null);
@@ -84,6 +100,7 @@ const bookColors = ['#EAA451', '#1a1668', '#029e76', '#ff6b6b', '#00aeff', '#e58
 
 function Home() {
   const [books, setBooks] = useState([]);
+  const prefersReduced = usePrefersReducedMotion();
   const heroRef = useRef(null);
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ['start start', 'end start'] });
   const heroY = useTransform(scrollYProgress, [0, 1], [0, 150]);
@@ -96,7 +113,13 @@ function Home() {
   }, []);
 
   return (
-    <div className="page-content bg-white">
+    <>
+      <a href="#main-content" className="skip-link">
+        Skip to main content
+      </a>
+
+      <div className="page-content bg-white">
+        <main id="main-content">
 
       {/* ===== HERO ===== */}
       <section className="stt-hero" ref={heroRef}>
@@ -106,8 +129,8 @@ function Home() {
             <motion.div
               key={i}
               className="particle"
-              animate={{ y: [0, -30, 0], x: [0, 15, 0], opacity: [0.3, 0.7, 0.3] }}
-              transition={{ duration: 4 + i, repeat: Infinity, ease: 'easeInOut', delay: i * 0.5 }}
+              animate={prefersReduced ? {} : { y: [0, -30, 0], x: [0, 15, 0], opacity: [0.3, 0.7, 0.3] }}
+              transition={prefersReduced ? {} : { duration: 4 + i, repeat: Infinity, ease: 'easeInOut', delay: i * 0.5 }}
             />
           ))}
         </div>
@@ -182,13 +205,19 @@ function Home() {
                     <SwiperSlide key={book.id || i}>
                       <Link href={`/shop-detail/${book.id}`} className="hero-slide-inner">
                         <div className="hero-slide-cover">
-                          <img loading="lazy" src={book.coverUrl || `https://via.placeholder.com/300x420/${bookColors[i % bookColors.length].replace('#','')}/ffffff?text=${encodeURIComponent(book.title?.substring(0,10) || 'Book')}`} alt={book.title} />
+                          <img 
+                            loading="lazy" 
+                            width={300}
+                            height={420}
+                            src={book.coverUrl || `https://via.placeholder.com/300x420/${bookColors[i % bookColors.length].replace('#','')}/ffffff?text=${encodeURIComponent(book.title?.substring(0,10) || 'Book')}`} 
+                            alt={book.title} 
+                          />
                         </div>
                         <div className="hero-slide-info">
                           <span className="hero-slide-badge">{book.categoryName || 'Featured'}</span>
                           <h3>{book.title}</h3>
                           <p className="hero-slide-author">by {book.author}</p>
-                          <p className="hero-slide-desc">{book.description?.substring(0, 100) || 'A captivating read...'}...</p>
+                          <p className="hero-slide-desc">{book.description?.substring(0, 100) || 'A captivating read…'}…</p>
                           <div className="hero-slide-price">${book.price || '19.99'}</div>
                         </div>
                       </Link>
@@ -196,17 +225,21 @@ function Home() {
                   )) : (
                     <SwiperSlide>
                       <div className="hero-slide-inner">
-                        <div className="hero-slide-cover" style={{background: 'linear-gradient(135deg, #EAA451, #e58c23)', display:'flex', alignItems:'center', justifyContent:'center'}}>
+                        <div 
+                          className="hero-slide-cover" 
+                          aria-hidden="true"
+                          style={{background: 'linear-gradient(135deg, #EAA451, #e58c23)', display:'flex', alignItems:'center', justifyContent:'center'}}
+                        >
                           <motion.i
                             className="fa-solid fa-book"
                             style={{fontSize:'3rem', color:'rgba(255,255,255,0.3)'}}
-                            animate={{ rotate: [0, 5, -5, 0] }}
-                            transition={{ duration: 3, repeat: Infinity }}
+                            animate={prefersReduced ? {} : { rotate: [0, 5, -5, 0] }}
+                            transition={prefersReduced ? {} : { duration: 3, repeat: Infinity }}
                           />
                         </div>
                         <div className="hero-slide-info">
                           <span className="hero-slide-badge">Loading</span>
-                          <h3>Discovering Books...</h3>
+                          <h3>Discovering Books…</h3>
                         </div>
                       </div>
                     </SwiperSlide>
@@ -265,7 +298,7 @@ function Home() {
             {(books.length > 0 ? books.slice(0, 4) : [{},{},{},{}]).map((book, i) => (
               <div className="col-lg-3 col-md-6" key={book.id || i}>
                 <motion.div variants={fadeUp} custom={i}>
-                  <Link href={book.id ? `/shop-detail/${book.id}` : '#'} style={{textDecoration:'none'}}>
+                  <Link href={book.id ? `/shop-detail/${book.id}` : '/books-grid-view-sidebar'} style={{textDecoration:'none'}}>
                     <motion.div
                       className="stt-book-card"
                       whileHover={{ y: -10, boxShadow: '0 20px 50px rgba(0,0,0,0.12)' }}
@@ -273,12 +306,25 @@ function Home() {
                     >
                       <div className="book-cover">
                         {book.coverUrl ? (
-                          <img loading="lazy" src={book.coverUrl} alt={book.title} />
+                          <img 
+                            loading="lazy" 
+                            width={240}
+                            height={340}
+                            src={book.coverUrl} 
+                            alt={book.title} 
+                          />
                         ) : (
                           <div style={{width:'100%', height:'100%', background: `linear-gradient(135deg, ${bookColors[i]}, ${bookColors[i+4]})`}} />
                         )}
                         <motion.button
                           className="wishlist-btn"
+                          aria-label={`Add ${book.title} to wishlist`}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' || e.key === ' ') {
+                              e.preventDefault();
+                              e.currentTarget.click();
+                            }
+                          }}
                           onClick={(e) => e.preventDefault()}
                           whileHover={{ scale: 1.3 }}
                           whileTap={{ scale: 0.9 }}
@@ -287,9 +333,9 @@ function Home() {
                         </motion.button>
                       </div>
                       <div className="book-info">
-                        <div className="book-category">{book.categoryName || 'Loading...'}</div>
+                        <div className="book-category">{book.categoryName || 'Loading…'}</div>
                         <h6>{book.title || 'Fetching books...'}</h6>
-                        <div className="book-author">by {book.author || '...'}</div>
+                        <div className="book-author">by {book.author || '…'}</div>
                         <div className="book-price">${book.price || '--'}</div>
                       </div>
                     </motion.div>
@@ -514,7 +560,9 @@ function Home() {
         </div>
       </AnimatedSection>
 
-    </div>
+        </main>
+      </div>
+    </>
   );
 }
 
