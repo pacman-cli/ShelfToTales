@@ -9,3 +9,5 @@ CREATE TABLE playlist_songs (
     added_by_id BIGINT NOT NULL REFERENCES users(id),
     created_at TIMESTAMP NOT NULL DEFAULT NOW()
 );
+
+CREATE INDEX idx_playlist_songs_added_by_id ON playlist_songs(added_by_id);
