@@ -19,6 +19,24 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+    networks:
+      - shelftotales-network
+
+  # Redis Cache & Blacklist
+  redis:
+    image: redis:7-alpine
+    container_name: shelftotales-redis
+    restart: unless-stopped
+    command: redis-server --requirepass shelftotales_redis_password
+    ports:
+      - "6379:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "shelftotales_redis_password", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - shelftotales-network
 
   # Spring Boot Application
   app:
@@ -38,8 +56,13 @@ services:
       H2_CONSOLE_ENABLED: false
       CORS_ALLOWED_ORIGINS: ${CORS_ALLOWED_ORIGINS:-http://localhost:3000}
       JWT_SECRET_KEY: ${JWT_SECRET_KEY:-3cfa76ef14937c1c0ea519f8fc057a80fcd04a7420f8e8bcd0a7567c272e007b}
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      REDIS_PASSWORD: shelftotales_redis_password
     depends_on:
       postgres:
+        condition: service_healthy
+      redis:
         condition: service_healthy
     networks:
       - shelftotales-network

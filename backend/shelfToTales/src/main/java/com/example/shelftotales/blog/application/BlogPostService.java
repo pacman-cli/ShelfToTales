@@ -1,6 +1,8 @@
 package com.example.shelftotales.blog.application;
 
 import com.example.shelftotales.auth.domain.User;
+import org.jsoup.Jsoup;
+import org.jsoup.safety.Safelist;
 import com.example.shelftotales.blog.domain.BlogPost;
 import com.example.shelftotales.blog.infrastructure.BlogPostRepository;
 import com.example.shelftotales.shared.exception.ResourceNotFoundException;
@@ -43,7 +45,7 @@ public class BlogPostService {
         BlogPost post = BlogPost.builder()
                 .author(author)
                 .title(request.getTitle())
-                .content(request.getContent())
+                .content(sanitizeHtml(request.getContent()))
                 .coverImage(request.getCoverImage())
                 .status(request.getStatus() != null ? request.getStatus() : "PUBLISHED")
                 .build();
@@ -58,7 +60,7 @@ public class BlogPostService {
             throw new IllegalArgumentException("You are not the author of this post");
         }
         post.setTitle(request.getTitle());
-        post.setContent(request.getContent());
+        post.setContent(sanitizeHtml(request.getContent()));
         post.setCoverImage(request.getCoverImage());
         if (request.getStatus() != null) {
             post.setStatus(request.getStatus());
@@ -97,5 +99,17 @@ public class BlogPostService {
                 .likesCount(post.getLikesCount())
                 .createdAt(post.getCreatedAt())
                 .build();
+    }
+
+    private String sanitizeHtml(String html) {
+        if (html == null) return null;
+        Safelist safelist = Safelist.relaxed()
+                .addTags("iframe")
+                .addAttributes("iframe", "src", "width", "height", "frameborder", "allow", "allowfullscreen", "allow", "class", "style")
+                .addAttributes(":all", "class", "style")
+                .addProtocols("iframe", "src", "http", "https")
+                .addProtocols("a", "href", "http", "https", "mailto", "tel")
+                .preserveRelativeLinks(true);
+        return Jsoup.clean(html, "", safelist, new org.jsoup.nodes.Document.OutputSettings().prettyPrint(false));
     }
 }

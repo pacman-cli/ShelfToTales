@@ -11,6 +11,7 @@ import com.example.shelftotales.catalog.infrastructure.BookRepository;
 import com.example.shelftotales.catalog.infrastructure.ImageHashService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,6 +29,16 @@ public class SemanticSearchController {
     private final EmbeddingService embeddingService;
     private final ImageHashService imageHashService;
     private final BookRepository bookRepository;
+    private final JdbcTemplate jdbcTemplate;
+
+    private boolean isPostgresDatabase() {
+        try {
+            String dbName = jdbcTemplate.execute((java.sql.Connection conn) -> conn.getMetaData().getDatabaseProductName());
+            return "PostgreSQL".equalsIgnoreCase(dbName);
+        } catch (Exception e) {
+            return false;
+        }
+    }
 
     private record BookMatch(Book book, int distance) {}
 
@@ -58,14 +69,22 @@ public class SemanticSearchController {
         try {
             long queryHash = imageHashService.computeDHash(file);
 
-            List<Book> allBooks = bookRepository.findAll();
-
-            List<BookMatch> matches = allBooks.stream()
-                    .filter(book -> book.getCoverHash() != null)
-                    .map(book -> new BookMatch(book, imageHashService.hammingDistance(queryHash, book.getCoverHash())))
-                    .sorted(Comparator.comparingInt(BookMatch::distance))
-                    .limit(limit)
-                    .collect(Collectors.toList());
+            List<BookMatch> matches;
+            if (isPostgresDatabase()) {
+                List<Book> similarBooks = bookRepository.findSimilarBooksByCoverHashPg(queryHash, limit);
+                matches = similarBooks.stream()
+                        .map(book -> new BookMatch(book, imageHashService.hammingDistance(queryHash, book.getCoverHash())))
+                        .sorted(Comparator.comparingInt(BookMatch::distance))
+                        .collect(Collectors.toList());
+            } else {
+                List<Book> allBooks = bookRepository.findAll();
+                matches = allBooks.stream()
+                        .filter(book -> book.getCoverHash() != null)
+                        .map(book -> new BookMatch(book, imageHashService.hammingDistance(queryHash, book.getCoverHash())))
+                        .sorted(Comparator.comparingInt(BookMatch::distance))
+                        .limit(limit)
+                        .collect(Collectors.toList());
+            }
 
             List<Map<String, Object>> results = matches.stream()
                     .map(match -> {

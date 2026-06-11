@@ -76,6 +76,9 @@ class AuthServiceTest {
     @Mock
     private AuthenticationManager authenticationManager;
 
+    @Mock
+    private BruteForceProtectionService bruteForceProtectionService;
+
     @InjectMocks
     private AuthService authService;
 
@@ -185,5 +188,14 @@ class AuthServiceTest {
                 .build();
 
         assertThrows(BadCredentialsException.class, () -> authService.login(oauthLogin));
+    }
+
+    @Test
+    void testLoginLockedAccount() {
+        when(bruteForceProtectionService.isLocked("test@example.com")).thenReturn(true);
+        when(bruteForceProtectionService.getLockoutRemainingSeconds("test@example.com")).thenReturn(300L);
+
+        assertThrows(org.springframework.security.authentication.LockedException.class, 
+                     () -> authService.login(loginRequest));
     }
 }

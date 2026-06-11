@@ -12,6 +12,6 @@ import java.util.List;
 
 @Repository
 public interface SocialActivityRepository extends JpaRepository<SocialActivity, Long> {
-    List<SocialActivity> findByUserInOrderByCreatedAtDesc(Collection<User> users);
+    List<SocialActivity> findByUserInOrderByCreatedAtDesc(Collection<User> users, org.springframework.data.domain.Pageable pageable);
     List<SocialActivity> findByUserIdOrderByCreatedAtDesc(Long userId);
 }

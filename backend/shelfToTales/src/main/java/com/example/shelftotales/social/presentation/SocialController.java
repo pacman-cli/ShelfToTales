@@ -58,7 +58,7 @@ public class SocialController {
     }
 
     @GetMapping("/feed")
-    public ResponseEntity<List<SocialActivityResponse>> getActivityFeed() {
-        return ResponseEntity.ok(socialService.getActivityFeed());
+    public ResponseEntity<List<SocialActivityResponse>> getActivityFeed(org.springframework.data.domain.Pageable pageable) {
+        return ResponseEntity.ok(socialService.getActivityFeed(pageable));
     }
 }

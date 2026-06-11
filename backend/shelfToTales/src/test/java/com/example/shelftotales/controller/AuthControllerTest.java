@@ -65,6 +65,9 @@ class AuthControllerTest {
     @MockBean
     private AuthService authService;
 
+    @MockBean
+    private TokenBlacklist tokenBlacklist;
+
     @Autowired
     private ObjectMapper objectMapper;
 
@@ -155,5 +158,34 @@ class AuthControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(loginRequest)))
                 .andExpect(status().isUnauthorized());
+    }
+
+    @Test
+    void testLoginLockedAccount() throws Exception {
+        when(authService.login(any(LoginRequest.class)))
+                .thenThrow(new org.springframework.security.authentication.LockedException("Account is locked. Please try again in 15 minutes."));
+
+        mockMvc.perform(post("/api/auth/login")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(loginRequest)))
+                .andExpect(status().isLocked())
+                .andExpect(jsonPath("$.message").value("Account is locked. Please try again in 15 minutes."));
+    }
+
+    @Test
+    void testLogoutSuccess() throws Exception {
+        mockMvc.perform(post("/api/auth/logout")
+                .header("Authorization", "Bearer jwt-token"))
+                .andExpect(status().isOk());
+
+        org.mockito.Mockito.verify(tokenBlacklist).add("jwt-token");
+    }
+
+    @Test
+    void testLogoutNoToken() throws Exception {
+        mockMvc.perform(post("/api/auth/logout"))
+                .andExpect(status().isOk());
+
+        org.mockito.Mockito.verify(tokenBlacklist, org.mockito.Mockito.never()).add(org.mockito.ArgumentMatchers.anyString());
     }
 }

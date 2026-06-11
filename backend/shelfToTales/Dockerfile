@@ -17,11 +17,20 @@ RUN mvn clean package -DskipTests
 # Use a lighter runtime image
 FROM eclipse-temurin:17-jre
 
+# Create a non-root user and group
+RUN groupadd -r appgroup && useradd -r -g appgroup -d /app -s /sbin/nologin appuser
+
 # Set working directory
 WORKDIR /app
 
 # Copy the built jar file from the build stage
-COPY --from=build /app/target/*.jar app.jar
+COPY --from=build --chown=appuser:appgroup /app/target/*.jar app.jar
+
+# Ensure permissions
+RUN chown -R appuser:appgroup /app
+
+# Use non-root user
+USER appuser
 
 # Expose port 8080
 EXPOSE 8080

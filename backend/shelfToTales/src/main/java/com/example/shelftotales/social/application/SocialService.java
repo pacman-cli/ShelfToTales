@@ -106,13 +106,18 @@ public class SocialService {
 
     @Transactional(readOnly = true)
     public List<SocialActivityResponse> getActivityFeed() {
+        return getActivityFeed(org.springframework.data.domain.PageRequest.of(0, 20));
+    }
+
+    @Transactional(readOnly = true)
+    public List<SocialActivityResponse> getActivityFeed(org.springframework.data.domain.Pageable pageable) {
         User currentUser = AuthUtils.getCurrentUser(userRepository);
 
         // Feed includes user's own activities and their followings' activities
         Set<User> feedUsers = new HashSet<>(currentUser.getFollowing());
         feedUsers.add(currentUser);
 
-        List<SocialActivity> activities = socialActivityRepository.findByUserInOrderByCreatedAtDesc(feedUsers);
+        List<SocialActivity> activities = socialActivityRepository.findByUserInOrderByCreatedAtDesc(feedUsers, pageable);
 
         return activities.stream()
                 .map(activity -> SocialActivityResponse.builder()

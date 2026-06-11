@@ -37,16 +37,28 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             @NonNull HttpServletResponse response,
             @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-        final String authHeader = request.getHeader("Authorization");
-        final String jwt;
-        final String userEmail;
+        String tempJwt = null;
+        if (request.getCookies() != null) {
+            for (jakarta.servlet.http.Cookie cookie : request.getCookies()) {
+                if ("token".equals(cookie.getName())) {
+                    tempJwt = cookie.getValue();
+                    break;
+                }
+            }
+        }
 
-        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+        final String authHeader = request.getHeader("Authorization");
+        if (tempJwt == null && authHeader != null && authHeader.startsWith("Bearer ")) {
+            tempJwt = authHeader.substring(7);
+        }
+
+        if (tempJwt == null) {
             filterChain.doFilter(request, response);
             return;
         }
 
-        jwt = authHeader.substring(7);
+        final String jwt = tempJwt;
+        final String userEmail;
         
         if (tokenBlacklist.isBlacklisted(jwt)) {
             logger.debug("Token is blacklisted");
@@ -55,10 +67,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             return;
         }
         
-        userEmail = jwtService.extractUsername(jwt);
-
-        if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-            try {
+        try {
+            userEmail = jwtService.extractUsername(jwt);
+            if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
                 if (jwtService.isTokenValid(jwt, userDetails)) {
                     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
@@ -69,11 +80,11 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
-            } catch (Exception e) {
-                // Log the error but continue the filter chain
-                logger.debug("JWT authentication failed: " + e.getMessage());
-                recordSecurityEvent(SecurityEventType.JWT_AUTHENTICATION_FAILED, SecurityEventSeverity.MEDIUM, request, userEmail, e.getMessage());
             }
+        } catch (Exception e) {
+            // Log the error but continue the filter chain
+            logger.debug("JWT authentication failed: " + e.getMessage());
+            recordSecurityEvent(SecurityEventType.JWT_AUTHENTICATION_FAILED, SecurityEventSeverity.MEDIUM, request, null, e.getMessage());
         }
         filterChain.doFilter(request, response);
     }

@@ -167,10 +167,22 @@ public class EmbeddingService {
 
     @Transactional
     public int reindexAll() {
-        List<Book> books = bookRepository.findAll();
-        for (Book book : books) embedBook(book);
-        log.info("Reindexed {} book embeddings", books.size());
-        return books.size();
+        int pageSize = 100;
+        int pageNumber = 0;
+        int totalReindexed = 0;
+        org.springframework.data.domain.Page<Book> bookPage;
+
+        do {
+            bookPage = bookRepository.findAll(org.springframework.data.domain.PageRequest.of(pageNumber, pageSize));
+            for (Book book : bookPage.getContent()) {
+                embedBook(book);
+                totalReindexed++;
+            }
+            pageNumber++;
+        } while (bookPage.hasNext());
+
+        log.info("Reindexed {} book embeddings", totalReindexed);
+        return totalReindexed;
     }
 
     private String buildBookText(Book book) {

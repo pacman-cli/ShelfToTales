@@ -61,4 +61,9 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     @Query("SELECT new com.example.shelftotales.bookshelf.application.CategoryBreakdownDTO(c.name, COUNT(b)) " +
            "FROM ShelfBook sb JOIN sb.book b JOIN b.category c WHERE sb.bookshelf.user.id = :userId GROUP BY c.name")
     List<CategoryBreakdownDTO> findCategoryBreakdownByUserId(@Param("userId") Long userId);
+
+    @Query(value = "SELECT * FROM books WHERE cover_hash IS NOT NULL " +
+                   "ORDER BY bit_count((cover_hash # CAST(:queryHash AS BIGINT))::bit(64)) ASC LIMIT :limit", 
+           nativeQuery = true)
+    List<Book> findSimilarBooksByCoverHashPg(@Param("queryHash") long queryHash, @Param("limit") int limit);
 }

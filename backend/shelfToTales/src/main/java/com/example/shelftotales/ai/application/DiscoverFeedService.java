@@ -32,6 +32,8 @@ public class DiscoverFeedService {
     private final UserRepository userRepository;
     private final AIService aiService;
     private final EmbeddingService embeddingService;
+    private final ShelfBookRepository shelfBookRepository;
+    private final ReviewRepository reviewRepository;
 
     @Transactional(readOnly = true)
     public DiscoverFeedResponse getDiscoverFeed() {
@@ -71,10 +73,39 @@ public class DiscoverFeedService {
     }
 
     private DiscoverFeedResponse.TrendingSection getTrending() {
-        List<BookResponse> top = bookRepository.findAll(PageRequest.of(0, 5)).stream()
+        List<Long> mostReadIds = shelfBookRepository.findMostReadBookIds(PageRequest.of(0, 5));
+        List<Book> mostReadBooks;
+        if (mostReadIds.isEmpty()) {
+            mostReadBooks = bookRepository.findAll(PageRequest.of(0, 5)).getContent();
+        } else {
+            mostReadBooks = bookRepository.findAllById(mostReadIds);
+            Map<Long, Book> bookMap = mostReadBooks.stream().collect(Collectors.toMap(Book::getId, b -> b));
+            mostReadBooks = mostReadIds.stream().map(bookMap::get).filter(Objects::nonNull).collect(Collectors.toList());
+        }
+
+        List<Long> topReviewedIds = reviewRepository.findTopReviewedBookIds(PageRequest.of(0, 5));
+        List<Book> topReviewedBooks;
+        if (topReviewedIds.isEmpty()) {
+            topReviewedBooks = bookRepository.findAll(PageRequest.of(0, 5)).getContent();
+        } else {
+            topReviewedBooks = bookRepository.findAllById(topReviewedIds);
+            Map<Long, Book> bookMap = topReviewedBooks.stream().collect(Collectors.toMap(Book::getId, b -> b));
+            topReviewedBooks = topReviewedIds.stream().map(bookMap::get).filter(Objects::nonNull).collect(Collectors.toList());
+        }
+
+        List<BookResponse> mostReadResponses = mostReadBooks.stream()
                 .map(b -> BookResponse.builder().id(b.getId()).title(b.getTitle())
                         .author(b.getAuthor()).coverUrl(b.getCoverUrl()).build())
                 .collect(Collectors.toList());
-        return DiscoverFeedResponse.TrendingSection.builder().mostRead(top).topReviewed(top).build();
+
+        List<BookResponse> topReviewedResponses = topReviewedBooks.stream()
+                .map(b -> BookResponse.builder().id(b.getId()).title(b.getTitle())
+                        .author(b.getAuthor()).coverUrl(b.getCoverUrl()).build())
+                .collect(Collectors.toList());
+
+        return DiscoverFeedResponse.TrendingSection.builder()
+                .mostRead(mostReadResponses)
+                .topReviewed(topReviewedResponses)
+                .build();
     }
 }

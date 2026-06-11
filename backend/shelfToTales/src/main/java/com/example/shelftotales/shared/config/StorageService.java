@@ -32,6 +32,7 @@ public class StorageService {
         if (!isAvailable()) {
             throw new IllegalStateException("Storage not configured. Set R2 credentials.");
         }
+        validateFileType(file, folder);
         String ext = getExtension(file.getOriginalFilename());
         String key = folder + "/" + UUID.randomUUID() + ext;
 
@@ -50,6 +51,41 @@ public class StorageService {
         } catch (Exception e) {
             log.error("Upload failed: {}", e.getMessage());
             throw new RuntimeException("File upload failed", e);
+        }
+    }
+
+    private void validateFileType(MultipartFile file, String folder) {
+        String filename = file.getOriginalFilename();
+        if (filename == null || filename.isBlank()) {
+            throw new IllegalArgumentException("Filename cannot be empty");
+        }
+        String ext = getExtension(filename).toLowerCase();
+        String contentType = file.getContentType();
+        if (contentType == null) {
+            contentType = "";
+        }
+        contentType = contentType.toLowerCase();
+
+        if ("images".equals(folder) || "covers".equals(folder)) {
+            boolean validExt = ext.equals(".jpg") || ext.equals(".jpeg") || ext.equals(".png") || ext.equals(".gif") || ext.equals(".webp");
+            boolean validMime = contentType.startsWith("image/");
+            if (!validExt || !validMime) {
+                throw new IllegalArgumentException("Only image files are allowed (.jpg, .jpeg, .png, .gif, .webp)");
+            }
+        } else if ("pdfs".equals(folder)) {
+            boolean validExt = ext.equals(".pdf");
+            boolean validMime = "application/pdf".equals(contentType);
+            if (!validExt || !validMime) {
+                throw new IllegalArgumentException("Only PDF files are allowed (.pdf)");
+            }
+        } else if ("playlist".equals(folder)) {
+            boolean validExt = ext.equals(".mp3") || ext.equals(".wav") || ext.equals(".ogg") || ext.equals(".m4a");
+            boolean validMime = contentType.startsWith("audio/");
+            if (!validExt || !validMime) {
+                throw new IllegalArgumentException("Only audio files are allowed (.mp3, .wav, .ogg, .m4a)");
+            }
+        } else {
+            throw new IllegalArgumentException("Unknown upload destination");
         }
     }
 

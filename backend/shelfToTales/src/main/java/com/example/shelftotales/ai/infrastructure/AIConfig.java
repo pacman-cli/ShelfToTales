@@ -14,7 +14,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.io.Resource;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 
 @Configuration
 @Slf4j
@@ -34,11 +38,11 @@ public class AIConfig {
     @Bean
     public OrtSession ortSession(OrtEnvironment env) {
         try {
-            Path modelPath = modelResource.getFile().toPath();
+            Path modelPath = getResourcePath(modelResource, "all-MiniLM-L6-v2-", ".onnx");
             log.info("Loading ONNX embedding model from: {}", modelPath);
             return env.createSession(modelPath.toString());
         } catch (Exception e) {
-            log.warn("ONNX model not found — semantic search will use fallback. Run: scripts/download-models.sh");
+            log.warn("ONNX model not found — semantic search will use fallback. Run: scripts/download-models.sh: {}", e.getMessage());
             return null;
         }
     }
@@ -46,11 +50,27 @@ public class AIConfig {
     @Bean
     public HuggingFaceTokenizer huggingFaceTokenizer() {
         try {
-            Path tokenizerPath = tokenizerResource.getFile().toPath();
+            Path tokenizerPath = getResourcePath(tokenizerResource, "tokenizer-", ".json");
             return HuggingFaceTokenizer.newInstance(tokenizerPath);
         } catch (Exception e) {
-            log.warn("Tokenizer not found — semantic search will use fallback.");
+            log.warn("Tokenizer not found — semantic search will use fallback: {}", e.getMessage());
             return null;
+        }
+    }
+
+    private Path getResourcePath(Resource resource, String prefix, String suffix) throws IOException {
+        try {
+            // Try to resolve as a direct file (works in local development/IDE running from filesystem)
+            return resource.getFile().toPath();
+        } catch (IOException e) {
+            // If it's inside a JAR (packaged application), copy the stream to a temporary file
+            log.info("Extracting classpath resource {} to temporary file due to JAR execution context...", resource.getFilename());
+            Path tempFile = Files.createTempFile(prefix, suffix);
+            try (InputStream in = resource.getInputStream()) {
+                Files.copy(in, tempFile, StandardCopyOption.REPLACE_EXISTING);
+            }
+            tempFile.toFile().deleteOnExit();
+            return tempFile;
         }
     }
 }

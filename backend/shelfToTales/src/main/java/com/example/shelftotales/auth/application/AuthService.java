@@ -27,6 +27,7 @@ public class AuthService {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final BruteForceProtectionService bruteForceProtectionService;
 
     @Transactional
     public AuthResponse register(RegisterRequest request) {
@@ -61,10 +62,23 @@ public class AuthService {
     }
 
     public AuthResponse login(LoginRequest request) {
-        User user = repository.findByEmail(request.getEmail())
-                .orElseThrow(() -> new BadCredentialsException("Invalid email or password"));
+        String email = request.getEmail();
+        if (bruteForceProtectionService.isLocked(email)) {
+            long remainingSeconds = bruteForceProtectionService.getLockoutRemainingSeconds(email);
+            long remainingMinutes = (remainingSeconds + 59) / 60;
+            throw new org.springframework.security.authentication.LockedException(
+                "Account is locked. Please try again in " + remainingMinutes + " minutes."
+            );
+        }
+
+        User user = repository.findByEmail(email)
+                .orElseThrow(() -> {
+                    bruteForceProtectionService.registerFailedAttempt(email);
+                    return new BadCredentialsException("Invalid email or password");
+                });
 
         if (user.getAuthProvider() != AuthProvider.LOCAL) {
+            bruteForceProtectionService.registerFailedAttempt(email);
             throw new BadCredentialsException("Invalid email or password");
         }
 
@@ -77,9 +91,11 @@ public class AuthService {
             );
         } catch (BadCredentialsException e) {
             log.warn("Failed login attempt: email={}", maskEmail(request.getEmail()));
+            bruteForceProtectionService.registerFailedAttempt(email);
             throw new BadCredentialsException("Invalid email or password");
         }
 
+        bruteForceProtectionService.resetAttempts(email);
         log.info("User logged in: userId={}", user.getId());
         
         var jwtToken = jwtService.generateToken(user);

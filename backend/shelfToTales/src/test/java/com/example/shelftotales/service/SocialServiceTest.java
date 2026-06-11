@@ -166,7 +166,7 @@ class SocialServiceTest {
             auth.when(() -> AuthUtils.getCurrentUser(userRepository)).thenReturn(currentUser);
             currentUser.getFollowing().add(targetUser);
 
-            when(socialActivityRepository.findByUserInOrderByCreatedAtDesc(anyCollection()))
+            when(socialActivityRepository.findByUserInOrderByCreatedAtDesc(anyCollection(), any(org.springframework.data.domain.Pageable.class)))
                     .thenReturn(List.of(followActivity));
 
             List<SocialActivityResponse> feed = socialService.getActivityFeed();

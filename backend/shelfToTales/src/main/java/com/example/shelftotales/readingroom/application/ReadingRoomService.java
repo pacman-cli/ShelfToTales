@@ -74,15 +74,21 @@ public class ReadingRoomService {
         socialService.logCustomActivity(user, "CREATE_ROOM", savedRoom.getId(),
                 creatorName + " created community reading room: " + savedRoom.getName());
 
-        return mapToReadingRoomResponse(savedRoom, user);
+        boolean isMember = true;
+        int memberCount = 1 + ("PRIVATE".equals(savedRoom.getVisibility()) && request.getInviteUserIds() != null ? request.getInviteUserIds().size() : 0);
+        return mapToReadingRoomResponse(savedRoom, user, isMember, memberCount);
     }
 
     @Transactional(readOnly = true)
     public List<ReadingRoomResponse> getRooms() {
         User currentUser = AuthUtils.getCurrentUser(userRepository);
-        return readingRoomRepository.findAllByOrderByCreatedAtDesc().stream()
-                .filter(room -> "PUBLIC".equals(room.getVisibility()) || roomMemberService.isMember(room.getId(), currentUser.getId()))
-                .map(room -> mapToReadingRoomResponse(room, currentUser))
+        return readingRoomRepository.findVisibleRoomsWithStats(currentUser.getId()).stream()
+                .map(row -> {
+                    ReadingRoom room = (ReadingRoom) row[0];
+                    long memberCount = (Long) row[1];
+                    long isMemberVal = (Long) row[2];
+                    return mapToReadingRoomResponse(room, currentUser, isMemberVal > 0, (int) memberCount);
+                })
                 .collect(Collectors.toList());
     }
 
@@ -136,7 +142,7 @@ public class ReadingRoomService {
         roomMessageRepository.deleteById(messageId);
     }
 
-    private ReadingRoomResponse mapToReadingRoomResponse(ReadingRoom room, User currentUser) {
+    private ReadingRoomResponse mapToReadingRoomResponse(ReadingRoom room, User currentUser, boolean isMember, int memberCount) {
         return ReadingRoomResponse.builder()
                 .id(room.getId())
                 .name(room.getName())
@@ -148,8 +154,8 @@ public class ReadingRoomService {
                 .pdfUrl(room.getBook() != null ? room.getBook().getPdfUrl() : null)
                 .previewAvailable(room.getBook() != null && room.getBook().isPreviewAvailable())
                 .visibility(room.getVisibility())
-                .isMember(roomMemberService.isMember(room.getId(), currentUser.getId()))
-                .memberCount((int) roomMemberRepository.countByRoomId(room.getId()))
+                .isMember(isMember)
+                .memberCount(memberCount)
                 .build();
     }
 

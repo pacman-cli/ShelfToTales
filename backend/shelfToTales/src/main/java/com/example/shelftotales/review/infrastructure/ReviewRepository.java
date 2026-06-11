@@ -21,4 +21,9 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     Double findAverageRatingByBookId(Long bookId);
 
     long countByUserId(Long userId);
+
+    @Query("SELECT r.book.id FROM Review r " +
+           "GROUP BY r.book.id " +
+           "ORDER BY AVG(r.rating) DESC, COUNT(r) DESC")
+    java.util.List<Long> findTopReviewedBookIds(org.springframework.data.domain.Pageable pageable);
 }

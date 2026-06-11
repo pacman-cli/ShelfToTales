@@ -126,8 +126,6 @@ class ReadingRoomServiceTest {
         try (MockedStatic<AuthUtils> auth = mockStatic(AuthUtils.class)) {
             auth.when(() -> AuthUtils.getCurrentUser(userRepository)).thenReturn(currentUser);
             when(readingRoomRepository.save(any(ReadingRoom.class))).thenReturn(readingRoom);
-            when(roomMemberRepository.countByRoomId(10L)).thenReturn(1L);
-            when(roomMemberService.isMember(10L, 1L)).thenReturn(true);
 
             ReadingRoomRequest request = ReadingRoomRequest.builder()
                     .name("Fiction Club")
@@ -149,15 +147,17 @@ class ReadingRoomServiceTest {
     void getRooms_returnsRooms() {
         try (MockedStatic<AuthUtils> auth = mockStatic(AuthUtils.class)) {
             auth.when(() -> AuthUtils.getCurrentUser(userRepository)).thenReturn(currentUser);
-            when(readingRoomRepository.findAllByOrderByCreatedAtDesc()).thenReturn(List.of(readingRoom));
-            when(roomMemberService.isMember(10L, 1L)).thenReturn(true);
-            when(roomMemberRepository.countByRoomId(10L)).thenReturn(1L);
+            List<Object[]> rows = new ArrayList<>();
+            rows.add(new Object[] { readingRoom, 1L, 1L });
+            when(readingRoomRepository.findVisibleRoomsWithStats(1L)).thenReturn(rows);
 
             List<ReadingRoomResponse> rooms = readingRoomService.getRooms();
 
             assertNotNull(rooms);
             assertEquals(1, rooms.size());
             assertEquals("Fiction Club", rooms.get(0).getName());
+            assertTrue(rooms.get(0).isMember());
+            assertEquals(1, rooms.get(0).getMemberCount());
         }
     }
 
@@ -221,8 +221,6 @@ class ReadingRoomServiceTest {
                 assertEquals(book, roomToSave.getBook());
                 return savedRoom;
             });
-            when(roomMemberRepository.countByRoomId(10L)).thenReturn(1L);
-            when(roomMemberService.isMember(10L, 1L)).thenReturn(true);
 
             ReadingRoomRequest request = ReadingRoomRequest.builder()
                     .name("Fiction Club")

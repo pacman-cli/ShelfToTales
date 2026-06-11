@@ -22,7 +22,7 @@ import java.util.Map;
 @Slf4j
 public class GoogleAuthService {
 
-    private static final String GOOGLE_TOKEN_INFO_URL = "https://oauth2.googleapis.com/tokeninfo?id_token=";
+    private static final String GOOGLE_TOKEN_INFO_URL = "https://oauth2.googleapis.com/tokeninfo";
 
     private final UserRepository userRepository;
     private final JwtService jwtService;
@@ -99,8 +99,16 @@ public class GoogleAuthService {
     @Retry(name = "google")
     public Map<String, Object> verifyGoogleToken(String idToken) {
         try {
-            String url = GOOGLE_TOKEN_INFO_URL + idToken;
-            return restTemplate.getForObject(url, Map.class);
+            org.springframework.http.HttpHeaders headers = new org.springframework.http.HttpHeaders();
+            headers.setContentType(org.springframework.http.MediaType.APPLICATION_FORM_URLENCODED);
+
+            org.springframework.util.MultiValueMap<String, String> map = new org.springframework.util.LinkedMultiValueMap<>();
+            map.add("id_token", idToken);
+
+            org.springframework.http.HttpEntity<org.springframework.util.MultiValueMap<String, String>> request =
+                    new org.springframework.http.HttpEntity<>(map, headers);
+
+            return restTemplate.postForObject(GOOGLE_TOKEN_INFO_URL, request, Map.class);
         } catch (Exception e) {
             log.error("Google token verification failed: {}", e.getMessage());
             throw new IllegalArgumentException("Invalid Google ID token");
