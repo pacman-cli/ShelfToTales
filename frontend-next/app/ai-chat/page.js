@@ -6,7 +6,7 @@ import { aiService } from '../lib/api';
 import PageTitle from '../components/layout/PageTitle';
 
 export default function AIChatPage() {
-  const [messages, setMessages] = useState([{ role: 'assistant', content: "Hi! I'm your book recommendation assistant. Tell me what kind of book you're looking for — a mood, a genre, or describe what you want to feel while reading." }]);
+  const [messages, setMessages] = useState([{ role: 'assistant', content: "Hi! I'm your ShelfToTales support assistant. I can help with book recommendations, order questions, account info, and more. How can I help you today?" }]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const endRef = useRef(null);
@@ -31,7 +31,7 @@ export default function AIChatPage() {
 
   return (
     <div className="page-content" style={{ background: '#f9f7f4', minHeight: '100vh' }}>
-      <PageTitle parentPage="AI" childPage="Book Recommendations"/>
+      <PageTitle parentPage="Support" childPage="AI Customer Support"/>
       <div className="container py-4" style={{ maxWidth: 700 }}>
         <div style={{ background: '#fff', borderRadius: 20, boxShadow: '0 4px 20px rgba(0,0,0,0.04)', overflow: 'hidden', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 250px)', minHeight: 400 }}>
           {/* Messages */}
@@ -48,7 +48,7 @@ export default function AIChatPage() {
           </div>
           {/* Input */}
           <form onSubmit={send} style={{ display: 'flex', gap: 8, padding: '1rem 1.5rem', borderTop: '1px solid #f0ede8' }}>
-            <input type="text" value={input} onChange={e => setInput(e.target.value)} placeholder="Ask for a book recommendation..." style={{ flex: 1, padding: '12px 16px', border: '1px solid #e8e5e0', borderRadius: 12, fontSize: '0.9rem', outline: 'none' }}/>
+            <input type="text" value={input} onChange={e => setInput(e.target.value)} placeholder="Ask about orders, books, or anything else..." style={{ flex: 1, padding: '12px 16px', border: '1px solid #e8e5e0', borderRadius: 12, fontSize: '0.9rem', outline: 'none' }}/>
             <button type="submit" disabled={loading || !input.trim()} style={{ padding: '12px 20px', borderRadius: 12, border: 'none', background: 'linear-gradient(135deg, #eaa451, #e58c23)', color: '#fff', fontWeight: 600, cursor: 'pointer', opacity: loading ? 0.5 : 1 }}><i className="fa-solid fa-paper-plane"/></button>
           </form>
         </div>

@@ -1,6 +1,6 @@
 export const metadata = {
-  title: 'AI Book Assistant',
-  description: 'Get personalized book recommendations powered by AI.',
+  title: 'AI Support',
+  description: 'Get help with book recommendations, order questions, and account inquiries.',
 };
 
 export default function AiChatLayout({ children }) {
