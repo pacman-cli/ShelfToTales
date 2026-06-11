@@ -22,6 +22,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
 
     long countByUserId(Long userId);
 
+    List<Review> findTop10ByUserIdOrderByCreatedAtDesc(Long userId);
+
     @Query("SELECT r.book.id FROM Review r " +
            "GROUP BY r.book.id " +
            "ORDER BY AVG(r.rating) DESC, COUNT(r) DESC")
