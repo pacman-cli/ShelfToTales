@@ -206,6 +206,46 @@ class RateLimitingFilterTest {
     }
 
     @Test
+    void socialEndpoint_allows10ThenBlocks() throws ServletException, IOException {
+        String ip = "10.0.0.7";
+
+        for (int i = 0; i < 10; i++) {
+            MockHttpServletRequest req = new MockHttpServletRequest("POST", "/api/social/follow/123");
+            req.setRemoteAddr(ip);
+            MockHttpServletResponse res = new MockHttpServletResponse();
+            filter.doFilter(req, res, chain);
+            assertEquals(200, res.getStatus());
+        }
+
+        MockHttpServletRequest blocked = new MockHttpServletRequest("POST", "/api/social/follow/123");
+        blocked.setRemoteAddr(ip);
+        MockHttpServletResponse blockedRes = new MockHttpServletResponse();
+        filter.doFilter(blocked, blockedRes, chain);
+
+        assertEquals(429, blockedRes.getStatus());
+    }
+
+    @Test
+    void adminEndpoint_allows10ThenBlocks() throws ServletException, IOException {
+        String ip = "10.0.0.8";
+
+        for (int i = 0; i < 10; i++) {
+            MockHttpServletRequest req = new MockHttpServletRequest("GET", "/api/admin/users");
+            req.setRemoteAddr(ip);
+            MockHttpServletResponse res = new MockHttpServletResponse();
+            filter.doFilter(req, res, chain);
+            assertEquals(200, res.getStatus());
+        }
+
+        MockHttpServletRequest blocked = new MockHttpServletRequest("GET", "/api/admin/users");
+        blocked.setRemoteAddr(ip);
+        MockHttpServletResponse blockedRes = new MockHttpServletResponse();
+        filter.doFilter(blocked, blockedRes, chain);
+
+        assertEquals(429, blockedRes.getStatus());
+    }
+
+    @Test
     void routeSegmentation_avoidsCrossEndpointRateLimitExhaustion() throws ServletException, IOException {
         String ip = "10.0.0.6";
 
@@ -223,7 +263,7 @@ class RateLimitingFilterTest {
         filter.doFilter(authBlocked, authRes, chain);
         assertEquals(429, authRes.getStatus());
 
-        // Verify checkout, orders, exchange, and other endpoints from the same IP are NOT blocked
+        // Verify checkout, orders, exchange, social, and admin endpoints from the same IP are NOT blocked
         MockHttpServletRequest checkoutReq = new MockHttpServletRequest("POST", "/api/checkout");
         checkoutReq.setRemoteAddr(ip);
         MockHttpServletResponse checkoutRes = new MockHttpServletResponse();
@@ -241,5 +281,17 @@ class RateLimitingFilterTest {
         MockHttpServletResponse exchangeRes = new MockHttpServletResponse();
         filter.doFilter(exchangeReq, exchangeRes, chain);
         assertEquals(200, exchangeRes.getStatus());
+
+        MockHttpServletRequest socialReq = new MockHttpServletRequest("POST", "/api/social/follow/123");
+        socialReq.setRemoteAddr(ip);
+        MockHttpServletResponse socialRes = new MockHttpServletResponse();
+        filter.doFilter(socialReq, socialRes, chain);
+        assertEquals(200, socialRes.getStatus());
+
+        MockHttpServletRequest adminReq = new MockHttpServletRequest("GET", "/api/admin/users");
+        adminReq.setRemoteAddr(ip);
+        MockHttpServletResponse adminRes = new MockHttpServletResponse();
+        filter.doFilter(adminReq, adminRes, chain);
+        assertEquals(200, adminRes.getStatus());
     }
 }

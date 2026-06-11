@@ -6,6 +6,7 @@ import com.example.shelftotales.admin.domain.SecurityEventType;
 import com.example.shelftotales.admin.infrastructure.SecurityEventRepository;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.MDC;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
@@ -23,6 +24,7 @@ public class SecurityMonitoringService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void record(SecurityEventType type, SecurityEventSeverity severity, HttpServletRequest request, String principal, String message) {
+        String requestId = MDC.get("requestId");
         securityEventRepository.save(SecurityEvent.builder()
                 .type(type)
                 .severity(severity)
@@ -31,6 +33,7 @@ public class SecurityMonitoringService {
                 .path(request.getRequestURI())
                 .principal(principal)
                 .message(message)
+                .requestId(requestId)
                 .build());
     }
 
@@ -63,6 +66,7 @@ public class SecurityMonitoringService {
                 .path(event.getPath())
                 .principal(event.getPrincipal())
                 .message(event.getMessage())
+                .requestId(event.getRequestId())
                 .createdAt(event.getCreatedAt())
                 .build();
     }

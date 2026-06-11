@@ -40,6 +40,9 @@ public class SecurityEvent {
     @Column(length = 500)
     private String message;
 
+    @Column(length = 100)
+    private String requestId;
+
     @Column(nullable = false)
     private LocalDateTime createdAt;
 

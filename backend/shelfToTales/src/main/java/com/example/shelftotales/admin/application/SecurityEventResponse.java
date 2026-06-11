@@ -18,5 +18,6 @@ public class SecurityEventResponse {
     private String path;
     private String principal;
     private String message;
+    private String requestId;
     private LocalDateTime createdAt;
 }

@@ -16,11 +16,13 @@ import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.slf4j.MDC;
 
 import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.Map;
+import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -58,13 +60,28 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         return !(uri.startsWith("/api/auth/") ||
                  uri.startsWith("/api/checkout") ||
                  uri.startsWith("/api/orders") ||
-                 uri.startsWith("/api/exchange/"));
+                 uri.startsWith("/api/exchange/") ||
+                 uri.startsWith("/api/social/follow") ||
+                 uri.startsWith("/api/social/friends") ||
+                 uri.startsWith("/api/social/requests") ||
+                 uri.startsWith("/api/social/status") ||
+                 uri.startsWith("/api/social/unfriend") ||
+                 uri.startsWith("/api/social/block") ||
+                 uri.startsWith("/api/social/report") ||
+                 uri.startsWith("/api/admin/users") ||
+                 uri.startsWith("/api/admin/orders") ||
+                 uri.startsWith("/api/admin/coupons") ||
+                 uri.startsWith("/api/admin/reports"));
     }
 
     @Override
     protected void doFilterInternal(@NonNull HttpServletRequest request,
                                     @NonNull HttpServletResponse response,
                                     @NonNull FilterChain filterChain) throws ServletException, IOException {
+        // Generate and set request ID for security event correlation
+        String requestId = UUID.randomUUID().toString();
+        MDC.put("requestId", requestId);
+        
         evictStaleEntries();
 
         String key = clientKey(request);
@@ -76,6 +93,7 @@ public class RateLimitingFilter extends OncePerRequestFilter {
         });
 
         if (entry.bucket().tryConsume(1)) {
+            MDC.clear();
             filterChain.doFilter(request, response);
             return;
         }
@@ -92,6 +110,8 @@ public class RateLimitingFilter extends OncePerRequestFilter {
                 "Rate limit exceeded. Try again in " + WINDOW.toSeconds() + " seconds."
         );
         response.getWriter().write(objectMapper.writeValueAsString(err));
+        
+        MDC.clear();
     }
 
     private void recordRateLimitEvent(HttpServletRequest request) {
@@ -127,6 +147,19 @@ public class RateLimitingFilter extends OncePerRequestFilter {
             category = "orders";
         } else if (uri.startsWith("/api/exchange/")) {
             category = "exchange";
+        } else if (uri.startsWith("/api/social/follow") ||
+                   uri.startsWith("/api/social/friends") ||
+                   uri.startsWith("/api/social/requests") ||
+                   uri.startsWith("/api/social/status") ||
+                   uri.startsWith("/api/social/unfriend") ||
+                   uri.startsWith("/api/social/block") ||
+                   uri.startsWith("/api/social/report")) {
+            category = "social";
+        } else if (uri.startsWith("/api/admin/users") ||
+                   uri.startsWith("/api/admin/orders") ||
+                   uri.startsWith("/api/admin/coupons") ||
+                   uri.startsWith("/api/admin/reports")) {
+            category = "admin";
         } else {
             category = "other";
         }
