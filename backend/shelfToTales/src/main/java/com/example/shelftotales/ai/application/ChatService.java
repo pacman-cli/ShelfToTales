@@ -2,11 +2,12 @@ package com.example.shelftotales.ai.application;
 
 import com.example.shelftotales.ai.application.chat.*;
 import com.example.shelftotales.ai.domain.*;
-
-import com.example.shelftotales.ai.application.ChatResponse;
 import com.example.shelftotales.catalog.domain.Book;
 import com.example.shelftotales.auth.domain.User;
 import com.example.shelftotales.auth.infrastructure.UserRepository;
+import com.example.shelftotales.commerce.domain.Order;
+import com.example.shelftotales.commerce.infrastructure.OrderRepository;
+import com.example.shelftotales.bookshelf.infrastructure.ShelfBookRepository;
 import com.example.shelftotales.shared.util.AuthUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -21,19 +22,34 @@ public class ChatService {
 
     private static final int MAX_HISTORY = 10;
     private static final String SYSTEM_PROMPT = """
-            You are a book recommendation assistant for ShelfToTales.
-            Keep responses concise (2-3 sentences + recommendations).
-            Ask ONE clarifying question if the user's request is vague.
-            When recommending, suggest 3-5 books with brief reasons why.""";
+            You are ShelfToTales, a friendly and knowledgeable bookstore customer support assistant.
+
+            ## Your Capabilities
+            - Recommend books from our catalog based on mood, genre, or preferences
+            - Help with order status and purchase history questions
+            - Answer questions about reading goals, achievements, and bookshelves
+            - Explain how bookstore features work (exchanges, reading rooms, social features)
+            - General bookstore inquiries
+
+            ## Rules
+            - Be helpful, friendly, and concise (2-4 sentences per response)
+            - Use the provided context to answer accurately
+            - For book recommendations, ALWAYS cite specific books from the catalog context by title
+            - If you don't know something, say so honestly rather than making it up
+            - Never fabricate order information — only use what's provided in the context
+            - Ask ONE clarifying question if the user's request is vague
+            """;
 
     private final OpenAIChatProvider openAIChatProvider;
     private final RuleBasedChatProvider ruleBasedChatProvider;
     private final EmbeddingService embeddingService;
     private final UserRepository userRepository;
+    private final OrderRepository orderRepository;
+    private final ShelfBookRepository shelfBookRepository;
 
     private final Map<Long, List<ChatMessage>> sessions = new ConcurrentHashMap<>();
     private final Map<Long, Long> sessionLastAccess = new ConcurrentHashMap<>();
-    private static final long SESSION_TTL_MS = 30 * 60 * 1000; // 30 minutes
+    private static final long SESSION_TTL_MS = 30 * 60 * 1000;
 
     public ChatResponse chat(String userMessage) {
         evictStaleSessions();
@@ -43,48 +59,44 @@ public class ChatService {
         history.add(ChatMessage.user(userMessage));
         if (history.size() > MAX_HISTORY) history.subList(0, history.size() - MAX_HISTORY).clear();
 
-        // RAG Retrieval: fetch top 4 similar books from database catalog
-        List<Map.Entry<Book, Double>> results = embeddingService.searchSimilar(userMessage, 4, null);
+        // Build conversation-aware search query
+        String searchQuery = buildConversationQuery(history, userMessage);
 
-        // Construct Catalog Context for the LLM
-        StringBuilder catalogCtx = new StringBuilder("\n\nAvailable Books in our Catalog matching user's search:\n");
-        if (results.isEmpty()) {
-            catalogCtx.append("(No direct matches found in database. Recommend generic matching genres or ask for clarification.)\n");
-        } else {
-            for (Map.Entry<Book, Double> entry : results) {
-                Book b = entry.getKey();
-                catalogCtx.append("- ID: ").append(b.getId())
-                          .append(", Title: \"").append(b.getTitle()).append("\"")
-                          .append(", Author: \"").append(b.getAuthor()).append("\"");
-                if (b.getCategory() != null) {
-                    catalogCtx.append(", Genre: \"").append(b.getCategory().getName()).append("\"");
-                }
-                if (b.getDescription() != null) {
-                    catalogCtx.append(", Description: \"").append(b.getDescription()).append("\"");
-                }
-                catalogCtx.append("\n");
-            }
-        }
+        // RAG Retrieval: fetch top 4 similar books
+        List<Map.Entry<Book, Double>> bookResults = embeddingService.searchSimilar(searchQuery, 4, null);
 
-        // Constrain System Prompt
-        String ragSystemPrompt = SYSTEM_PROMPT + "\n\n" +
-            "You MUST recommend books ONLY from the 'Available Books in our Catalog' list below. " +
-            "Explain why you selected them based on their descriptions. Do not suggest titles not listed. " +
-            "If the list is empty, explain that we don't have matching books right now and recommend exploring other genres.\n" +
-            catalogCtx.toString();
+        // Build multi-domain context
+        String catalogContext = buildCatalogContext(bookResults);
+        String orderContext = buildOrderContext(currentUser.getId());
+        String statsContext = buildReadingStats(currentUser.getId());
+        String userContext = buildUserContext(currentUser);
+
+        // Build conversation history context
+        String historyContext = buildHistoryContext(history);
+
+        // Assemble full system prompt
+        String fullPrompt = SYSTEM_PROMPT + "\n" +
+            userContext + "\n" +
+            orderContext + "\n" +
+            statsContext + "\n" +
+            catalogContext + "\n" +
+            historyContext;
 
         String reply = openAIChatProvider.isAvailable()
-                ? openAIChatProvider.chat(history, ragSystemPrompt)
+                ? openAIChatProvider.chat(history, fullPrompt)
                 : null;
-        if (reply == null) reply = ruleBasedChatProvider.chat(history, ragSystemPrompt);
+        if (reply == null) reply = ruleBasedChatProvider.chat(history, fullPrompt);
 
         history.add(ChatMessage.assistant(reply));
 
-        List<ChatResponse.BookRecommendation> recommendations = results.stream()
-                .map(e -> ChatResponse.BookRecommendation.builder()
+        List<ChatResponse.BookRecommendation> recommendations = bookResults.stream()
+                .map(e -> {
+                    String reason = generateBookReason(e.getKey(), e.getValue(), currentUser.getId());
+                    return ChatResponse.BookRecommendation.builder()
                         .bookId(e.getKey().getId()).title(e.getKey().getTitle())
                         .author(e.getKey().getAuthor()).coverUrl(e.getKey().getCoverUrl())
-                        .reason("Highly relevant match in our catalog").build())
+                        .reason(reason).build();
+                })
                 .collect(Collectors.toList());
 
         return ChatResponse.builder().reply(reply).recommendations(recommendations).build();
@@ -94,6 +106,91 @@ public class ChatService {
         User currentUser = AuthUtils.getCurrentUser(userRepository);
         sessions.remove(currentUser.getId());
         sessionLastAccess.remove(currentUser.getId());
+    }
+
+    private String buildConversationQuery(List<ChatMessage> history, String currentMessage) {
+        if (history.size() < 2) return currentMessage;
+        List<String> recentUserMessages = history.stream()
+            .filter(m -> m.role().equals("user"))
+            .map(ChatMessage::content)
+            .collect(Collectors.toList());
+        int start = Math.max(0, recentUserMessages.size() - 2);
+        return String.join(" ", recentUserMessages.subList(start, recentUserMessages.size()));
+    }
+
+    private String buildCatalogContext(List<Map.Entry<Book, Double>> results) {
+        StringBuilder ctx = new StringBuilder("\n## Available Books in our Catalog\n");
+        if (results.isEmpty()) {
+            ctx.append("(No matching books found. Suggest exploring other genres or ask for clarification.)\n");
+        } else {
+            for (Map.Entry<Book, Double> entry : results) {
+                Book b = entry.getKey();
+                ctx.append("- \"").append(b.getTitle()).append("\" by ").append(b.getAuthor());
+                if (b.getCategory() != null) ctx.append(" [Genre: ").append(b.getCategory().getName()).append("]");
+                if (b.getDescription() != null) {
+                    String desc = b.getDescription();
+                    if (desc.length() > 150) desc = desc.substring(0, 150) + "...";
+                    ctx.append(" — ").append(desc);
+                }
+                ctx.append("\n");
+            }
+        }
+        return ctx.toString();
+    }
+
+    private String buildOrderContext(Long userId) {
+        try {
+            List<Order> orders = orderRepository.findByUserIdOrderByOrderDateDesc(userId);
+            if (orders.isEmpty()) return "\n## Order History\n(No orders yet)\n";
+            StringBuilder ctx = new StringBuilder("\n## Recent Order History\n");
+            int count = 0;
+            for (Order order : orders) {
+                if (count >= 3) break;
+                ctx.append("- Order #").append(order.getId())
+                   .append(": ").append(order.getItems() != null ? order.getItems().size() : 0).append(" items")
+                   .append(", Total: $").append(order.getTotalAmount())
+                   .append(", Status: ").append(order.getStatus());
+                if (order.getOrderDate() != null) ctx.append(", Date: ").append(order.getOrderDate().toLocalDate());
+                ctx.append("\n");
+                count++;
+            }
+            return ctx.toString();
+        } catch (Exception e) {
+            return "\n## Order History\n(Unavailable)\n";
+        }
+    }
+
+    private String buildReadingStats(Long userId) {
+        try {
+            int completed = shelfBookRepository.findBookIdsByUserIdAndStatus(userId, "COMPLETED").size();
+            int reading = shelfBookRepository.findBookIdsByUserIdAndStatus(userId, "READING").size();
+            return "\n## Reading Stats\n- Books completed: " + completed + "\n- Currently reading: " + reading + "\n";
+        } catch (Exception e) {
+            return "\n## Reading Stats\n(Unavailable)\n";
+        }
+    }
+
+    private String buildUserContext(User user) {
+        return "\n## User\n- Name: " + (user.getFullName() != null ? user.getFullName() : "Reader") +
+               "\n- Member since: " + (user.getCreatedAt() != null ? user.getCreatedAt().toLocalDate() : "recently") + "\n";
+    }
+
+    private String buildHistoryContext(List<ChatMessage> history) {
+        if (history.size() <= 1) return "";
+        StringBuilder ctx = new StringBuilder("\n## Recent Conversation\n");
+        int start = Math.max(0, history.size() - 5);
+        for (int i = start; i < history.size() - 1; i++) {
+            ChatMessage msg = history.get(i);
+            ctx.append(msg.role()).append(": ").append(msg.content()).append("\n");
+        }
+        return ctx.toString();
+    }
+
+    private String generateBookReason(Book book, double score, Long userId) {
+        if (score > 0.9) return "Strongly matches your reading taste";
+        if (score > 0.7) return "Great match based on your profile";
+        if (book.getCategory() != null) return "Popular in " + book.getCategory().getName();
+        return "Recommended based on your interests";
     }
 
     private void evictStaleSessions() {
