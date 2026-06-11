@@ -12,6 +12,13 @@ vi.mock('../lib/api', () => ({
         getFeed: vi.fn(),
         getFollowing: vi.fn(),
     },
+    gamificationService: {
+        getStreak: vi.fn().mockResolvedValue({ data: null }),
+        getMyAchievements: vi.fn().mockResolvedValue({ data: [] }),
+    },
+    goalService: {
+        getActiveGoal: vi.fn().mockResolvedValue({ data: null }),
+    },
 }));
 
 // Mock IntersectionObserver

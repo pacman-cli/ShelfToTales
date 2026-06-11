@@ -5,9 +5,8 @@ export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { readingRoomService, socialService, bookService, exchangeService, friendService } from '../lib/api';
+import { readingRoomService, socialService, bookService } from '../lib/api';
 import '../assets/css/reader-network.css';
-import { FadeIn } from '../components/common/AnimationUtils';
 
 const ReaderNetwork = () => {
     const router = useRouter();
@@ -84,7 +83,6 @@ const ReaderNetwork = () => {
             } else {
                 await socialService.follow(userId);
             }
-            // Refresh states
             handleSearch(searchQuery);
             fetchFollowingList();
         } catch (err) {
@@ -113,6 +111,14 @@ const ReaderNetwork = () => {
         }
     };
 
+    const moodIcons = {
+        cozy: 'fa-solid fa-mug-hot',
+        melancholic: 'fa-solid fa-cloud-showers-heavy',
+        adventurous: 'fa-solid fa-compass',
+        suspenseful: 'fa-solid fa-mask',
+        reflective: 'fa-solid fa-brain'
+    };
+
     return (
         <div className="reader-network-page">
             {/* Hero Section */}
@@ -121,16 +127,16 @@ const ReaderNetwork = () => {
                     <h1>Build your <span>Reader Network</span></h1>
                     <p>Connect with bibliophiles in your neighborhood, join curated clubs, and share the magic of a good story.</p>
                     <button className="rn-btn-join mt-4 px-5 py-3" onClick={() => setShowCreateModal(true)}>
-                        <i className="fa-solid fa-plus me-2"></i> Host a New Room
+                        <i className="fa-solid fa-plus me-2" aria-hidden="true"></i> Host a New Room
                     </button>
                 </div>
             </div>
 
             <div className="container my-5">
                 {successMsg && (
-                    <div className="alert alert-success alert-dismissible fade show" role="alert">
+                    <div className="alert alert-success alert-dismissible fade show" role="alert" aria-live="polite">
                         {successMsg}
-                        <button type="button" className="btn-close" onClick={() => setSuccessMsg('')}></button>
+                        <button type="button" className="btn-close" aria-label="Dismiss" onClick={() => setSuccessMsg('')}></button>
                     </div>
                 )}
 
@@ -147,7 +153,7 @@ const ReaderNetwork = () => {
 
                             {rooms.length === 0 ? (
                                 <div className="text-center p-5 border rounded bg-light">
-                                    <i className="fa-solid fa-book-open display-4 text-muted mb-3"></i>
+                                    <i className="fa-solid fa-book-open display-4 text-muted mb-3" aria-hidden="true"></i>
                                     <p className="text-muted">No active virtual reading rooms. Be the first to host one!</p>
                                     <button className="btn btn-outline-primary rounded-pill mt-2" onClick={() => setShowCreateModal(true)}>
                                         Create Room
@@ -161,14 +167,14 @@ const ReaderNetwork = () => {
                                                 <div>
                                                     <div className="d-flex justify-content-between align-items-start">
                                                         <span className="rn-badge rn-badge-blue">Hosted by {room.createdBy?.fullName || 'User'}</span>
-                                                        <i className="fa-regular fa-bookmark text-muted"></i>
+                                                        <i className="fa-regular fa-bookmark text-muted" aria-hidden="true"></i>
                                                     </div>
                                                     <h4 className="fw-bold mt-2">{room.name}</h4>
                                                     <p className="text-muted small">{room.description || "Grab your favorite book and join this cozy virtual club."}</p>
                                                 </div>
                                                 <div className="d-flex justify-content-between align-items-center mt-3 pt-3 border-top">
                                                     <span className="small text-muted">
-                                                        <i className="fa-regular fa-clock me-1"></i> Active
+                                                        <i className="fa-regular fa-clock me-1" aria-hidden="true"></i> Active
                                                     </span>
                                                     <button className="rn-btn-join btn-sm" onClick={() => router.push(`/reading-room/${room.id}`)}>
                                                         Join Room
@@ -181,48 +187,25 @@ const ReaderNetwork = () => {
                             )}
                         </section>
 
-                        <section className="rn-section" style={{
-                            backgroundColor: '#fafbfc',
-                            padding: '30px',
-                            borderRadius: '16px',
-                            boxShadow: 'inset 0 1px 3px rgba(0,0,0,0.02)',
-                            border: '1px solid #f0f0f0',
-                            marginBottom: '40px'
-                        }}>
+                        <section className="rn-section rn-mood-section">
                             <div className="d-flex justify-content-between align-items-center mb-3">
                                 <div>
-                                    <h2 className="rn-section-title mb-1" style={{ fontSize: '22px', fontWeight: '700' }}>
-                                        <i className="fa-solid fa-wand-magic-sparkles text-primary me-2"></i>AI Mood Matchmaker
+                                    <h2 className="rn-section-title rn-mood-section-title mb-1">
+                                        <i className="fa-solid fa-wand-magic-sparkles text-primary me-2" aria-hidden="true"></i>AI Mood Matchmaker
                                     </h2>
                                     <p className="text-muted small mb-0">Select your current reading vibe to find book recommendations matching your mood.</p>
                                 </div>
                             </div>
 
-                            <div className="d-flex flex-wrap gap-2 mb-4">
+                            <div className="d-flex flex-wrap gap-2 mb-4" role="group" aria-label="Mood selection">
                                 {['cozy', 'melancholic', 'adventurous', 'suspenseful', 'reflective'].map((mood) => (
-                                    <button 
+                                    <button
                                         key={mood}
+                                        className={`rn-mood-btn${selectedMood === mood ? ' active' : ''}`}
                                         onClick={() => setSelectedMood(mood)}
-                                        style={{
-                                            padding: '8px 16px',
-                                            borderRadius: '20px',
-                                            fontSize: '13px',
-                                            fontWeight: '600',
-                                            border: '1px solid',
-                                            borderColor: selectedMood === mood ? '#ff5e5e' : '#e0e0e0',
-                                            backgroundColor: selectedMood === mood ? '#ff5e5e' : '#fff',
-                                            color: selectedMood === mood ? '#fff' : '#666',
-                                            textTransform: 'capitalize',
-                                            transition: 'all 0.2s ease',
-                                            cursor: 'pointer',
-                                            boxShadow: selectedMood === mood ? '0 4px 10px rgba(255, 94, 94, 0.2)' : 'none'
-                                        }}
+                                        aria-pressed={selectedMood === mood}
                                     >
-                                        {mood === 'cozy' && <i className="fa-solid fa-mug-hot me-1"></i>}
-                                        {mood === 'melancholic' && <i className="fa-solid fa-cloud-showers-heavy me-1"></i>}
-                                        {mood === 'adventurous' && <i className="fa-solid fa-compass me-1"></i>}
-                                        {mood === 'suspenseful' && <i className="fa-solid fa-mask me-1"></i>}
-                                        {mood === 'reflective' && <i className="fa-solid fa-brain me-1"></i>}
+                                        <i className={`${moodIcons[mood]} me-1`} aria-hidden="true"></i>
                                         {mood}
                                     </button>
                                 ))}
@@ -234,72 +217,27 @@ const ReaderNetwork = () => {
                                 <div className="row">
                                     {moodBooks.map((mBook) => (
                                         <div className="col-md-4 mb-3" key={mBook.id}>
-                                            <div 
+                                            <button
+                                                className="rn-mood-book-card"
                                                 onClick={() => router.push(`/shop-detail/${mBook.id}`)}
-                                                style={{ 
-                                                    backgroundColor: '#fff',
-                                                    borderRadius: '12px',
-                                                    padding: '15px',
-                                                    border: '1px solid #eee',
-                                                    boxShadow: '0 2px 8px rgba(0,0,0,0.02)',
-                                                    cursor: 'pointer',
-                                                    transition: 'all 0.2s ease',
-                                                    display: 'flex',
-                                                    flexDirection: 'column',
-                                                    alignItems: 'center',
-                                                    textAlign: 'center',
-                                                    height: '100%'
-                                                }}
-                                                onMouseOver={(e) => {
-                                                    e.currentTarget.style.transform = 'translateY(-3px)';
-                                                    e.currentTarget.style.boxShadow = '0 6px 15px rgba(0,0,0,0.06)';
-                                                }}
-                                                onMouseOut={(e) => {
-                                                    e.currentTarget.style.transform = 'none';
-                                                    e.currentTarget.style.boxShadow = '0 2px 8px rgba(0,0,0,0.02)';
-                                                }}
                                             >
-                                                <img 
-                                                    src={mBook.coverUrl} 
-                                                    alt={mBook.title} 
-                                                    style={{ 
-                                                        width: '80px', 
-                                                        height: '115px', 
-                                                        objectFit: 'cover', 
-                                                        borderRadius: '6px',
-                                                        marginBottom: '10px',
-                                                        boxShadow: '0 3px 8px rgba(0,0,0,0.1)'
-                                                    }} 
+                                                <img
+                                                    src={mBook.coverUrl}
+                                                    alt={`Cover of ${mBook.title}`}
+                                                    width="80"
+                                                    height="115"
+                                                    className="rn-mood-book-cover"
                                                 />
-                                                <h6 style={{ 
-                                                    fontSize: '13px', 
-                                                    fontWeight: '600', 
-                                                    margin: '0 0 2px 0',
-                                                    maxHeight: '36px',
-                                                    overflow: 'hidden',
-                                                    textOverflow: 'ellipsis',
-                                                    display: '-webkit-box',
-                                                    WebkitLineClamp: 2,
-                                                    WebkitBoxOrient: 'vertical'
-                                                }}>
+                                                <h6 className="rn-mood-book-title">
                                                     {mBook.title}
                                                 </h6>
-                                                <span className="text-muted" style={{ fontSize: '11px', marginBottom: '8px' }}>
+                                                <span className="text-muted rn-mood-book-author">
                                                     By {mBook.author}
                                                 </span>
-                                                <div style={{ marginTop: 'auto' }}>
-                                                    <span style={{ 
-                                                        fontSize: '11px', 
-                                                        color: '#ff5e5e', 
-                                                        backgroundColor: '#fff0f0', 
-                                                        padding: '3px 8px', 
-                                                        borderRadius: '12px',
-                                                        fontWeight: '600'
-                                                    }}>
-                                                        {selectedMood}
-                                                    </span>
-                                                </div>
-                                            </div>
+                                                <span className="rn-mood-tag">
+                                                    {selectedMood}
+                                                </span>
+                                            </button>
                                         </div>
                                     ))}
                                 </div>
@@ -309,47 +247,43 @@ const ReaderNetwork = () => {
                         <section className="rn-section">
                             <div className="d-flex justify-content-between align-items-center mb-4">
                                 <h2 className="rn-section-title mb-0">Community Clubs</h2>
-                                <button className="btn btn-outline-primary rounded-pill btn-sm">Explore All Clubs</button>
                             </div>
                             <div className="row">
                                 <div className="col-md-4 mb-4">
                                     <div className="rn-club-card">
-                                        <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&q=80&w=400" alt="" className="rn-club-img" />
+                                        <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&q=80&w=400" alt="" width="400" height="200" className="rn-club-img" aria-hidden="true" />
                                         <div className="rn-club-content">
-                                            <span className="small text-warning fw-bold mb-1 d-block"><i className="fa-solid fa-star me-1"></i> TRENDING</span>
+                                            <span className="small text-warning fw-bold mb-1 d-block"><i className="fa-solid fa-star me-1" aria-hidden="true"></i> TRENDING</span>
                                             <h5 className="fw-bold">The Inkwell Society</h5>
                                             <p className="text-muted small mb-4">A haven for lovers of classic literature and deep thematic analysis.</p>
                                             <div className="d-flex justify-content-between align-items-center mt-3">
                                                 <span className="small text-muted">1.2k Members</span>
-                                                <i className="fa-solid fa-arrow-right text-primary"></i>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="col-md-4 mb-4">
                                     <div className="rn-club-card">
-                                        <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=400" alt="" className="rn-club-img" />
+                                        <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1451187580459-43490279c0fa?auto=format&fit=crop&q=80&w=400" alt="" width="400" height="200" className="rn-club-img" aria-hidden="true" />
                                         <div className="rn-club-content">
-                                            <span className="small text-primary fw-bold mb-1 d-block"><i className="fa-solid fa-bolt me-1"></i> ACTIVE NOW</span>
+                                            <span className="small text-primary fw-bold mb-1 d-block"><i className="fa-solid fa-bolt me-1" aria-hidden="true"></i> ACTIVE NOW</span>
                                             <h5 className="fw-bold">Neon Odyssey</h5>
                                             <p className="text-muted small mb-4">Exploring speculative fiction, cyberpunk, and the frontiers of space opera.</p>
                                             <div className="d-flex justify-content-between align-items-center mt-3">
                                                 <span className="small text-muted">850 Members</span>
-                                                <i className="fa-solid fa-arrow-right text-primary"></i>
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="col-md-4 mb-4">
                                     <div className="rn-club-card">
-                                        <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1474367658818-e81f34b73b0a?auto=format&fit=crop&q=80&w=400" alt="" className="rn-club-img" />
+                                        <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1474367658818-e81f34b73b0a?auto=format&fit=crop&q=80&w=400" alt="" width="400" height="200" className="rn-club-img" aria-hidden="true" />
                                         <div className="rn-club-content">
-                                            <span className="small text-info fw-bold mb-1 d-block"><i className="fa-solid fa-leaf me-1"></i> NEWEST</span>
+                                            <span className="small text-info fw-bold mb-1 d-block"><i className="fa-solid fa-leaf me-1" aria-hidden="true"></i> NEWEST</span>
                                             <h5 className="fw-bold">Modern Prose Collective</h5>
                                             <p className="text-muted small mb-4">Dedicated to contemporary fiction, short stories, and emerging voices.</p>
                                             <div className="d-flex justify-content-between align-items-center mt-3">
                                                 <span className="small text-muted">420 Members</span>
-                                                <i className="fa-solid fa-arrow-right text-primary"></i>
                                             </div>
                                         </div>
                                     </div>
@@ -363,30 +297,35 @@ const ReaderNetwork = () => {
                         {/* User Finder Search */}
                         <div className="rn-friends-sidebar mb-4">
                             <h5 className="fw-bold mb-3">Find Readers</h5>
+                            <label htmlFor="reader-search" className="visually-hidden">Search readers by name or email</label>
                             <div className="input-group">
                                 <input
-                                    type="text"
+                                    id="reader-search"
+                                    type="search"
                                     className="form-control rounded-start-pill"
-                                    placeholder="Search by name or email..."
+                                    placeholder="Search by name or email\u2026"
                                     value={searchQuery}
                                     onChange={(e) => handleSearch(e.target.value)}
-                                    style={{ borderRight: 'none' }}
+                                    autoComplete="off"
+                                    spellCheck="false"
                                 />
-                                <span className="input-group-text bg-white rounded-end-pill" style={{ borderLeft: 'none' }}>
+                                <span className="input-group-text bg-white rounded-end-pill" aria-hidden="true">
                                     <i className="fa-solid fa-magnifying-glass text-muted"></i>
                                 </span>
                             </div>
 
                             {searchResults.length > 0 && (
-                                <div className="search-results mt-3 border rounded p-2 bg-light shadow-sm" style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                                <div className="rn-search-results mt-3 border rounded p-2 bg-light shadow-sm" role="list" aria-label="Search results">
                                     {searchResults.map(user => (
-                                        <div key={user.id} className="d-flex align-items-center justify-content-between p-2 border-bottom">
+                                        <div key={user.id} className="d-flex align-items-center justify-content-between p-2 border-bottom" role="listitem">
                                             <div className="d-flex align-items-center gap-2">
                                                 <img
                                                     src={user.profileImageUrl || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.email}`}
                                                     alt=""
+                                                    width="32"
+                                                    height="32"
                                                     className="rounded-circle border"
-                                                    style={{ width: '32px', height: '32px', objectFit: 'cover' }}
+                                                    style={{ objectFit: 'cover' }}
                                                 />
                                                 <div>
                                                     <h6 className="mb-0 fw-bold small">{user.fullName}</h6>
@@ -396,6 +335,7 @@ const ReaderNetwork = () => {
                                             <button
                                                 className={`btn btn-xs rounded-pill px-2 py-1 ${user.isFollowing ? 'btn-outline-danger' : 'btn-primary'}`}
                                                 style={{ fontSize: '0.7rem' }}
+                                                aria-label={user.isFollowing ? `Unfollow ${user.fullName}` : `Follow ${user.fullName}`}
                                                 onClick={() => toggleFollow(user.id, user.isFollowing)}
                                             >
                                                 {user.isFollowing ? 'Unfollow' : 'Follow'}
@@ -413,15 +353,17 @@ const ReaderNetwork = () => {
                             </div>
 
                             {following.length === 0 ? (
-                                <p className="small text-muted text-center py-3">You aren't following anyone yet. Search for friends above!</p>
+                                <p className="small text-muted text-center py-3">You aren&apos;t following anyone yet. Search for friends above!</p>
                             ) : (
                                 following.map(user => (
                                     <div className="friend-item d-flex align-items-center gap-2 mb-3" key={user.id}>
                                         <img
                                             src={user.profileImageUrl || `https://api.dicebear.com/7.x/adventurer/svg?seed=${user.email}`}
                                             alt=""
+                                            width="36"
+                                            height="36"
                                             className="friend-avatar"
-                                            style={{ width: '36px', height: '36px', objectFit: 'cover' }}
+                                            style={{ objectFit: 'cover' }}
                                         />
                                         <div className="friend-info">
                                             <h6 className="mb-0 fw-bold">{user.fullName}</h6>
@@ -430,6 +372,7 @@ const ReaderNetwork = () => {
                                         <button
                                             className="btn btn-outline-secondary btn-sm ms-auto rounded-pill py-0 px-2"
                                             style={{ fontSize: '0.75rem' }}
+                                            aria-label={`Unfollow ${user.fullName}`}
                                             onClick={() => toggleFollow(user.id, true)}
                                         >
                                             Unfollow
@@ -445,7 +388,7 @@ const ReaderNetwork = () => {
                 <div className="rn-host-box my-5">
                     <div className="row align-items-center">
                         <div className="col-lg-5">
-                            <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=600" alt="" className="img-fluid rounded-4 shadow-lg" />
+                            <img loading="lazy" decoding="async" src="https://images.unsplash.com/photo-1544947950-fa07a98d237f?auto=format&fit=crop&q=80&w=600" alt="Library with warm lighting" width="600" height="400" className="img-fluid rounded-4 shadow-lg" />
                         </div>
                         <div className="col-lg-7">
                             <h2 className="rn-section-title">Host a Virtual Reading Room</h2>
@@ -454,7 +397,6 @@ const ReaderNetwork = () => {
                                 <button className="btn btn-primary px-4 py-2 rounded-pill fw-bold" onClick={() => setShowCreateModal(true)}>
                                     Create a Room
                                 </button>
-                                <button className="btn btn-outline-dark px-4 py-2 rounded-pill fw-bold">Learn More</button>
                             </div>
                         </div>
                     </div>
@@ -463,41 +405,43 @@ const ReaderNetwork = () => {
 
             {/* Create Room Modal */}
             {showCreateModal && (
-                <div className="modal show d-block" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)', zIndex: 1050 }}>
+                <div className="modal show d-block rn-modal-backdrop" tabIndex="-1" style={{ background: 'rgba(0,0,0,0.5)', zIndex: 1050 }}>
                     <div className="modal-dialog modal-dialog-centered">
                         <div className="modal-content" style={{ borderRadius: '15px' }}>
                             <div className="modal-header">
                                 <h5 className="modal-title fw-bold">Host a Virtual Reading Room</h5>
-                                <button type="button" className="btn-close" onClick={() => setShowCreateModal(false)}></button>
+                                <button type="button" className="btn-close" aria-label="Close" onClick={() => setShowCreateModal(false)}></button>
                             </div>
                             <form onSubmit={handleCreateRoom}>
                                 <div className="modal-body">
-                                    {errorMsg && <div className="alert alert-danger">{errorMsg}</div>}
+                                    {errorMsg && <div className="alert alert-danger" role="alert">{errorMsg}</div>}
                                     <div className="mb-3">
-                                        <label className="form-label fw-bold">Room Name</label>
+                                        <label htmlFor="room-name" className="form-label fw-bold">Room Name</label>
                                         <input
+                                            id="room-name"
                                             type="text"
                                             className="form-control"
                                             value={newRoomName}
                                             onChange={(e) => setNewRoomName(e.target.value)}
-                                            placeholder="e.g. Silent Coffee Shop Lounge"
+                                            placeholder="e.g. Silent Coffee Shop Lounge\u2026"
                                             required
                                         />
                                     </div>
                                     <div className="mb-3">
-                                        <label className="form-label fw-bold">Description</label>
+                                        <label htmlFor="room-desc" className="form-label fw-bold">Description</label>
                                         <textarea
+                                            id="room-desc"
                                             className="form-control"
                                             rows="3"
                                             value={newRoomDesc}
                                             onChange={(e) => setNewRoomDesc(e.target.value)}
-                                            placeholder="Describe what you want to read or talk about here..."
+                                            placeholder="Describe what you want to read or talk about here\u2026"
                                         ></textarea>
                                     </div>
                                 </div>
                                 <div className="modal-footer">
                                     <button type="button" className="btn btn-outline-secondary rounded-pill" onClick={() => setShowCreateModal(false)}>Cancel</button>
-                                    <button type="submit" className="btn btn-primary rounded-pill">Create & Join</button>
+                                    <button type="submit" className="btn btn-primary rounded-pill">Create &amp; Join</button>
                                 </div>
                             </form>
                         </div>
