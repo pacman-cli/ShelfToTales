@@ -23,6 +23,7 @@
     "axios": "^1.16.1",
     "bootstrap": "^5.3.8",
     "chart.js": "^4.5.1",
+    "dompurify": "^3.4.9",
     "framer-motion": "^11.0.0",
     "next": "15.5.18",
     "nouislider": "^15.8.1",

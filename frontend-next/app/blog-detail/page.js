@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import Swal from 'sweetalert2';
+import DOMPurify from 'dompurify';
 import { blogService } from '../lib/api';
 import PageTitle from '../components/layout/PageTitle';
 import ReportButton from '../components/features/ReportButton';
@@ -14,6 +15,15 @@ function BlogDetail() {
   const blogId = searchParams?.get('id');
   const [blog, setBlog] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [cleanHtml, setCleanHtml] = useState('');
+
+  useEffect(() => {
+    if (blog?.content) {
+      setCleanHtml(DOMPurify.sanitize(blog.content));
+    } else {
+      setCleanHtml('');
+    }
+  }, [blog]);
 
   useEffect(() => {
     if (blogId) {
@@ -104,7 +114,7 @@ function BlogDetail() {
                 <h2 className="fw-bold mb-4" style={{ fontFamily: 'Playfair Display, serif', color: '#1a1a2e' }}>{blog.title}</h2>
                 <div
                   style={{ fontSize: '1.1rem', lineHeight: 1.8, color: '#444' }}
-                  dangerouslySetInnerHTML={{ __html: blog.content || '' }}
+                  dangerouslySetInnerHTML={{ __html: cleanHtml }}
                 />
                 <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mt-4 pt-3 border-top">
                   <div className="d-flex gap-3">

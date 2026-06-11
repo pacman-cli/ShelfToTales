@@ -101,17 +101,15 @@ export function AuthProvider({ children }) {
    * rolling back the token if the profile fetch fails.
    */
   const handleAuthResponse = useCallback(async (data) => {
-    const token = data.token ?? data.accessToken;
-
-    // Persist token first so the profile request carries the Authorization header.
-    localStorage.setItem(STORAGE_KEY_TOKEN, token);
+    // Persist dummy token first so existing checks pass, but real token is in HttpOnly cookie
+    localStorage.setItem(STORAGE_KEY_TOKEN, 'present');
 
     try {
       const profileRes = await userService.getProfile();
       // Merge login response (has role) with profile response (has full details)
       const user = { ...profileRes.data, role: data.role || profileRes.data.role };
       localStorage.setItem(STORAGE_KEY_USER, JSON.stringify(user));
-      dispatch({ type: ACTIONS.LOGIN_SUCCESS, payload: { token, user } });
+      dispatch({ type: ACTIONS.LOGIN_SUCCESS, payload: { token: 'present', user } });
       return user;
     } catch (err) {
       localStorage.removeItem(STORAGE_KEY_TOKEN);
@@ -129,10 +127,16 @@ export function AuthProvider({ children }) {
     return handleAuthResponse(data);
   }, [handleAuthResponse]);
 
-  const logout = useCallback(() => {
-    localStorage.removeItem(STORAGE_KEY_TOKEN);
-    localStorage.removeItem(STORAGE_KEY_USER);
-    dispatch({ type: ACTIONS.LOGOUT });
+  const logout = useCallback(async () => {
+    try {
+      await authService.logout();
+    } catch (err) {
+      console.error('API logout failed:', err);
+    } finally {
+      localStorage.removeItem(STORAGE_KEY_TOKEN);
+      localStorage.removeItem(STORAGE_KEY_USER);
+      dispatch({ type: ACTIONS.LOGOUT });
+    }
   }, []);
 
   const updateProfile = useCallback((data) => {

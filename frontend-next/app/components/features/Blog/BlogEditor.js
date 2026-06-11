@@ -35,6 +35,11 @@ const MenuBar = ({ editor }) => {
       editor.chain().focus().extendMarkRange('link').unsetLink().run();
       return;
     }
+    const lowerUrl = url.trim().toLowerCase();
+    if (lowerUrl.startsWith('javascript:') || lowerUrl.startsWith('data:')) {
+      alert('Invalid URL scheme');
+      return;
+    }
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run();
   }, [editor]);
 
@@ -104,7 +109,14 @@ function BlogEditor({ content, onChange, placeholder }) {
     extensions: [
       StarterKit.configure({ heading: { levels: [2, 3] } }),
       Image.configure({ HTMLAttributes: { class: 'blog-editor-image' } }),
-      Link.configure({ openOnClick: false, HTMLAttributes: { class: 'blog-editor-link' } }),
+      Link.configure({
+        openOnClick: false,
+        HTMLAttributes: { class: 'blog-editor-link' },
+        validate: href => {
+          const lower = href.trim().toLowerCase();
+          return !lower.startsWith('javascript:') && !lower.startsWith('data:');
+        }
+      }),
       Youtube.configure({ width: 640, height: 360 }),
     ],
     content: content || '',

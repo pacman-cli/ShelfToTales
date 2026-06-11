@@ -8,14 +8,17 @@ import Swal from 'sweetalert2';
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080/api';
 
-const api = axios.create({ baseURL: API_BASE_URL });
+const api = axios.create({
+  baseURL: API_BASE_URL,
+  withCredentials: true
+});
 
 // Request interceptor: attach JWT from localStorage if present.
 api.interceptors.request.use(
   (config) => {
     if (typeof window !== 'undefined') {
       const token = window.localStorage.getItem('token');
-      if (token) {
+      if (token && token !== 'present' && token.includes('.')) {
         config.headers.Authorization = `Bearer ${token}`;
       }
     }
@@ -61,6 +64,7 @@ export const authService = {
   login: (credentials) => api.post('/auth/login', credentials),
   register: (userData) => api.post('/auth/register', userData),
   googleAuth: (idToken) => api.post('/auth/google', { idToken }),
+  logout: () => api.post('/auth/logout'),
 };
 
 export const bookService = {
