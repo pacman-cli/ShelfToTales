@@ -18,11 +18,20 @@ function ShopList(){
     const [selectBtn, setSelectBtn] = useState('Newest');
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
+    const [sortBy, setSortBy] = useState('id');
+    const [sortDir, setSortDir] = useState('desc');
+
+    const sortMap = {
+        'Newest': { sortBy: 'id', sortDir: 'desc' },
+        'Oldest': { sortBy: 'id', sortDir: 'asc' },
+        'Price Low': { sortBy: 'price', sortDir: 'asc' },
+        'Price High': { sortBy: 'price', sortDir: 'desc' },
+    };
 
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const response = await bookService.getAll({ page: currentPage, size: 20 });
+                const response = await bookService.getAll({ page: currentPage, size: 20, sortBy, sortDir });
                 setBooks(response.data.content || response.data || []);
                 setTotalPages(response.data.totalPages || 1);
             } catch (error) {
@@ -30,7 +39,17 @@ function ShopList(){
             }
         };
         fetchBooks();
-    }, [currentPage]);
+    }, [currentPage, sortBy, sortDir]);
+
+    const handleSortChange = (label) => {
+        setSelectBtn(label);
+        const s = sortMap[label];
+        if (s) {
+            setSortBy(s.sortBy);
+            setSortDir(s.sortDir);
+        }
+        setCurrentPage(0);
+    };
 
     return(
         <>
@@ -88,10 +107,10 @@ function ShopList(){
                                     <Dropdown>
                                         <Dropdown.Toggle  className="i-false">{selectBtn} <i className="ms-4 font-14 fa-solid fa-caret-down" /></Dropdown.Toggle>
                                         <Dropdown.Menu>
-                                            <Dropdown.Item onClick={()=>setSelectBtn('Newest')}>Newest</Dropdown.Item>
-                                            <Dropdown.Item onClick={()=>setSelectBtn('Oldest')}>Oldest</Dropdown.Item>
-                                            <Dropdown.Item onClick={()=>setSelectBtn('Price Low')}>Price Low</Dropdown.Item>
-                                            <Dropdown.Item onClick={()=>setSelectBtn('Price High')}>Price High</Dropdown.Item>
+                                            <Dropdown.Item onClick={()=>handleSortChange('Newest')}>Newest</Dropdown.Item>
+                                            <Dropdown.Item onClick={()=>handleSortChange('Oldest')}>Oldest</Dropdown.Item>
+                                            <Dropdown.Item onClick={()=>handleSortChange('Price Low')}>Price Low</Dropdown.Item>
+                                            <Dropdown.Item onClick={()=>handleSortChange('Price High')}>Price High</Dropdown.Item>
                                         </Dropdown.Menu>
                                     </Dropdown>
                                 </div>

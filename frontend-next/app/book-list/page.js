@@ -7,6 +7,7 @@ import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { bookService, wishlistService, cartService } from '../lib/api';
 import Swal from 'sweetalert2';
+import { Dropdown } from 'react-bootstrap';
 
 // Components
 import ClientsSlider from '../components/features/Home/ClientsSlider';
@@ -20,11 +21,21 @@ function BookListPage() {
     const [loading, setLoading] = useState(true);
     const [currentPage, setCurrentPage] = useState(0);
     const [totalPages, setTotalPages] = useState(1);
+    const [selectBtn, setSelectBtn] = useState('Newest');
+    const [sortBy, setSortBy] = useState('id');
+    const [sortDir, setSortDir] = useState('desc');
+
+    const sortMap = {
+        'Newest': { sortBy: 'id', sortDir: 'desc' },
+        'Oldest': { sortBy: 'id', sortDir: 'asc' },
+        'Price Low': { sortBy: 'price', sortDir: 'asc' },
+        'Price High': { sortBy: 'price', sortDir: 'desc' },
+    };
 
     useEffect(() => {
         const fetchBooks = async () => {
             try {
-                const response = await bookService.getAll({ page: currentPage, size: 20 });
+                const response = await bookService.getAll({ page: currentPage, size: 20, sortBy, sortDir });
                 setBooks(response.data.content || response.data || []);
                 setTotalPages(response.data.totalPages || 1);
                 setLoading(false);
@@ -34,7 +45,17 @@ function BookListPage() {
             }
         };
         fetchBooks();
-    }, [currentPage]);
+    }, [currentPage, sortBy, sortDir]);
+
+    const handleSortChange = (label) => {
+        setSelectBtn(label);
+        const s = sortMap[label];
+        if (s) {
+            setSortBy(s.sortBy);
+            setSortDir(s.sortDir);
+        }
+        setCurrentPage(0);
+    };
 
     const handleAddToWishlist = async (bookId) => {
         try {
@@ -102,11 +123,17 @@ function BookListPage() {
                                     <i className="fa-solid fa-list-ul"></i> Categories
                                 </button>
                             </div>
-                            <div className="dropdown">
-                                <button className="btn btn-link fw-bold text-decoration-none d-flex align-items-center gap-2 p-0" type="button" style={{ color: '#1A162E' }}>
-                                    <i className="fa-solid fa-arrow-down-wide-short"></i> Newest <i className="fa-solid fa-caret-down small ms-1"></i>
-                                </button>
-                            </div>
+                            <Dropdown className="dropdown">
+                                <Dropdown.Toggle className="btn btn-link fw-bold text-decoration-none d-flex align-items-center gap-2 p-0 border-0 bg-transparent i-false" style={{ color: '#1A162E', boxShadow: 'none' }}>
+                                    <i className="fa-solid fa-arrow-down-wide-short"></i> {selectBtn} <i className="fa-solid fa-caret-down small ms-1"></i>
+                                </Dropdown.Toggle>
+                                <Dropdown.Menu>
+                                    <Dropdown.Item onClick={() => handleSortChange('Newest')}>Newest</Dropdown.Item>
+                                    <Dropdown.Item onClick={() => handleSortChange('Oldest')}>Oldest</Dropdown.Item>
+                                    <Dropdown.Item onClick={() => handleSortChange('Price Low')}>Price Low</Dropdown.Item>
+                                    <Dropdown.Item onClick={() => handleSortChange('Price High')}>Price High</Dropdown.Item>
+                                </Dropdown.Menu>
+                            </Dropdown>
                         </div>
                     </div>
 
