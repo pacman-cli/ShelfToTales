@@ -35,7 +35,7 @@ function Pricing(){
                                             <div className="pricingtable-price"> 
                                                 <h2 className="pricingtable-bx">${data.price}<small className="pricingtable-type">/Month</small></h2>
                                             </div>
-                                            <p className="text">Aliquam dui lacus, lobortis quis sapien non.</p>
+                                            <p className="text">Enjoy access to premium features, offline reading, and AI-driven recommendations tailored for you.</p>
                                             <ul className="pricingtable-features">
                                                 <li>Unlimited Book Access</li>
                                                 <li>Community Features</li>

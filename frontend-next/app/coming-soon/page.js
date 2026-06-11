@@ -63,7 +63,10 @@ function ComingSoon(){
 	const sendEmail = (e) => {
 		e.preventDefault();
 		//emailjs.sendForm('YOUR_SERVICE_ID', 'YOUR_TEMPLATE_ID', form.current, 'YOUR_USER_ID')
-		emailjs.sendForm('service_gfykn6i', 'template_iy1pb0b', e.target, 'HccoOtZS6GHw-N-m6')
+		const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || 'service_gfykn6i';
+		const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || 'template_iy1pb0b';
+		const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || 'HccoOtZS6GHw-N-m6';
+		emailjs.sendForm(serviceId, templateId, e.target, publicKey)
 		  .then((result) => {
 			  console.log(result.text);
 		  }, (error) => {
