@@ -17,10 +17,11 @@ services:
 
   redis:
     image: redis:7-alpine
+    command: redis-server --requirepass shelftotales_redis_password
     ports:
       - "6379:6379"
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: ["CMD", "redis-cli", "-a", "shelftotales_redis_password", "ping"]
       interval: 5s
       timeout: 3s
       retries: 5
