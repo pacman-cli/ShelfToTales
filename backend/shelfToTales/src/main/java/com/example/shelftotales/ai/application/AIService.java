@@ -10,12 +10,31 @@ import java.util.*;
 @Service
 public class AIService {
 
-    private static final Map<String, Integer> GENRE_DIMENSIONS = Map.of(
-        "sci-fi", 0, "science fiction", 0, "fantasy", 1, "mystery", 2, "thriller", 3,
-        "romance", 4, "horror", 5, "nonfiction", 6, "biography", 7, "history", 8,
-        "poetry", 9, "classics", 10, "young adult", 11, "children", 12, "self-help", 13,
-        "philosophy", 14, "religion", 15, "art", 16, "cookbook", 17, "travel", 18, "science", 19
-    );
+    private static final Map<String, Integer> GENRE_DIMENSIONS;
+    static {
+        GENRE_DIMENSIONS = new HashMap<>();
+        GENRE_DIMENSIONS.put("sci-fi", 0);
+        GENRE_DIMENSIONS.put("science fiction", 0);
+        GENRE_DIMENSIONS.put("fantasy", 1);
+        GENRE_DIMENSIONS.put("mystery", 2);
+        GENRE_DIMENSIONS.put("thriller", 3);
+        GENRE_DIMENSIONS.put("romance", 4);
+        GENRE_DIMENSIONS.put("horror", 5);
+        GENRE_DIMENSIONS.put("nonfiction", 6);
+        GENRE_DIMENSIONS.put("biography", 7);
+        GENRE_DIMENSIONS.put("history", 8);
+        GENRE_DIMENSIONS.put("poetry", 9);
+        GENRE_DIMENSIONS.put("classics", 10);
+        GENRE_DIMENSIONS.put("young adult", 11);
+        GENRE_DIMENSIONS.put("children", 12);
+        GENRE_DIMENSIONS.put("self-help", 13);
+        GENRE_DIMENSIONS.put("philosophy", 14);
+        GENRE_DIMENSIONS.put("religion", 15);
+        GENRE_DIMENSIONS.put("art", 16);
+        GENRE_DIMENSIONS.put("cookbook", 17);
+        GENRE_DIMENSIONS.put("travel", 18);
+        GENRE_DIMENSIONS.put("science", 19);
+    }
 
     private static final List<String> SPOILER_KEYWORDS = Arrays.asList(
             "spoiler", "spoilers", "dies", "dying", "death", "kills", "killed", 
