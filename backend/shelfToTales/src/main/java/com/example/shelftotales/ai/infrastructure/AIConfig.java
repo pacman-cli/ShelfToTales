@@ -32,7 +32,12 @@ public class AIConfig {
 
     @Bean
     public OrtEnvironment ortEnvironment() {
-        return OrtEnvironment.getEnvironment();
+        try {
+            return OrtEnvironment.getEnvironment();
+        } catch (Exception e) {
+            log.warn("Failed to create OrtEnvironment: {}", e.getMessage());
+            return null;
+        }
     }
 
     @Bean

@@ -3,7 +3,7 @@ const cspHeader = `
   default-src 'self';
   script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com;
   style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com;
-  img-src 'self' blob: data: https://images.unsplash.com https://i.pravatar.cc https://ui-avatars.com https://via.placeholder.com;
+  img-src 'self' blob: data: https://images.unsplash.com https://i.pravatar.cc https://ui-avatars.com https://via.placeholder.com https://*.r2.dev https://placehold.co https://api.dicebear.com;
   font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com;
   connect-src 'self' http://localhost:8080 ws://localhost:8080 wss://localhost:8080 https://accounts.google.com;
   frame-src 'self' https://accounts.google.com https://www.youtube.com;

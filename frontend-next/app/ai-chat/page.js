@@ -4,9 +4,31 @@ export const dynamic = 'force-dynamic';
 import React, { useState, useRef, useEffect } from 'react';
 import { aiService } from '../lib/api';
 import PageTitle from '../components/layout/PageTitle';
+import './AiChat.css';
+
+function renderMarkdown(text) {
+  if (!text) return null;
+  const parts = text.split(/(\*\*.*?\*\*)/g);
+  return parts.map((part, i) => {
+    if (part.startsWith('**') && part.endsWith('**')) {
+      return <strong key={i}>{part.slice(2, -2)}</strong>;
+    }
+    const lines = part.split('\n');
+    return lines.map((line, j) => (
+      <React.Fragment key={`${i}-${j}`}>
+        {j > 0 && <br />}
+        {line}
+      </React.Fragment>
+    ));
+  });
+}
 
 export default function AIChatPage() {
-  const [messages, setMessages] = useState([{ role: 'assistant', content: "Hi! I'm your ShelfToTales support assistant. I can help with book recommendations, order questions, account info, and more. How can I help you today?" }]);
+  const [messages, setMessages] = useState([{
+    role: 'assistant',
+    content: "Hi! I'm your ShelfToTales support assistant. I can help with book recommendations, order questions, account info, and more. How can I help you today?",
+    recommendations: []
+  }]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const endRef = useRef(null);
@@ -18,14 +40,15 @@ export default function AIChatPage() {
     if (!input.trim() || loading) return;
     const userMsg = input.trim();
     setInput('');
-    setMessages(prev => [...prev, { role: 'user', content: userMsg }]);
+    setMessages(prev => [...prev, { role: 'user', content: userMsg, recommendations: [] }]);
     setLoading(true);
     try {
       const res = await aiService.chat(userMsg);
-      const reply = res.data?.reply || "I couldn't find a recommendation. Try describing what mood you're in!";
-      setMessages(prev => [...prev, { role: 'assistant', content: reply }]);
+      const reply = res.data?.reply || "I'm not sure how to help with that. Could you try rephrasing your question?";
+      const recommendations = res.data?.recommendations || [];
+      setMessages(prev => [...prev, { role: 'assistant', content: reply, recommendations }]);
     } catch {
-      setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I'm having trouble connecting. Please try again." }]);
+      setMessages(prev => [...prev, { role: 'assistant', content: "Sorry, I'm having trouble connecting. Please try again.", recommendations: [] }]);
     } finally { setLoading(false); }
   };
 
@@ -38,8 +61,24 @@ export default function AIChatPage() {
           <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
             {messages.map((msg, i) => (
               <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: 12 }}>
-                <div style={{ maxWidth: '80%', padding: '12px 16px', borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: msg.role === 'user' ? 'linear-gradient(135deg, #eaa451, #e58c23)' : '#f5f3f0', color: msg.role === 'user' ? '#fff' : '#333', fontSize: '0.9rem', lineHeight: 1.6 }}>
-                  {msg.content}
+                <div style={{ maxWidth: '80%' }}>
+                  <div className="msg-content" style={{ padding: '12px 16px', borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: msg.role === 'user' ? 'linear-gradient(135deg, #eaa451, #e58c23)' : '#f5f3f0', color: msg.role === 'user' ? '#fff' : '#333', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                    {renderMarkdown(msg.content)}
+                  </div>
+                  {msg.recommendations && msg.recommendations.length > 0 && (
+                    <div className="ai-rec-cards">
+                      {msg.recommendations.map((rec, j) => (
+                        <div key={j} className="ai-rec-card" onClick={() => window.open(`/shop-detail/${rec.bookId}`, '_blank')}>
+                          <img src={rec.coverUrl || '/images/book-default.jpg'} alt={rec.title} />
+                          <div className="ai-rec-card-info">
+                            <span className="ai-rec-card-title">{rec.title}</span>
+                            {rec.author && <span className="ai-rec-card-author">{rec.author}</span>}
+                            {rec.reason && <span className="ai-rec-card-reason">{rec.reason}</span>}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             ))}
