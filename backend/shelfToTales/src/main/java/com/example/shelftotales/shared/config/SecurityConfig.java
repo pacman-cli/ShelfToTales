@@ -54,8 +54,20 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+        org.springframework.security.web.csrf.CookieCsrfTokenRepository csrfRepository = 
+                org.springframework.security.web.csrf.CookieCsrfTokenRepository.withHttpOnlyFalse();
+        csrfRepository.setCookiePath("/");
+
+        org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler requestHandler = 
+                new org.springframework.security.web.csrf.CsrfTokenRequestAttributeHandler();
+        requestHandler.setCsrfRequestAttributeName(null);
+
         http
-                .csrf(csrf -> csrf.disable())
+                .csrf(csrf -> csrf
+                        .csrfTokenRepository(csrfRepository)
+                        .csrfTokenRequestHandler(requestHandler)
+                        .ignoringRequestMatchers("/api/auth/**", "/swagger-ui/**", "/api-docs/**", "/v3/api-docs/**", "/ws/**", "/actuator/**")
+                )
                 .cors(cors -> cors.configurationSource(corsConfigurationSource()));
 
         if (requireHttps) {
