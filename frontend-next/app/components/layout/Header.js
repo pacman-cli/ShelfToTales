@@ -165,8 +165,8 @@ function Header(){
 												</Link>
 												<Link href={"/ai-chat"} className="dropdown-item d-flex justify-content-between align-items-center ai-icon">
 													<div>
-														<i className="fa-solid fa-robot ms-1"></i>
-														<span className="ms-2">AI Recommendations</span>
+														<i className="fa-solid fa-headset ms-1"></i>
+														<span className="ms-2">AI Support</span>
 													</div>
 												</Link>
 												{user?.role === 'ADMIN' && (
