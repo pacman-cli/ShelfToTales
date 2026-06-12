@@ -323,3 +323,78 @@
   font-weight: 700;
   color: #1a1a2e;
 }
+
+/* === Notification Dropdown Enhancement === */
+.notification-dropdown .dropdown-menu {
+  border-radius: 16px !important;
+  border: 1px solid rgba(0, 0, 0, 0.05) !important;
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.08) !important;
+  background: #ffffff !important;
+  padding: 0 !important;
+  overflow: hidden;
+  margin-top: 10px !important;
+}
+
+.notification-dropdown .dropdown-header {
+  border-bottom: 1px solid rgba(0, 0, 0, 0.04);
+  padding: 16px 20px !important;
+  background-color: #fcfcfc;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.notification-dropdown .dropdown-header h6 {
+  font-family: var(--font-heading);
+  font-weight: 700;
+  color: #1a1a2e;
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.notification-dropdown .dropdown-body {
+  max-height: 340px;
+  overflow-y: auto;
+}
+
+.notification-dropdown .dropdown-item {
+  transition: all 0.2s ease;
+  white-space: normal !important;
+  display: flex !important;
+  align-items: start !important;
+  padding: 16px 20px !important;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+}
+
+.notification-dropdown .dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.notification-dropdown .dropdown-item:hover {
+  background-color: #fafafa !important;
+}
+
+.notification-dropdown .dropdown-item.bg-light {
+  background-color: #fffaf4 !important; /* Premium Warm Amber tint for unread notifications */
+}
+
+.notification-dropdown .dropdown-item.bg-light:hover {
+  background-color: #fff5e8 !important;
+}
+
+.notification-dropdown .dropdown-body::-webkit-scrollbar {
+  width: 6px;
+}
+
+.notification-dropdown .dropdown-body::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.notification-dropdown .dropdown-body::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+}
+
+.notification-dropdown .dropdown-body::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.2);
+}
