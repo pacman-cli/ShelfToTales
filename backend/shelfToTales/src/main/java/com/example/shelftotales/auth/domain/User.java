@@ -1,5 +1,6 @@
 package com.example.shelftotales.auth.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -27,6 +28,7 @@ public class User implements UserDetails {
     @Column(nullable = false, unique = true)
     private String email;
 
+    @JsonIgnore
     private String password;
 
     private String fullName;
@@ -78,10 +80,12 @@ public class User implements UserDetails {
         inverseJoinColumns = @JoinColumn(name = "followed_id")
     )
     @Builder.Default
+    @JsonIgnore
     private java.util.Set<User> following = new java.util.HashSet<>();
 
     @ManyToMany(mappedBy = "following", fetch = FetchType.LAZY)
     @Builder.Default
+    @JsonIgnore
     private java.util.Set<User> followers = new java.util.HashSet<>();
 
     @PrePersist
@@ -96,24 +100,30 @@ public class User implements UserDetails {
     }
 
     @Override
+    @JsonIgnore
     public Collection<? extends GrantedAuthority> getAuthorities() {
         return List.of(new SimpleGrantedAuthority("ROLE_" + role.name()));
     }
 
     @Override
+    @JsonIgnore
     public String getUsername() {
         return email;
     }
 
     @Override
+    @JsonIgnore
     public boolean isAccountNonExpired() { return true; }
 
     @Override
+    @JsonIgnore
     public boolean isAccountNonLocked() { return true; }
 
     @Override
+    @JsonIgnore
     public boolean isCredentialsNonExpired() { return true; }
 
     @Override
+    @JsonIgnore
     public boolean isEnabled() { return !banned; }
 }

@@ -28,8 +28,9 @@ public class AdminUserController {
     }
 
     @PostMapping("/{userId}/ban")
-    public ResponseEntity<Void> ban(@PathVariable Long userId, @RequestBody Map<String, String> body) {
-        adminUserService.banUser(userId, body.get("reason"));
+    public ResponseEntity<Void> ban(@PathVariable Long userId, @RequestBody(required = false) Map<String, String> body) {
+        String reason = (body != null) ? body.get("reason") : null;
+        adminUserService.banUser(userId, reason);
         return ResponseEntity.ok().build();
     }
 
@@ -40,8 +41,9 @@ public class AdminUserController {
     }
 
     @PostMapping("/{userId}/warn")
-    public ResponseEntity<Void> warn(@PathVariable Long userId, @RequestBody Map<String, String> body) {
-        adminUserService.warnUser(userId, body.get("reason"));
+    public ResponseEntity<Void> warn(@PathVariable Long userId, @RequestBody(required = false) Map<String, String> body) {
+        String reason = (body != null) ? body.get("reason") : null;
+        adminUserService.warnUser(userId, reason);
         return ResponseEntity.ok().build();
     }
 
