@@ -6,8 +6,10 @@ import { useParams, useRouter } from 'next/navigation';
 import { bookService, quoteService } from '../../lib/api';
 import Swal from 'sweetalert2';
 import ClientOnly from '../../components/ClientOnly';
-import PdfViewer from '../../components/features/PdfViewer/PdfViewer';
+import dynamicImport from 'next/dynamic';
+const PdfViewer = dynamicImport(() => import('../../components/features/PdfViewer/PdfViewer'), { ssr: false });
 import '../../components/features/PdfViewer/PdfViewer.css';
+
 
 function ReadBookInner() {
   const { bookId } = useParams();
