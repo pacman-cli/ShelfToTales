@@ -52,6 +52,7 @@ public class BookService {
     private final OrderRepository orderRepository;
     private final UserRepository userRepository;
 
+    @Transactional(readOnly = true)
     @Cacheable(value = "books", key = "#query + ':' + #categoryId + ':' + #minPrice + ':' + #maxPrice + ':' + #inStockOnly + ':' + #minRating + ':' + #page + ':' + #size + ':' + #sortBy + ':' + #sortDir")
     public PagedResponse<BookResponse> getBooks(String query, Long categoryId, BigDecimal minPrice, BigDecimal maxPrice, boolean inStockOnly, Double minRating, int page, int size, String sortBy, String sortDir) {
         Sort sort = "desc".equalsIgnoreCase(sortDir) ? Sort.by(sortBy).descending() : Sort.by(sortBy).ascending();
@@ -70,6 +71,7 @@ public class BookService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     public Optional<BookResponse> getBookById(Long id) {
         return bookRepository.findById(id).map(book -> {
             BookResponse resp = toResponse(book);
@@ -88,6 +90,7 @@ public class BookService {
         });
     }
 
+    @Transactional(readOnly = true)
     public boolean canUserReadBook(Long userId, Long bookId) {
         Book book = bookRepository.findById(bookId).orElse(null);
         if (book == null) return false;
@@ -100,6 +103,7 @@ public class BookService {
         return orderRepository.existsByUserIdAndItemsBookIdAndStatus(userId, bookId, OrderStatus.DELIVERED);
     }
 
+    @Transactional(readOnly = true)
     public Optional<ReadBookResponse> getReadBookInfo(Long id) {
         return bookRepository.findByIdAndPdfUrlIsNotNull(id).map(book -> ReadBookResponse.builder()
                 .id(book.getId())
@@ -208,6 +212,7 @@ public class BookService {
                 .build();
     }
 
+    @Transactional(readOnly = true)
     public java.util.List<BookResponse> getBooksByMood(String mood) {
         return bookRepository.findByMood(mood).stream()
                 .map(this::toResponse)
