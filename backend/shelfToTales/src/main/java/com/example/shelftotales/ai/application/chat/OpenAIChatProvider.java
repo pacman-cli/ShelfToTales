@@ -1,10 +1,6 @@
 package com.example.shelftotales.ai.application.chat;
+
 import com.example.shelftotales.ai.domain.*;
-
-import com.example.shelftotales.auth.domain.*;
-import com.example.shelftotales.catalog.domain.*;
-import com.example.shelftotales.bookshelf.domain.*;
-
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
@@ -30,7 +26,17 @@ public class OpenAIChatProvider implements ChatProvider {
     @Value("${ai.chat.base-url:https://openrouter.ai/api/v1/chat/completions}")
     private String baseUrl;
 
-    private final RestTemplate restTemplate = new RestTemplate();
+    @Value("${ai.chat.openrouter.referer:https://shelftotales.com}")
+    private String openrouterReferer;
+
+    @Value("${ai.chat.openrouter.title:ShelfToTales}")
+    private String openrouterTitle;
+
+    private final RestTemplate restTemplate;
+
+    public OpenAIChatProvider(RestTemplate restTemplate) {
+        this.restTemplate = restTemplate;
+    }
 
     @Override
     public boolean isAvailable() {
@@ -63,6 +69,13 @@ public class OpenAIChatProvider implements ChatProvider {
             if (apiKey != null && !apiKey.isBlank()) {
                 headers.setBearerAuth(apiKey);
             }
+            // OpenRouter recommends HTTP-Referer and X-Title headers for ranking
+            // and free-tier quota tracking. The values are user-controlled via
+            // ai.chat.openrouter.* properties, never from request input.
+            if ("openrouter".equals(provider)) {
+                headers.set("HTTP-Referer", openrouterReferer);
+                headers.set("X-Title", openrouterTitle);
+            }
 
             ResponseEntity<Map> response = restTemplate.exchange(
                     baseUrl, HttpMethod.POST, new HttpEntity<>(body, headers), Map.class);
@@ -77,7 +90,7 @@ public class OpenAIChatProvider implements ChatProvider {
             }
             return null;
         } catch (Exception e) {
-            log.error("OpenAI API call failed: {}", e.getMessage());
+            log.warn("Chat provider call failed (provider={}, model={}): {}", provider, model, e.getMessage());
             return null;
         }
     }

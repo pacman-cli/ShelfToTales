@@ -4,6 +4,7 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useEffect } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { readingRoomService, socialService, bookService } from '../lib/api';
 import '../assets/css/reader-network.css';
@@ -217,15 +218,17 @@ const ReaderNetwork = () => {
                                 <div className="row">
                                     {moodBooks.map((mBook) => (
                                         <div className="col-md-4 mb-3" key={mBook.id}>
-                                            <button
+                                            <Link
+                                                href={`/shop-detail/${mBook.id}`}
                                                 className="rn-mood-book-card"
-                                                onClick={() => router.push(`/shop-detail/${mBook.id}`)}
                                             >
                                                 <img
                                                     src={mBook.coverUrl}
                                                     alt={`Cover of ${mBook.title}`}
                                                     width="80"
                                                     height="115"
+                                                    loading="lazy"
+                                                    decoding="async"
                                                     className="rn-mood-book-cover"
                                                 />
                                                 <h6 className="rn-mood-book-title">
@@ -237,7 +240,7 @@ const ReaderNetwork = () => {
                                                 <span className="rn-mood-tag">
                                                     {selectedMood}
                                                 </span>
-                                            </button>
+                                            </Link>
                                         </div>
                                     ))}
                                 </div>
@@ -353,7 +356,7 @@ const ReaderNetwork = () => {
                             </div>
 
                             {following.length === 0 ? (
-                                <p className="small text-muted text-center py-3">You aren&apos;t following anyone yet. Search for friends above!</p>
+                                <p className="small text-muted text-center py-3">You aren’t following anyone yet. Search for friends above!</p>
                             ) : (
                                 following.map(user => (
                                     <div className="friend-item d-flex align-items-center gap-2 mb-3" key={user.id}>
@@ -423,8 +426,9 @@ const ReaderNetwork = () => {
                                             className="form-control"
                                             value={newRoomName}
                                             onChange={(e) => setNewRoomName(e.target.value)}
-                                            placeholder="e.g. Silent Coffee Shop Lounge\u2026"
+                                            placeholder="e.g. Silent Coffee Shop Lounge…"
                                             required
+                                            autoComplete="off"
                                         />
                                     </div>
                                     <div className="mb-3">
@@ -435,7 +439,8 @@ const ReaderNetwork = () => {
                                             rows="3"
                                             value={newRoomDesc}
                                             onChange={(e) => setNewRoomDesc(e.target.value)}
-                                            placeholder="Describe what you want to read or talk about here\u2026"
+                                            placeholder="Describe what you want to read or talk about here…"
+                                            autoComplete="off"
                                         ></textarea>
                                     </div>
                                 </div>

@@ -62,6 +62,10 @@ export default function AdminBooksPage() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!form.coverUrl) {
+      Swal.fire('Cover Required', 'Please upload a cover image before saving.', 'warning');
+      return;
+    }
     const payload = {
       ...form,
       categoryId: Number(form.categoryId),
@@ -154,7 +158,7 @@ export default function AdminBooksPage() {
             <input className="form-control" type="number" name="stock" value={form.stock} onChange={handleChange} />
           </div>
           <div className="col-md-6">
-            <label className="form-label">Cover Image</label>
+            <label className="form-label">Cover Image <span className="text-danger">*</span></label>
             {form.coverUrl ? (
               <div className="d-flex align-items-center gap-2">
                 <img src={form.coverUrl} alt="Cover preview" style={{ width: 60, height: 80, objectFit: 'cover', borderRadius: 6 }} />
@@ -164,10 +168,13 @@ export default function AdminBooksPage() {
                 </div>
               </div>
             ) : (
-              <label className="btn btn-outline-primary btn-sm" style={{ cursor: 'pointer' }}>
-                <i className="fa-solid fa-cloud-arrow-up me-1" /> Upload Cover
-                <input type="file" accept="image/*" className="d-none" onChange={(e) => handleFileUpload(e, 'coverUrl')} disabled={uploading} />
-              </label>
+              <>
+                <label className="btn btn-outline-primary btn-sm" style={{ cursor: 'pointer' }}>
+                  <i className="fa-solid fa-cloud-arrow-up me-1" /> Upload Cover
+                  <input type="file" accept="image/*" className="d-none" onChange={(e) => handleFileUpload(e, 'coverUrl')} disabled={uploading} />
+                </label>
+                <small className="text-danger d-block mt-1">Required — books without a cover won't display properly</small>
+              </>
             )}
           </div>
           <div className="col-md-6">

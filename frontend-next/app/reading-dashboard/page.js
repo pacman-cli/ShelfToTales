@@ -242,9 +242,9 @@ const ReadingDashboard = () => {
                                     <div className="row">
                                         {dashboardData.recommendations.map((rec) => (
                                             <div className="col-md-4 mb-3" key={rec.bookId}>
-                                                <button
+                                                <Link
+                                                    href={`/shop-detail/${rec.bookId}`}
                                                     className="rn-mood-book-card"
-                                                    onClick={() => router.push(`/shop-detail/${rec.bookId}`)}
                                                 >
                                                     <span className="badge bg-warning text-dark mb-1">{rec.matchCategory || 'Recommended'}</span>
                                                     <img
@@ -252,6 +252,8 @@ const ReadingDashboard = () => {
                                                         alt={`Cover of ${rec.title}`}
                                                         width="80"
                                                         height="115"
+                                                        loading="lazy"
+                                                        decoding="async"
                                                         className="rn-mood-book-cover"
                                                     />
                                                     <h6 className="rn-mood-book-title">{rec.title}</h6>
@@ -264,7 +266,7 @@ const ReadingDashboard = () => {
                                                     {rec.reason && (
                                                         <span className="rn-mood-tag">{rec.reason}</span>
                                                     )}
-                                                </button>
+                                                </Link>
                                             </div>
                                         ))}
                                     </div>
@@ -542,7 +544,7 @@ const ReadingDashboard = () => {
 
                         <div className="d-flex align-items-center gap-3">
                             <button className="btn btn-link p-0 text-muted" onClick={prevTrack} aria-label="Previous track">
-                                <i className="fa-solid fa-backward-step"></i>
+                                <i className="fa-solid fa-backward-step" aria-hidden="true"></i>
                             </button>
                             <button
                                 className="bg-primary p-2 rounded-circle text-white d-flex align-items-center justify-content-center"
@@ -550,10 +552,10 @@ const ReadingDashboard = () => {
                                 onClick={togglePlay}
                                 aria-label={isPlaying ? "Pause" : "Play"}
                             >
-                                <i className={`fa-solid ${isPlaying ? 'fa-pause' : 'fa-play'}`}></i>
+                                <i className={`fa-solid ${isPlaying ? 'fa-pause' : 'fa-play'}`} aria-hidden="true"></i>
                             </button>
                             <button className="btn btn-link p-0 text-muted" onClick={nextTrack} aria-label="Next track">
-                                <i className="fa-solid fa-forward-step"></i>
+                                <i className="fa-solid fa-forward-step" aria-hidden="true"></i>
                             </button>
                             <label htmlFor="seek-slider" className="visually-hidden">Seek</label>
                             <input
@@ -565,6 +567,7 @@ const ReadingDashboard = () => {
                                 max={duration || 100}
                                 value={currentTime}
                                 onChange={(e) => seek(parseFloat(e.target.value))}
+                                autoComplete="off"
                             />
                             <span className="small text-muted" style={{ minWidth: '85px', textAlign: 'right' }}>
                                 {formatTime(currentTime)} / {formatTime(duration)}
@@ -582,6 +585,7 @@ const ReadingDashboard = () => {
                                     step="0.01"
                                     value={volume}
                                     onChange={(e) => setVolume(parseFloat(e.target.value))}
+                                    autoComplete="off"
                                 />
                             </div>
                         </div>

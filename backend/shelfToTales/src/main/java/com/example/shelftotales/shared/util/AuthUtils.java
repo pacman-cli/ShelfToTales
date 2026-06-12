@@ -26,4 +26,13 @@ public final class AuthUtils {
         }
         return auth.getName();
     }
+
+    /** Returns the current user, or null if anonymous. */
+    public static String getCurrentUserEmailOrNull() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getName())) {
+            return null;
+        }
+        return auth.getName();
+    }
 }

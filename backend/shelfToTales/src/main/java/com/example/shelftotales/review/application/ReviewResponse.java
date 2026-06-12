@@ -1,9 +1,6 @@
 package com.example.shelftotales.review.application;
 
-import com.example.shelftotales.auth.domain.*;
-import com.example.shelftotales.catalog.domain.*;
-import com.example.shelftotales.bookshelf.domain.*;
-
+import com.example.shelftotales.ai.domain.SpoilerLevel;
 import lombok.*;
 import java.time.LocalDateTime;
 
@@ -18,6 +15,9 @@ public class ReviewResponse {
     private int rating;
     private String comment;
     private boolean isSpoiler;
+    private SpoilerLevel spoilerLevel;
+    private Double spoilerScore;
+    private String sanitizedComment;
     private LocalDateTime createdAt;
     private UserSummary user;
 

@@ -20,7 +20,7 @@ public class Order {
 
     private static final Map<OrderStatus, Set<OrderStatus>> VALID_TRANSITIONS = Map.of(
             OrderStatus.PENDING, Set.of(OrderStatus.CONFIRMED, OrderStatus.CANCELLED),
-            OrderStatus.CONFIRMED, Set.of(OrderStatus.SHIPPED, OrderStatus.CANCELLED),
+            OrderStatus.CONFIRMED, Set.of(OrderStatus.SHIPPED, OrderStatus.DELIVERED, OrderStatus.CANCELLED),
             OrderStatus.SHIPPED, Set.of(OrderStatus.DELIVERED),
             OrderStatus.DELIVERED, Set.of(),
             OrderStatus.CANCELLED, Set.of()

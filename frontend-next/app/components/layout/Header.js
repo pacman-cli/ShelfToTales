@@ -192,7 +192,7 @@ function Header(){
 								{isAuthenticated ? (
 									<Dropdown as="li" className="nav-item dropdown profile-dropdown ms-4">
 										<Dropdown.Toggle as="div" className="nav-link i-false" style={{cursor: 'pointer'}}>
-											<img loading="lazy" decoding="async" src={user.profileImageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || 'User')}&background=EAA451&color=fff&size=80`} alt="/" style={{width:32,height:32,borderRadius:'50%',objectFit:'cover',border:'2px solid rgba(234,164,81,0.3)'}} />
+											<img loading="lazy" decoding="async" src={user.profileImageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || 'User')}&background=EAA451&color=fff&size=80`} alt="/" style={{width:32,height:32,borderRadius:'50%',objectFit:'cover',border:'2px solid rgba(234,164,81,0.3)'}} onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(user.fullName || 'User')}&background=EAA451&color=fff&size=80`; }} />
 											<div className="profile-info">
 												<h6 className="title">{user.fullName || user.email}</h6>
 												<span>{user.email}</span>

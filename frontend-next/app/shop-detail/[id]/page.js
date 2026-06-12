@@ -114,6 +114,7 @@ function ReviewCommentsThread({ reviewId }) {
                             src={node.user?.profileImageUrl || `https://ui-avatars.com/api/?name=${encodeURIComponent(node.user?.username || 'U')}&size=24&background=eaa451&color=fff`} 
                             alt="" 
                             style={{ width: 24, height: 24, borderRadius: '50%', objectFit: 'cover' }} 
+                            onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(node.user?.username || 'U')}&size=24&background=eaa451&color=fff`; }}
                         />
                         <strong style={{ fontSize: '0.85rem' }}>{node.user?.username || 'User'}</strong>
                         <span style={{ fontSize: '0.75rem', color: '#6b7280', fontVariantNumeric: 'tabular-nums' }}>
@@ -228,7 +229,7 @@ function CommentBlog({id, title, comment, date, rating, avatar, isSpoiler}){
         <>
             <div className="comment-body" id="div-comment-3" style={{ position: 'relative' }}>
                 <div className="comment-author vcard">
-                    <img loading="lazy" decoding="async" src={avatar || profile2} alt="" className="avatar"/>
+                    <img loading="lazy" decoding="async" src={avatar || profile2} alt="" className="avatar" onError={(e) => { e.target.onerror = null; e.target.src = profile2; }}/>
                     <cite className="fn">{title}</cite> <span className="says">says:</span>
                     <div className="comment-meta" style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                         <Link href={"#"}>{new Date(date).toLocaleDateString()}</Link>

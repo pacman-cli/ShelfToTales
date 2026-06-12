@@ -2,6 +2,8 @@ package com.example.shelftotales.ai.application;
 
 import com.example.shelftotales.ai.application.chat.*;
 import com.example.shelftotales.ai.domain.*;
+import com.example.shelftotales.ai.rag.PromptOrchestrator;
+import com.example.shelftotales.ai.rag.RagRetriever;
 import com.example.shelftotales.catalog.domain.Book;
 import com.example.shelftotales.auth.domain.User;
 import com.example.shelftotales.auth.infrastructure.UserRepository;
@@ -11,6 +13,10 @@ import com.example.shelftotales.bookshelf.infrastructure.ShelfBookRepository;
 import com.example.shelftotales.shared.util.AuthUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+
+import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -46,6 +52,8 @@ public class ChatService {
     private final UserRepository userRepository;
     private final OrderRepository orderRepository;
     private final ShelfBookRepository shelfBookRepository;
+    private final RagRetriever ragRetriever;
+    private final PromptOrchestrator promptOrchestrator;
 
     private final Map<Long, List<ChatMessage>> sessions = new ConcurrentHashMap<>();
     private final Map<Long, Long> sessionLastAccess = new ConcurrentHashMap<>();
@@ -62,8 +70,15 @@ public class ChatService {
         // Build conversation-aware search query
         String searchQuery = buildConversationQuery(history, userMessage);
 
-        // RAG Retrieval: fetch top 4 similar books
-        List<Map.Entry<Book, Double>> bookResults = embeddingService.searchSimilar(searchQuery, 4, null);
+        // RAG Retrieval: top-4 chunks, then resolve to books for display.
+        var retrieved = ragRetriever.retrieve(searchQuery, 4);
+        List<Map.Entry<Book, Double>> bookResults = new ArrayList<>();
+        for (RetrievedChunk rc : retrieved) {
+            Book book = embeddingService.findBookById(rc.chunk().getBookId());
+            if (book != null) {
+                bookResults.add(Map.entry(book, rc.score()));
+            }
+        }
 
         // Build multi-domain context
         String catalogContext = buildCatalogContext(bookResults);
@@ -74,13 +89,14 @@ public class ChatService {
         // Build conversation history context
         String historyContext = buildHistoryContext(history);
 
-        // Assemble full system prompt
-        String fullPrompt = SYSTEM_PROMPT + "\n" +
+        // Assemble full system prompt with RAG context injected.
+        String basePrompt = SYSTEM_PROMPT + "\n" +
             userContext + "\n" +
             orderContext + "\n" +
             statsContext + "\n" +
             catalogContext + "\n" +
             historyContext;
+        String fullPrompt = promptOrchestrator.build(basePrompt, retrieved);
 
         String reply = openAIChatProvider.isAvailable()
                 ? openAIChatProvider.chat(history, fullPrompt)

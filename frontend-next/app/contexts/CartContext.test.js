@@ -94,8 +94,8 @@ describe('CartContext', () => {
   it('refreshCart fetches and updates state', async () => {
     const cartPayload = {
       items: [{ bookId: 1, title: 'Dune', quantity: 1, price: 19.99 }],
-      count: 1,
-      total: 19.99,
+      totalItems: 1,
+      totalPrice: 19.99,
     };
     cartService.getCart.mockResolvedValue({ data: cartPayload });
 
@@ -116,8 +116,8 @@ describe('CartContext', () => {
   it('addToCart calls API and updates state', async () => {
     const cartPayload = {
       items: [{ bookId: 1, title: 'Dune', quantity: 2, price: 19.99 }],
-      count: 2,
-      total: 39.98,
+      totalItems: 2,
+      totalPrice: 39.98,
     };
     cartService.addToCart.mockResolvedValue({ data: cartPayload });
 
@@ -138,8 +138,8 @@ describe('CartContext', () => {
   it('updateQuantity calls API and updates state', async () => {
     const cartPayload = {
       items: [{ bookId: 1, title: 'Dune', quantity: 5, price: 19.99 }],
-      count: 5,
-      total: 99.95,
+      totalItems: 5,
+      totalPrice: 99.95,
     };
     cartService.updateQuantity.mockResolvedValue({ data: cartPayload });
 
@@ -160,8 +160,8 @@ describe('CartContext', () => {
   it('removeFromCart calls API and updates state', async () => {
     const cartPayload = {
       items: [],
-      count: 0,
-      total: 0,
+      totalItems: 0,
+      totalPrice: 0,
     };
     cartService.removeFromCart.mockResolvedValue({ data: cartPayload });
 

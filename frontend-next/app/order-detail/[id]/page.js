@@ -8,12 +8,34 @@ import { useParams } from 'next/navigation';
 import PageTitle from '../../components/layout/PageTitle';
 import { orderService } from '../../lib/api';
 import { FadeIn } from '../../components/common/AnimationUtils';
+import Swal from 'sweetalert2';
 
 function OrderDetail() {
   const { id } = useParams();
   const [order, setOrder] = useState(null);
   const [checkoutSummary, setCheckoutSummary] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [updatingStatus, setUpdatingStatus] = useState(false);
+
+  const handleConfirmReceipt = async () => {
+    setUpdatingStatus(true);
+    try {
+      const response = await orderService.receive(id);
+      setOrder(response.data);
+      Swal.fire({
+        icon: 'success',
+        title: 'Receipt Confirmed',
+        text: 'Thank you for confirming receipt of your book! The PDF is now unlocked.',
+        timer: 2000,
+        showConfirmButton: false,
+      });
+    } catch (error) {
+      console.error('Error confirming receipt:', error);
+      Swal.fire('Failed to confirm receipt', error.response?.data?.message || 'Could not update status', 'error');
+    } finally {
+      setUpdatingStatus(false);
+    }
+  };
 
   useEffect(() => {
     const fetchOrder = async () => {
@@ -63,9 +85,20 @@ function OrderDetail() {
               <div className="card shadow-sm border-0 mb-4">
                 <div className="card-header bg-white border-bottom py-3 d-flex justify-content-between align-items-center">
                   <h5 className="mb-0">Order Items</h5>
-                  <span className={`badge ${order.status === 'COMPLETED' ? 'bg-success' : 'bg-warning'}`}>
-                    {order.status}
-                  </span>
+                  <div className="d-flex align-items-center gap-2">
+                    <span className={`badge ${order.status === 'DELIVERED' ? 'bg-success' : 'bg-warning'}`}>
+                      {order.status}
+                    </span>
+                    {order.status !== 'DELIVERED' && order.status !== 'CANCELLED' && (
+                      <button
+                        onClick={handleConfirmReceipt}
+                        className="btn btn-sm btn-success rounded-pill px-3 fw-bold"
+                        disabled={updatingStatus}
+                      >
+                        {updatingStatus ? 'Confirming…' : 'Mark as Received'}
+                      </button>
+                    )}
+                  </div>
                 </div>
                 <div className="card-body">
                   <div className="table-responsive">

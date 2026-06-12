@@ -94,15 +94,13 @@ environment:
   H2_CONSOLE_ENABLED: false
 ```
 
-## Running with H2 (Local Development)
+## Running with PostgreSQL (Default)
 
-If you want to use H2 instead of PostgreSQL for local development, simply run the application normally without Docker:
+The backend uses **PostgreSQL** in every non-test profile. The JDBC URL in `application.properties` defaults to `jdbc:postgresql://localhost:5432/shelftotalesdb`. H2 appears only in `src/test/resources/application.properties` (in-memory, `ddl-auto=create-drop`, Flyway disabled) so unit tests do not need a live database.
 
-```bash
-./mvnw spring-boot:run
-```
+## Legacy: Running with H2
 
-The application will use H2 in-memory database by default (see `application.properties`).
+If a previous version of this project used an H2 default, that has been superseded. The current `application.properties` is wired to PostgreSQL; switching back to H2 would require overriding the datasource URL, driver, and JPA dialect in a custom `application-{profile}.properties` file.
 
 ## Troubleshooting
 

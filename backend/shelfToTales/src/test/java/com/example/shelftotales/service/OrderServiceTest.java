@@ -241,4 +241,31 @@ class OrderServiceTest {
             verify(orderRepository).findByIdAndUserIdWithItems(1000L, 1L);
         }
     }
+
+    @Test
+    void markAsReceived_success() {
+        try (MockedStatic<AuthUtils> auth = mockStatic(AuthUtils.class)) {
+            auth.when(() -> AuthUtils.getCurrentUser(userRepository)).thenReturn(testUser);
+
+            Order order = Order.builder()
+                    .id(1000L)
+                    .user(testUser)
+                    .orderDate(LocalDateTime.now())
+                    .status(OrderStatus.CONFIRMED)
+                    .totalAmount(BigDecimal.valueOf(30.00))
+                    .items(new ArrayList<>())
+                    .build();
+
+            when(orderRepository.findByIdAndUserIdWithItems(1000L, 1L)).thenReturn(Optional.of(order));
+            when(orderRepository.save(any(Order.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+            OrderResponse response = orderService.markAsReceived(1000L);
+
+            assertNotNull(response);
+            assertEquals(1000L, response.getId());
+            assertEquals(OrderStatus.DELIVERED, response.getStatus());
+            verify(orderRepository).findByIdAndUserIdWithItems(1000L, 1L);
+            verify(orderRepository).save(any(Order.class));
+        }
+    }
 }

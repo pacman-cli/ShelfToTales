@@ -75,6 +75,7 @@ export const bookService = {
   getSimilar: (id) => api.get(`/books/${id}/similar`),
   getByMood: (mood) => api.get(`/books/mood/${mood}`),
   search: (query) => api.get('/books', { params: { q: query } }),
+  getReadInfo: (id) => api.get(`/books/${id}/read`), // Added method
 };
 
 export const categoryService = {
@@ -125,11 +126,25 @@ export const orderService = {
   getUserOrders: () => api.get('/orders'),
   getHistory: () => api.get('/orders'),
   getById: (id) => api.get(`/orders/${id}`),
+  receive: (id) => api.put(`/orders/${id}/receive`), // Added method
 };
 
 export const reviewService = {
   getByBookId: (bookId) => api.get(`/books/${bookId}/reviews`),
   addReview: (bookId, reviewData) => api.post(`/books/${bookId}/reviews`, reviewData),
+  submitModerated: (data) => api.post('/reviews/submit', data),
+  getByBookIdModerated: (bookId) => api.get(`/reviews/book/${bookId}`),
+};
+
+export const spoilerService = {
+  get: (reviewId) => api.get(`/reviews/${reviewId}/spoiler`),
+  recheck: (reviewId) => api.post(`/reviews/${reviewId}/spoiler-check`),
+};
+
+export const recommendationService = {
+  forYou: (limit = 10) => api.get('/recommendations/for-you', { params: { limit } }),
+  byMood: (mood, limit = 10) => api.get(`/recommendations/mood/${encodeURIComponent(mood)}`, { params: { limit } }),
+  similar: (bookId, limit = 10) => api.get(`/recommendations/similar/${bookId}`, { params: { limit } }),
 };
 
 export const dashboardService = {

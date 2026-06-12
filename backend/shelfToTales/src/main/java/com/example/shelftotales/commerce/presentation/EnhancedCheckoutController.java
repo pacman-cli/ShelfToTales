@@ -1,6 +1,7 @@
 package com.example.shelftotales.commerce.presentation;
 import com.example.shelftotales.commerce.domain.*;
 import com.example.shelftotales.commerce.application.*;
+import com.example.shelftotales.commerce.application.OrderResponse;
 
 import com.example.shelftotales.auth.domain.*;
 import com.example.shelftotales.catalog.domain.*;
@@ -17,12 +18,14 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class EnhancedCheckoutController {
     private final EnhancedCheckoutService checkoutService;
+    private final OrderService orderService;
 
     @PostMapping
-    public ResponseEntity<Order> checkout(@RequestBody Map<String, Object> body) {
+    public ResponseEntity<OrderResponse> checkout(@RequestBody Map<String, Object> body) {
         Long addressId = Long.parseLong(body.get("addressId").toString());
         String paymentMethod = (String) body.getOrDefault("paymentMethod", "COD");
         String couponCode = (String) body.get("couponCode");
-        return ResponseEntity.ok(checkoutService.checkout(addressId, paymentMethod, couponCode));
+        Order order = checkoutService.checkout(addressId, paymentMethod, couponCode);
+        return ResponseEntity.ok(orderService.mapToOrderResponse(order));
     }
 }

@@ -71,7 +71,7 @@ function MyProfileInner() {
           <div className="prof-header-bg"/>
           <div className="prof-avatar-section" onDrop={onDrop} onDragOver={onDragOver} onDragLeave={onDragLeave}>
             <div className={`prof-avatar-wrap ${dragOver ? 'drag-over' : ''}`} onClick={() => fileRef.current?.click()}>
-              <img src={avatarUrl} alt="Profile" className="prof-avatar-img"/>
+              <img src={avatarUrl} alt="Profile" className="prof-avatar-img" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(profile?.fullName||'U')}&background=1a1a2e&color=eaa451&size=200&bold=true`; }} />
               <div className="prof-avatar-overlay">
                 {uploading ? <div className="spinner-border spinner-border-sm text-white"/> : <><i className="fa-solid fa-camera"/><span>Change</span></>}
               </div>

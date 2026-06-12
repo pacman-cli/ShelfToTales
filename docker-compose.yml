@@ -26,5 +26,39 @@ services:
       timeout: 3s
       retries: 5
 
+  backend:
+    build:
+      context: ./backend/shelfToTales
+      dockerfile: Dockerfile
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://postgres:5432/shelftotalesdb
+      SPRING_DATASOURCE_USERNAME: shelftotales
+      SPRING_DATASOURCE_PASSWORD: shelftotales_password
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PASSWORD: shelftotales_redis_password
+      JWT_SECRET_KEY: dev-only-change-in-production-min-32-bytes!!
+      CORS_ALLOWED_ORIGINS: http://localhost:3000
+      R2_ACCESS_KEY: "391928c467ecc584f9df8b6a72d86949"
+      R2_SECRET_KEY: "ede129eb4da6f1d844594fca4661b30057a980d78632ed2e5ff275a876df799b"
+      R2_BUCKET: "shelftotales"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ./frontend-next
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:8080/api
+    depends_on:
+      - backend
+
 volumes:
   pgdata:

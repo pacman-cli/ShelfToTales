@@ -76,6 +76,9 @@ class ReviewServiceTest {
     private AIService aiService;
 
     @Mock
+    private com.example.shelftotales.ai.application.SpoilerDetectionService spoilerDetectionService;
+
+    @Mock
     private org.springframework.context.ApplicationEventPublisher eventPublisher;
 
     @InjectMocks
@@ -118,7 +121,6 @@ class ReviewServiceTest {
             auth.when(() -> AuthUtils.getCurrentUser(userRepository)).thenReturn(testUser);
             when(bookRepository.findById(10L)).thenReturn(Optional.of(testBook));
             when(reviewRepository.findByBookIdAndUserId(10L, 1L)).thenReturn(Optional.empty());
-            when(aiService.isSpoilerReview("Great book!")).thenReturn(false);
             when(reviewRepository.save(any(Review.class))).thenReturn(testReview);
 
             ReviewRequest request = ReviewRequest.builder()

@@ -17,7 +17,7 @@ function FeaturedSlider() {
         const fetchBooks = async () => {
             try {
                 const response = await bookService.getAll();
-                setBooks(response.data.slice(0, 5)); // Just take first 5
+                setBooks((response.data.content || response.data || []).slice(0, 5));
             } catch (error) {
                 console.error('Error fetching featured books:', error);
             }

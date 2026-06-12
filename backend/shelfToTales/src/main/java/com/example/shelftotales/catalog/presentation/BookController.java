@@ -105,4 +105,12 @@ public class BookController {
             @RequestParam(defaultValue = "5") @Min(1) @Max(20) int limit) {
         return ResponseEntity.ok(bookService.findSimilarBooks(id, limit));
     }
+
+    @PostMapping(value = "/search-by-image", consumes = "multipart/form-data")
+    @Operation(summary = "Search the catalog by uploading a book cover image")
+    public ResponseEntity<java.util.List<BookResponse>> searchByImage(
+            @RequestParam("file") org.springframework.web.multipart.MultipartFile file,
+            @RequestParam(defaultValue = "5") @Min(1) @Max(20) int limit) {
+        return ResponseEntity.ok(bookService.searchByCover(file, limit));
+    }
 }

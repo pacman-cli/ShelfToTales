@@ -52,7 +52,7 @@ graph TB
     end
 
     subgraph Database["🗄️ Database"]
-        H2[(H2 — Dev)]
+        H2[(H2 — Tests)]
         PG[(PostgreSQL — Prod)]
     end
 
@@ -62,10 +62,12 @@ graph TB
     JWT_FILTER --> API
     API --> Services
     Services --> REPOS
-    REPOS --> H2
     REPOS --> PG
-    FLYWAY --> H2
     FLYWAY --> PG
+    H2 -.test scope.-> TESTS
+    subgraph Tests[Test resources only]
+      H2
+    end
 ```
 
 ---
@@ -366,7 +368,7 @@ flowchart LR
 | **Frontend** | Next.js 15.5, React 19, Bootstrap 5, Chart.js, Swiper, Axios |
 | **Backend** | Java 17, Spring Boot 3.4, Spring Security, Spring Data JPA |
 | **Auth** | JWT (HMAC-SHA256), Google OAuth2, BCrypt |
-| **Database** | H2 (dev), PostgreSQL (prod), Flyway migrations |
+| **Database** | PostgreSQL (default, all profiles), H2 (test scope only) |
 | **API Docs** | Springdoc OpenAPI / Swagger UI |
 | **Testing** | Vitest + Testing Library (frontend), JUnit + Mockito (backend) |
 | **Build** | Maven (backend), npm (frontend) |
@@ -430,7 +432,7 @@ cd backend/shelfToTales
 
 - API: `http://localhost:8080`
 - Swagger UI: `http://localhost:8080/swagger-ui.html`
-- H2 Console: `http://localhost:8080/h2-console`
+- H2 Console: only available when running the test profile (default profile is PostgreSQL, so the H2 console is not exposed)
 
 ### Frontend
 

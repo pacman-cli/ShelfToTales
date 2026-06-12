@@ -1,0 +1,56 @@
+[ {
+  "messages" : [ {
+    "content" : "You are a spoiler detection model for the book \"Atomic Habits\" by James Clear.\nGenre: Self-Help. Mood: productivity,motivation,self-improvement.\n\nClassify book reviews as:\n- SAFE: No spoilers or plot details\n- MINOR_SPOILER: Hints about characters or events\n- MAJOR_SPOILER: Reveals key plot points, endings, or character deaths\n\nRespond with ONLY valid JSON:\n{\n  \"level\": \"SAFE\" | \"MINOR_SPOILER\" | \"MAJOR_SPOILER\",\n  \"score\": 0.0-1.0,\n  \"reasoning\": \"brief explanation\"\n}\n",
+    "role" : "system"
+  }, {
+    "content" : "Great book about building habits! Very practical advice.",
+    "role" : "user"
+  }, {
+    "content" : "{\"level\": \"SAFE\", \"score\": 0.00, \"reasoning\": \"Review does not contain plot-specific details\"}",
+    "role" : "assistant"
+  } ]
+}, {
+  "messages" : [ {
+    "content" : "You are a spoiler detection model for the book \"Atomic Habits\" by James Clear.\nGenre: Self-Help. Mood: productivity,motivation,self-improvement.\n\nClassify book reviews as:\n- SAFE: No spoilers or plot details\n- MINOR_SPOILER: Hints about characters or events\n- MAJOR_SPOILER: Reveals key plot points, endings, or character deaths\n\nRespond with ONLY valid JSON:\n{\n  \"level\": \"SAFE\" | \"MINOR_SPOILER\" | \"MAJOR_SPOILER\",\n  \"score\": 0.0-1.0,\n  \"reasoning\": \"brief explanation\"\n}\n",
+    "role" : "system"
+  }, {
+    "content" : "The book reveals the authors wife dies in a car accident which motivates him to change his whole life.",
+    "role" : "user"
+  }, {
+    "content" : "{\"level\": \"MAJOR_SPOILER\", \"score\": 0.90, \"reasoning\": \"Review contains explicit plot reveals or character fates\"}",
+    "role" : "assistant"
+  } ]
+}, {
+  "messages" : [ {
+    "content" : "You are a spoiler detection model for the book \"Atomic Habits\" by James Clear.\nGenre: Self-Help. Mood: productivity,motivation,self-improvement.\n\nClassify book reviews as:\n- SAFE: No spoilers or plot details\n- MINOR_SPOILER: Hints about characters or events\n- MAJOR_SPOILER: Reveals key plot points, endings, or character deaths\n\nRespond with ONLY valid JSON:\n{\n  \"level\": \"SAFE\" | \"MINOR_SPOILER\" | \"MAJOR_SPOILER\",\n  \"score\": 0.0-1.0,\n  \"reasoning\": \"brief explanation\"\n}\n",
+    "role" : "system"
+  }, {
+    "content" : "The chapter about habit stacking was a game changer for me. Highly recommend.",
+    "role" : "user"
+  }, {
+    "content" : "{\"level\": \"SAFE\", \"score\": 0.00, \"reasoning\": \"Review does not contain plot-specific details\"}",
+    "role" : "assistant"
+  } ]
+}, {
+  "messages" : [ {
+    "content" : "You are a spoiler detection model for the book \"Atomic Habits\" by James Clear.\nGenre: Self-Help. Mood: productivity,motivation,self-improvement.\n\nClassify book reviews as:\n- SAFE: No spoilers or plot details\n- MINOR_SPOILER: Hints about characters or events\n- MAJOR_SPOILER: Reveals key plot points, endings, or character deaths\n\nRespond with ONLY valid JSON:\n{\n  \"level\": \"SAFE\" | \"MINOR_SPOILER\" | \"MAJOR_SPOILER\",\n  \"score\": 0.0-1.0,\n  \"reasoning\": \"brief explanation\"\n}\n",
+    "role" : "system"
+  }, {
+    "content" : "The ending reveals the habit system was designed by a secret organization. The main character dies at the end.",
+    "role" : "user"
+  }, {
+    "content" : "{\"level\": \"MAJOR_SPOILER\", \"score\": 0.90, \"reasoning\": \"Review contains explicit plot reveals or character fates\"}",
+    "role" : "assistant"
+  } ]
+}, {
+  "messages" : [ {
+    "content" : "You are a spoiler detection model for the book \"Atomic Habits\" by James Clear.\nGenre: Self-Help. Mood: productivity,motivation,self-improvement.\n\nClassify book reviews as:\n- SAFE: No spoilers or plot details\n- MINOR_SPOILER: Hints about characters or events\n- MAJOR_SPOILER: Reveals key plot points, endings, or character deaths\n\nRespond with ONLY valid JSON:\n{\n  \"level\": \"SAFE\" | \"MINOR_SPOILER\" | \"MAJOR_SPOILER\",\n  \"score\": 0.0-1.0,\n  \"reasoning\": \"brief explanation\"\n}\n",
+    "role" : "system"
+  }, {
+    "content" : "James Clear writes in a clear and engaging way. Changed my daily routines completely.",
+    "role" : "user"
+  }, {
+    "content" : "{\"level\": \"SAFE\", \"score\": 0.00, \"reasoning\": \"Review does not contain plot-specific details\"}",
+    "role" : "assistant"
+  } ]
+} ]

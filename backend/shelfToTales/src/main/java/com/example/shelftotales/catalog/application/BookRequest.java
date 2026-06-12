@@ -28,6 +28,7 @@ public class BookRequest {
 
     private String description;
 
+    @NotBlank(message = "Cover image is required")
     private String coverUrl;
 
     private LocalDate publishedDate;

@@ -1,11 +1,14 @@
 package com.example.shelftotales.review.domain;
 
+import com.example.shelftotales.ai.domain.SpoilerLevel;
+import com.example.shelftotales.ai.domain.SpamLevel;
 import com.example.shelftotales.auth.domain.User;
 import com.example.shelftotales.catalog.domain.Book;
 import com.example.shelftotales.catalog.domain.Category;
 
 import jakarta.persistence.*;
 import lombok.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Entity
@@ -32,6 +35,24 @@ public class Review {
     @Column(nullable = false)
     @Builder.Default
     private boolean isSpoiler = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "spoiler_level", nullable = false, length = 16)
+    @Builder.Default
+    private SpoilerLevel spoilerLevel = SpoilerLevel.SAFE;
+
+    @Column(nullable = false)
+    @Builder.Default
+    private boolean isSpam = false;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "spam_level", nullable = false, length = 16)
+    @Builder.Default
+    private SpamLevel spamLevel = SpamLevel.SAFE;
+
+    @Column(name = "spam_score", precision = 4, scale = 3)
+    @Builder.Default
+    private BigDecimal spamScore = BigDecimal.ZERO;
 
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;

@@ -61,6 +61,12 @@ public class EmbeddingService {
         return isPgVectorAvailable;
     }
 
+    /** Resolve a book by id; returns null when missing. Used by the chat RAG path. */
+    public Book findBookById(Long bookId) {
+        if (bookId == null) return null;
+        return bookRepository.findById(bookId).orElse(null);
+    }
+
     public List<Long> getSimilarBookIdsExcluding(double[] vector, Long excludeBookId, int limit) {
         if (vector == null || vector.length == 0) return Collections.emptyList();
         String vectorStr = aiService.vectorToString(vector);

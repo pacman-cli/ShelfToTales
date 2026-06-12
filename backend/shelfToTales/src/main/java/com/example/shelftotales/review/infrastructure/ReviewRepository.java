@@ -28,4 +28,14 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
            "GROUP BY r.book.id " +
            "ORDER BY AVG(r.rating) DESC, COUNT(r) DESC")
     java.util.List<Long> findTopReviewedBookIds(org.springframework.data.domain.Pageable pageable);
+
+    @Query("SELECT r.book.id FROM Review r WHERE r.user.id = :userId")
+    List<Long> findBookIdsByUserId(@org.springframework.data.repository.query.Param("userId") Long userId);
+
+    @Query("SELECT r.user.id FROM Review r WHERE r.book.id = :bookId")
+    List<Long> findUserIdsByBookId(@org.springframework.data.repository.query.Param("bookId") Long bookId);
+
+    List<Review> findByBookId(Long bookId);
+
+    long countByBookIdAndSpoilerLevelIsNotNull(Long bookId);
 }

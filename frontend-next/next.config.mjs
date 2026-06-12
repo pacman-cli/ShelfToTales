@@ -2,14 +2,17 @@
 const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL || 'http://localhost:8080';
 const apiHost = new URL(apiBase).host;
 const apiOrigin = new URL(apiBase).origin;
+const wsUrl = apiOrigin.replace(/^http/, 'ws');
+const wssUrl = apiOrigin.replace(/^http/, 'wss');
 
 const cspHeader = `
   default-src 'self';
   script-src 'self' 'unsafe-eval' 'unsafe-inline' https://accounts.google.com;
-  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com;
-  img-src 'self' blob: data: https://images.unsplash.com https://i.pravatar.cc https://ui-avatars.com https://via.placeholder.com https://*.r2.dev https://placehold.co https://api.dicebear.com;
+  style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://accounts.google.com;
+  img-src 'self' blob: data: https://images.unsplash.com https://i.pravatar.cc https://ui-avatars.com https://via.placeholder.com https://*.r2.dev https://placehold.co https://api.dicebear.com https://covers.openlibrary.org https://archive.org https://lh3.googleusercontent.com;
   font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com;
-  connect-src 'self' ${apiOrigin} ws://${apiHost} wss://${apiHost} https://accounts.google.com;
+  media-src 'self' https://www.soundjay.com https://www.soundhelix.com;
+  connect-src 'self' ${apiOrigin} ${wsUrl} ${wssUrl} ws://${apiHost} wss://${apiHost} https://accounts.google.com;
   worker-src 'self' https://unpkg.com;
   frame-src 'self' https://accounts.google.com https://www.youtube.com https://www.google.com;
   object-src 'none';

@@ -18,6 +18,10 @@ import com.example.shelftotales.catalog.infrastructure.CategoryRepository;
 import com.example.shelftotales.catalog.infrastructure.BookEmbeddingRepository;
 import com.example.shelftotales.catalog.infrastructure.ImageHashService;
 import com.example.shelftotales.commerce.infrastructure.OrderRepository;
+import com.example.shelftotales.auth.infrastructure.UserRepository;
+import com.example.shelftotales.commerce.domain.OrderStatus;
+import com.example.shelftotales.auth.domain.Role;
+import com.example.shelftotales.auth.domain.User;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -29,8 +33,12 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import org.springframework.web.multipart.MultipartFile;
+
 import java.util.Optional;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +50,7 @@ public class BookService {
     private final EmbeddingService embeddingService;
     private final ImageHashService imageHashService;
     private final OrderRepository orderRepository;
+    private final UserRepository userRepository;
 
     @Cacheable(value = "books", key = "#query + ':' + #categoryId + ':' + #minPrice + ':' + #maxPrice + ':' + #inStockOnly + ':' + #minRating + ':' + #page + ':' + #size + ':' + #sortBy + ':' + #sortDir")
     public PagedResponse<BookResponse> getBooks(String query, Long categoryId, BigDecimal minPrice, BigDecimal maxPrice, boolean inStockOnly, Double minRating, int page, int size, String sortBy, String sortDir) {
@@ -61,9 +70,22 @@ public class BookService {
                 .build();
     }
 
-    @Cacheable(value = "bookById", key = "#id")
     public Optional<BookResponse> getBookById(Long id) {
-        return bookRepository.findById(id).map(this::toResponse);
+        return bookRepository.findById(id).map(book -> {
+            BookResponse resp = toResponse(book);
+            Long userId = null;
+            boolean isAdminOrMod = false;
+            try {
+                User user = com.example.shelftotales.shared.util.AuthUtils.getCurrentUser(userRepository);
+                userId = user.getId();
+                isAdminOrMod = user.getRole() == Role.ADMIN || user.getRole() == Role.MODERATOR;
+            } catch (Exception e) {}
+
+            if (book.isPreviewAvailable() || isAdminOrMod || (userId != null && canUserReadBook(userId, id))) {
+                resp.setPdfUrl(book.getPdfUrl());
+            }
+            return resp;
+        });
     }
 
     public boolean canUserReadBook(Long userId, Long bookId) {
@@ -71,7 +93,11 @@ public class BookService {
         if (book == null) return false;
         if (book.isPreviewAvailable()) return true;
         if (userId == null) return false;
-        return orderRepository.existsByUserIdAndItemsBookId(userId, bookId);
+        User user = userRepository.findById(userId).orElse(null);
+        if (user != null && (user.getRole() == Role.ADMIN || user.getRole() == Role.MODERATOR)) {
+            return true;
+        }
+        return orderRepository.existsByUserIdAndItemsBookIdAndStatus(userId, bookId, OrderStatus.DELIVERED);
     }
 
     public Optional<ReadBookResponse> getReadBookInfo(Long id) {
@@ -119,10 +145,7 @@ public class BookService {
     }
 
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = "books", allEntries = true),
-        @CacheEvict(value = "bookById", key = "#id")
-    })
+    @CacheEvict(value = "books", allEntries = true)
     public BookResponse updateBook(Long id, BookRequest request) {
         Book book = bookRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Book not found: " + id));
@@ -158,10 +181,7 @@ public class BookService {
     }
 
     @Transactional
-    @Caching(evict = {
-        @CacheEvict(value = "books", allEntries = true),
-        @CacheEvict(value = "bookById", key = "#id")
-    })
+    @CacheEvict(value = "books", allEntries = true)
     public void deleteBook(Long id) {
         if (!bookRepository.existsById(id)) {
             throw new IllegalArgumentException("Book not found: " + id);
@@ -180,7 +200,7 @@ public class BookService {
                 .publishedDate(book.getPublishedDate())
                 .categoryName(book.getCategory() != null ? book.getCategory().getName() : null)
                 .categoryId(book.getCategory() != null ? book.getCategory().getId() : null)
-                .pdfUrl(book.getPdfUrl())
+                .pdfUrl(null)
                 .previewAvailable(book.isPreviewAvailable())
                 .price(book.getPrice())
                 .stock(book.getStock())
@@ -227,6 +247,36 @@ public class BookService {
         return similarIds.stream()
                 .map(bookMap::get)
                 .filter(java.util.Objects::nonNull)
+                .map(this::toResponse)
+                .collect(java.util.stream.Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public List<BookResponse> searchByCover(MultipartFile file, int limit) {
+        if (file == null || file.isEmpty()) return List.of();
+        long hash;
+        try {
+            hash = imageHashService.computeDHash(file);
+        } catch (java.io.IOException e) {
+            throw new IllegalArgumentException("Could not read uploaded image");
+        }
+        // Pgvector path uses bit_count, otherwise fall back to in-memory Hamming over
+        // the (small) set of books that have a cover_hash stored.
+        List<Book> candidates;
+        try {
+            candidates = bookRepository.findSimilarBooksByCoverHashPg(hash, limit);
+        } catch (RuntimeException pg) {
+            List<Book> all = bookRepository.findBooksWithCoverHash();
+            candidates = new ArrayList<>(all);
+            candidates.sort((a, b) -> Integer.compare(
+                    imageHashService.hammingDistance(hash, a.getCoverHash() == null ? 0L : a.getCoverHash()),
+                    imageHashService.hammingDistance(hash, b.getCoverHash() == null ? 0L : b.getCoverHash())));
+            if (candidates.size() > limit) candidates = candidates.subList(0, limit);
+        }
+        // Filter out clearly unrelated matches (Hamming distance > 8 for 64-bit dHash).
+        return candidates.stream()
+                .filter(b -> b.getCoverHash() != null)
+                .filter(b -> imageHashService.hammingDistance(hash, b.getCoverHash()) <= 8)
                 .map(this::toResponse)
                 .collect(java.util.stream.Collectors.toList());
     }

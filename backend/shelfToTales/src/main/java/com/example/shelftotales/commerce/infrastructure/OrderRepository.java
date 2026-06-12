@@ -26,6 +26,12 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     boolean existsByUserIdAndItemsBookId(Long userId, Long bookId);
 
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(o) > 0 FROM Order o JOIN o.items i WHERE o.user.id = :userId AND i.book.id = :bookId AND o.status = :status")
+    boolean existsByUserIdAndItemsBookIdAndStatus(
+            @org.springframework.data.repository.query.Param("userId") Long userId, 
+            @org.springframework.data.repository.query.Param("bookId") Long bookId, 
+            @org.springframework.data.repository.query.Param("status") OrderStatus status);
+
     @Query("SELECT DISTINCT i.book.id FROM Order o JOIN o.items i WHERE o.user.id = :userId AND o.status <> 'CANCELLED'")
     java.util.List<Long> findBoughtBookIdsByUserId(@Param("userId") Long userId);
 }

@@ -35,7 +35,16 @@ function ReadBookInner() {
   useEffect(() => {
     if (!bookId) return;
     bookService.getById(bookId)
-      .then(res => setBook(res.data))
+      .then(async (res) => {
+        const bookData = res.data;
+        try {
+          const readRes = await bookService.getReadInfo(bookId);
+          bookData.pdfUrl = readRes.data.pdfUrl;
+        } catch (err) {
+          bookData.pdfUrl = null;
+        }
+        setBook(bookData);
+      })
       .catch(() => router.push('/books-grid-view'))
       .finally(() => setLoading(false));
   }, [bookId, router]);
@@ -159,7 +168,7 @@ function ReadBookInner() {
             </div>
           )}
 
-          {book.pdfUrl && (
+          {book.pdfUrl ? (
             <div style={{ marginTop: '1.5rem', paddingTop: '1.5rem', borderTop: '1px solid #f0ede8' }}>
               {!readingMode ? (
                 <button
@@ -184,6 +193,10 @@ function ReadBookInner() {
                   <PdfViewer url={book.pdfUrl} title={book.title} />
                 </div>
               )}
+            </div>
+          ) : (
+            <div className="alert alert-warning mt-4 text-center">
+              <i className="fa-solid fa-lock me-2" /> PDF reading is locked. Mark this book as received in your order history to unlock.
             </div>
           )}
         </div>

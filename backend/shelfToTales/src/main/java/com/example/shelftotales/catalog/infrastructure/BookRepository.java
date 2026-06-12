@@ -63,7 +63,10 @@ public interface BookRepository extends JpaRepository<Book, Long> {
     List<CategoryBreakdownDTO> findCategoryBreakdownByUserId(@Param("userId") Long userId);
 
     @Query(value = "SELECT * FROM books WHERE cover_hash IS NOT NULL " +
-                   "ORDER BY bit_count((cover_hash # CAST(:queryHash AS BIGINT))::bit(64)) ASC LIMIT :limit", 
+                   "ORDER BY bit_count((cover_hash # CAST(:queryHash AS BIGINT))::bit(64)) ASC LIMIT :limit",
            nativeQuery = true)
     List<Book> findSimilarBooksByCoverHashPg(@Param("queryHash") long queryHash, @Param("limit") int limit);
+
+    @Query("SELECT b FROM Book b WHERE b.coverHash IS NOT NULL")
+    List<Book> findBooksWithCoverHash();
 }

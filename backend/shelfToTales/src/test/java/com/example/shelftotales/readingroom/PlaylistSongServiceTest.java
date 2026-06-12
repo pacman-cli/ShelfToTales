@@ -161,24 +161,28 @@ class PlaylistSongServiceTest {
 
     @Test
     void deleteSong_deletesExistingSong() {
-        when(playlistSongRepository.existsById(10L)).thenReturn(true);
+        PlaylistSong song = PlaylistSong.builder()
+                .id(10L)
+                .fileUrl(null)
+                .build();
+        when(playlistSongRepository.findById(10L)).thenReturn(Optional.of(song));
         doNothing().when(playlistSongRepository).deleteById(10L);
 
         playlistSongService.deleteSong(10L);
 
-        verify(playlistSongRepository).existsById(10L);
+        verify(playlistSongRepository).findById(10L);
         verify(playlistSongRepository).deleteById(10L);
     }
 
     @Test
     void deleteSong_throwsIllegalArgumentExceptionWhenNotFound() {
-        when(playlistSongRepository.existsById(99L)).thenReturn(false);
+        when(playlistSongRepository.findById(99L)).thenReturn(Optional.empty());
 
         IllegalArgumentException ex = assertThrows(IllegalArgumentException.class,
                 () -> playlistSongService.deleteSong(99L));
 
         assertEquals("Song not found: 99", ex.getMessage());
-        verify(playlistSongRepository).existsById(99L);
+        verify(playlistSongRepository).findById(99L);
         verify(playlistSongRepository, never()).deleteById(any());
     }
 }

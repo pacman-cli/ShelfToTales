@@ -188,7 +188,7 @@ function Dashboard() {
         {/* Hero */}
         <div className="dash-hero">
           <div className="dash-hero-inner">
-            <img src={avatarUrl} alt="" className="dash-avatar"/>
+            <img src={avatarUrl} alt="" className="dash-avatar" onError={(e) => { e.target.onerror = null; e.target.src = `https://ui-avatars.com/api/?name=${encodeURIComponent(data.fullName||'U')}&background=eaa451&color=fff&size=72&bold=true`; }}/>
             <div>
               <h1 className="dash-greeting">Welcome back, {firstName}</h1>
               <p className="dash-subtitle">{data.email} · Member since {data.memberSince ? new Date(data.memberSince).getFullYear() : '2024'}</p>

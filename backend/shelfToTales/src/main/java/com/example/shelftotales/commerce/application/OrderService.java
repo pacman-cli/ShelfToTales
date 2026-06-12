@@ -109,7 +109,18 @@ public class OrderService {
         return mapToOrderResponse(order);
     }
 
-    private OrderResponse mapToOrderResponse(Order order) {
+    @Transactional
+    public OrderResponse markAsReceived(Long orderId) {
+        User user = AuthUtils.getCurrentUser(userRepository);
+        Order order = orderRepository.findByIdAndUserIdWithItems(orderId, user.getId())
+                .orElseThrow(() -> new IllegalArgumentException("Order not found: " + orderId));
+        
+        order.transitionTo(OrderStatus.DELIVERED);
+        Order savedOrder = orderRepository.save(order);
+        return mapToOrderResponse(savedOrder);
+    }
+
+    public OrderResponse mapToOrderResponse(Order order) {
         List<OrderItemResponse> itemResponses = order.getItems().stream()
                 .map(item -> OrderItemResponse.builder()
                         .id(item.getId())

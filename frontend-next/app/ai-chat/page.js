@@ -2,8 +2,10 @@
 export const dynamic = 'force-dynamic';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { aiService } from '../lib/api';
 import PageTitle from '../components/layout/PageTitle';
+import Skeleton from '../components/layout/Skeleton';
 import './AiChat.css';
 
 function renderMarkdown(text) {
@@ -58,31 +60,43 @@ export default function AIChatPage() {
       <div className="container py-4" style={{ maxWidth: 700 }}>
         <div style={{ background: '#fff', borderRadius: 20, boxShadow: '0 4px 20px rgba(0,0,0,0.04)', overflow: 'hidden', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 250px)', minHeight: 400 }}>
           {/* Messages */}
-          <div style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
-            {messages.map((msg, i) => (
-              <div key={i} style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: 12 }}>
-                <div style={{ maxWidth: '80%' }}>
-                  <div className="msg-content" style={{ padding: '12px 16px', borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: msg.role === 'user' ? 'linear-gradient(135deg, #eaa451, #e58c23)' : '#f5f3f0', color: msg.role === 'user' ? '#fff' : '#333', fontSize: '0.9rem', lineHeight: 1.6 }}>
-                    {renderMarkdown(msg.content)}
-                  </div>
-                  {msg.recommendations && msg.recommendations.length > 0 && (
-                    <div className="ai-rec-cards">
-                      {msg.recommendations.map((rec, j) => (
-                        <div key={j} className="ai-rec-card" onClick={() => window.open(`/shop-detail/${rec.bookId}`, '_blank')}>
-                          <img src={rec.coverUrl || '/images/book-default.jpg'} alt={rec.title} />
-                          <div className="ai-rec-card-info">
-                            <span className="ai-rec-card-title">{rec.title}</span>
-                            {rec.author && <span className="ai-rec-card-author">{rec.author}</span>}
-                            {rec.reason && <span className="ai-rec-card-reason">{rec.reason}</span>}
-                          </div>
-                        </div>
-                      ))}
+          <div role="log" aria-live="polite" aria-label="AI chat transcript" style={{ flex: 1, overflowY: 'auto', padding: '1.5rem' }}>
+            <AnimatePresence initial={false}>
+              {messages.map((msg, i) => (
+                <motion.div
+                  key={i}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.25 }}
+                  style={{ display: 'flex', justifyContent: msg.role === 'user' ? 'flex-end' : 'flex-start', marginBottom: 12 }}
+                >
+                  <div style={{ maxWidth: '80%' }}>
+                    <div className="msg-content" style={{ padding: '12px 16px', borderRadius: msg.role === 'user' ? '16px 16px 4px 16px' : '16px 16px 16px 4px', background: msg.role === 'user' ? 'linear-gradient(135deg, #eaa451, #e58c23)' : '#f5f3f0', color: msg.role === 'user' ? '#fff' : '#333', fontSize: '0.9rem', lineHeight: 1.6 }}>
+                      {renderMarkdown(msg.content)}
                     </div>
-                  )}
-                </div>
+                    {msg.recommendations && msg.recommendations.length > 0 && (
+                      <div className="ai-rec-cards">
+                        {msg.recommendations.map((rec, j) => (
+                          <div key={j} className="ai-rec-card" onClick={() => window.open(`/shop-detail/${rec.bookId}`, '_blank')}>
+                            <img src={rec.coverUrl || '/images/book-default.jpg'} alt={rec.title} />
+                            <div className="ai-rec-card-info">
+                              <span className="ai-rec-card-title">{rec.title}</span>
+                              {rec.author && <span className="ai-rec-card-author">{rec.author}</span>}
+                              {rec.reason && <span className="ai-rec-card-reason">{rec.reason}</span>}
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                </motion.div>
+              ))}
+            </AnimatePresence>
+            {loading && (
+              <div style={{ padding: '8px 16px' }}>
+                <Skeleton lines={2} height={12} />
               </div>
-            ))}
-            {loading && <div style={{ display: 'flex', gap: 4, padding: '12px 16px' }}><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ddd', animation: 'pulse 1s infinite' }}/><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ddd', animation: 'pulse 1s infinite 0.2s' }}/><span style={{ width: 8, height: 8, borderRadius: '50%', background: '#ddd', animation: 'pulse 1s infinite 0.4s' }}/></div>}
+            )}
             <div ref={endRef}/>
           </div>
           {/* Input */}
