@@ -51,9 +51,11 @@ function RegistrationInner(){
             const res = await authService.googleAuth(response.credential);
             localStorage.setItem('token', res.data?.token || 'present');
             const profileRes = await userService.getProfile();
-            localStorage.setItem('user', JSON.stringify(profileRes.data));
+            const loggedInUser = { ...profileRes.data, role: res.data.role || profileRes.data.role };
+            localStorage.setItem('user', JSON.stringify(loggedInUser));
             Swal.fire('Success', 'Account created with Google', 'success');
-            window.location.href = '/dashboard';
+            const target = loggedInUser?.role === 'ADMIN' ? '/admin/dashboard' : '/dashboard';
+            window.location.href = target;
         } catch (error) {
             console.error('Google auth error:', error);
             console.error('Response data:', error.response?.data);

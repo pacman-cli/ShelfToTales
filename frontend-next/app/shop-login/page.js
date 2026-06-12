@@ -44,9 +44,10 @@ function LoginInner(){
 
     const handleGoogleResponse = async (response) => {
         try {
-            await googleAuth(response.credential);
+            const loggedInUser = await googleAuth(response.credential);
             Swal.fire({ icon: 'success', title: 'Welcome!', showConfirmButton: false, timer: 800 });
-            setTimeout(() => { window.location.href = '/dashboard'; }, 800);
+            const target = loggedInUser?.role === 'ADMIN' ? '/admin/dashboard' : '/dashboard';
+            setTimeout(() => { window.location.href = target; }, 800);
         } catch (error) {
             Swal.fire('Error', error.response?.data?.message || 'Google login failed', 'error');
         }
@@ -55,9 +56,10 @@ function LoginInner(){
     const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            await login(email, password);
+            const loggedInUser = await login(email, password);
             Swal.fire({ icon: 'success', title: 'Welcome!', showConfirmButton: false, timer: 800 });
-            setTimeout(() => { window.location.href = '/dashboard'; }, 800);
+            const target = loggedInUser?.role === 'ADMIN' ? '/admin/dashboard' : '/dashboard';
+            setTimeout(() => { window.location.href = target; }, 800);
         } catch (error) {
             Swal.fire('Error', error.response?.data?.message || 'Login failed', 'error');
         }

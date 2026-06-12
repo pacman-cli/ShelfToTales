@@ -4,6 +4,7 @@ export const dynamic = 'force-dynamic';
 
 import React, { useMemo, useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useApi } from '../hooks/useApi';
 import { dashboardService, gamificationService, notificationService, goalService } from '../lib/api';
 import Swal from 'sweetalert2';
@@ -81,6 +82,14 @@ function Dashboard() {
   const [achievements, setAchievements] = useState([]);
   const [unreadNotifs, setUnreadNotifs] = useState(0);
   const [annualGoal, setAnnualGoal] = useState(24);
+  const router = useRouter();
+
+  useEffect(() => {
+    const user = typeof window !== 'undefined' ? JSON.parse(localStorage.getItem('user') || '{}') : {};
+    if (user?.role === 'ADMIN') {
+      router.replace('/admin/dashboard');
+    }
+  }, [router]);
 
   useEffect(() => {
     if (data) {
