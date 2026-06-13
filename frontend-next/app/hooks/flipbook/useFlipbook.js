@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useReadingProgress } from '../useReadingProgress';
 
 const MIN_ZOOM = 0.5;
 const MAX_ZOOM = 2.5;
@@ -43,9 +44,14 @@ const ZOOM_STEP = 0.25;
  *   setActionsOpen: (open: boolean) => void,
  * }}
  */
-export function useFlipbook({ flipbook }) {
+export function useFlipbook({ flipbook, bookId = null } = {}) {
   const totalPages = flipbook?.pages?.length ?? 0;
   const [pageIndex, setPageIndex] = useState(0);
+  const numericBookId = typeof bookId === 'number' || (typeof bookId === 'string' && /^\d+$/.test(bookId))
+    ? Number(bookId)
+    : null;
+  const progress = useReadingProgress({ bookId: numericBookId });
+
   const [zoom, setZoom] = useState(1);
   const [mode, setMode] = useState('single');
   const [muted, setMuted] = useState(false);
@@ -59,6 +65,21 @@ export function useFlipbook({ flipbook }) {
     setPageIndex(0);
     setZoom(1);
   }, [flipbook?.id]);
+
+  // Hydrate the page from the backend once the progress fetch lands.
+  useEffect(() => {
+    if (numericBookId == null) return;
+    if (!progress.loading && progress.currentPage > 0 && progress.currentPage < totalPages) {
+      setPageIndex(progress.currentPage);
+    }
+  }, [numericBookId, progress.loading, progress.currentPage, totalPages]);
+
+  // Persist the page whenever the user changes it (debounced inside the hook).
+  useEffect(() => {
+    if (numericBookId == null) return;
+    if (progress.loading) return;
+    progress.savePage(pageIndex);
+  }, [numericBookId, pageIndex, progress.loading, progress.savePage]);
 
   const goTo = useCallback((index) => {
     setPageIndex((current) => {
@@ -139,6 +160,7 @@ export function useFlipbook({ flipbook }) {
     closeEmbed,
     actionsOpen,
     setActionsOpen,
+    progress,
   }), [
     pageIndex, totalPages, goTo, next, prev, zoom, zoomIn, zoomOut, resetZoom,
     mode, toggleMode, muted, toggleMute, textMode, toggleTextMode,

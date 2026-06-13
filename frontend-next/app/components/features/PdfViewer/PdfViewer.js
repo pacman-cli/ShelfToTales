@@ -1,15 +1,15 @@
 'use client';
 
-import React, { useState, useCallback } from 'react';
+import React, { useState, useCallback, useEffect } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
 
-function PdfViewer({ url, title }) {
+function PdfViewer({ url, title, initialPage = 1, onPageChange }) {
   const [numPages, setNumPages] = useState(null);
-  const [pageNumber, setPageNumber] = useState(1);
+  const [pageNumber, setPageNumber] = useState(Math.max(1, Number(initialPage) || 1));
   const [scale, setScale] = useState(1.2);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -27,6 +27,10 @@ function PdfViewer({ url, title }) {
 
   const goToPrevPage = () => setPageNumber(p => Math.max(1, p - 1));
   const goToNextPage = () => setPageNumber(p => Math.min(numPages || 1, p + 1));
+
+  useEffect(() => {
+    if (typeof onPageChange === 'function') onPageChange(pageNumber);
+  }, [pageNumber, onPageChange]);
   const zoomIn = () => setScale(s => Math.min(3, s + 0.2));
   const zoomOut = () => setScale(s => Math.max(0.4, s - 0.2));
   const fitWidth = () => setScale(1.2);

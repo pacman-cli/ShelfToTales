@@ -10,6 +10,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface ReadingActivityRepository extends JpaRepository<ReadingActivity, Long> {
@@ -24,4 +25,6 @@ public interface ReadingActivityRepository extends JpaRepository<ReadingActivity
 
     @Query("SELECT ra FROM ReadingActivity ra JOIN FETCH ra.book WHERE ra.user.id = :userId ORDER BY ra.lastReadAt DESC")
     List<ReadingActivity> findAllByUserIdOrderByLastReadAtDesc(Long userId);
+
+    Optional<ReadingActivity> findFirstByUserIdAndBookIdOrderByLastReadAtDesc(Long userId, Long bookId);
 }
