@@ -42,18 +42,30 @@ class SemanticSearchControllerTest {
     @MockitoBean
     private JdbcTemplate jdbcTemplate;
 
+    @MockitoBean
+    private com.example.shelftotales.catalog.application.BookService bookService;
+
+    @MockitoBean
+    private com.example.shelftotales.ai.application.UnifiedSearchService unifiedSearchService;
+
     @Test
-    void searchSemantic_shouldReturn200() throws Exception {
-        Book book = Book.builder().id(1L).title("Semantic Match").author("Author").build();
-        List<Map.Entry<Book, Double>> matches = List.of(Map.entry(book, 0.95));
+    void search_shouldReturn200() throws Exception {
+        when(bookService.getBooks(anyString(), any(), any(), any(), any(Boolean.class), any(), anyInt(), anyInt(), anyString(), anyString()))
+                .thenReturn(com.example.shelftotales.shared.dto.PagedResponse.<com.example.shelftotales.catalog.application.BookResponse>builder().content(java.util.List.of()).build());
+        when(unifiedSearchService.merge(anyString(), any(), any(), anyInt(), anyInt()))
+                .thenReturn(com.example.shelftotales.ai.application.UnifiedSearchResponse.builder()
+                        .query("test")
+                        .results(java.util.List.of())
+                        .total(0)
+                        .signals(com.example.shelftotales.ai.application.UnifiedSearchResponse.Signals.builder()
+                                .text("ok").semantic("ok").build())
+                        .build());
 
-        when(embeddingService.searchSimilar("test", 10, null)).thenReturn(matches);
-
-        mockMvc.perform(get("/api/search/semantic?q=test&limit=10"))
+        mockMvc.perform(get("/api/search?q=test"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.query").value("test"))
-                .andExpect(jsonPath("$.results[0].title").value("Semantic Match"))
-                .andExpect(jsonPath("$.results[0].score").value(0.95));
+                .andExpect(jsonPath("$.signals.text").value("ok"))
+                .andExpect(jsonPath("$.signals.semantic").value("ok"));
     }
 
     @Test
