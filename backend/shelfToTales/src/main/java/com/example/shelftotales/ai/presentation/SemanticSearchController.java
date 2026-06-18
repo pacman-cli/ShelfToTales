@@ -114,6 +114,23 @@ public class SemanticSearchController {
         return ResponseEntity.ok(resp);
     }
 
+    // -------- Backwards-compat shim (deprecated) --------
+
+    /**
+     * @deprecated Use {@code GET /api/search} instead. Retained for one release for backwards compat.
+     */
+    @Deprecated
+    @GetMapping("/semantic")
+    public ResponseEntity<UnifiedSearchResponse> searchSemantic(
+            @RequestParam String q,
+            @RequestParam(defaultValue = "10") int limit) {
+        UnifiedSearchResponse resp = unifiedSearchService.merge(
+                q, List.of(),
+                embeddingService.searchSimilar(q, Math.max(limit, 24), null),
+                0, limit);
+        return ResponseEntity.ok(resp);
+    }
+
     // -------- Existing endpoints (unchanged behaviour) --------
 
     private boolean isPostgresDatabase() {
