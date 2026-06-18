@@ -267,6 +267,8 @@ export const friendService = {
 export const aiService = {
   chat: (message) => api.post('/ai/chat', { message }),
   clearHistory: () => api.delete('/ai/chat'),
+  /** @deprecated Use searchService.unifiedSearch instead. */
+  semanticSearch: (query, limit) => api.get('/search/semantic', { params: { q: query, limit } }),
 };
 
 export const searchService = {
@@ -274,8 +276,9 @@ export const searchService = {
   unifiedSearch: (q, { page = 0, size = 24, sortBy = 'title', sortDir = 'asc' } = {}) =>
     api.get('/search', { params: { q, page, size, sortBy, sortDir } }),
 
-  // Deprecated — retained for one release for any straggler callers
+  /** @deprecated Use unifiedSearch instead. */
   textSearch: (params) => api.get('/books', { params }),
+  /** @deprecated Use unifiedSearch instead. */
   semanticSearch: (query, limit = 10) => api.get('/search/semantic', { params: { q: query, limit } }),
 
   // Unchanged
