@@ -271,8 +271,15 @@ export const aiService = {
 };
 
 export const searchService = {
+  // Primary — calls the new unified endpoint
+  unifiedSearch: (q, { page = 0, size = 24, sortBy = 'title', sortDir = 'asc' } = {}) =>
+    api.get('/search', { params: { q, page, size, sortBy, sortDir } }),
+
+  // Deprecated — retained for one release for any straggler callers
   textSearch: (params) => api.get('/books', { params }),
   semanticSearch: (query, limit = 10) => api.get('/search/semantic', { params: { q: query, limit } }),
+
+  // Unchanged
   imageSearch: (file, limit = 10) => {
     const formData = new FormData();
     formData.append('file', file);
