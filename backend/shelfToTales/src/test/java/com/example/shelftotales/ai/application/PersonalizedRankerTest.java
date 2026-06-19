@@ -13,6 +13,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 class PersonalizedRankerTest {
@@ -103,9 +104,31 @@ class PersonalizedRankerTest {
                 .bookId(2L).title("Overlap").score(0.05)
                 .matchedSources(List.of("text"))
                 .build();
-        // Stub the books: hit1 has no mood, hit2 has "reflective"
-        when(bookRepository.findById(1L)).thenReturn(java.util.Optional.of(book(1, "No overlap", null)));
-        when(bookRepository.findById(2L)).thenReturn(java.util.Optional.of(book(2, "Overlap", "reflective")));
+        // Stub the batch lookup: hit1 has no mood, hit2 has "reflective".
+        // Use Answer to filter the iterable and return only matching books,
+        // since Mockito's default Iterable stub can drop entries that don't
+        // match the Set semantics of JpaRepository#findAllById.
+        Book stub1 = Book.builder().build();
+        Book stub2 = Book.builder().build();
+        try {
+            Field f1 = Book.class.getDeclaredField("id"); f1.setAccessible(true);
+            f1.set(stub1, 1L);
+            f1.set(stub2, 2L);
+            Field ft = Book.class.getDeclaredField("title"); ft.setAccessible(true);
+            ft.set(stub1, "No overlap");
+            ft.set(stub2, "Overlap");
+            Field fm = Book.class.getDeclaredField("moodTags"); fm.setAccessible(true);
+            fm.set(stub2, "reflective");
+        } catch (Exception e) { throw new RuntimeException(e); }
+        when(bookRepository.findAllById(any())).thenAnswer(inv -> {
+            Iterable<Long> ids = inv.getArgument(0);
+            java.util.List<Book> out = new java.util.ArrayList<>();
+            for (Long id : ids) {
+                if (id.equals(1L)) out.add(stub1);
+                else if (id.equals(2L)) out.add(stub2);
+            }
+            return out;
+        });
         PersonalizedRanker.Ranked result = ranker.rank(user, List.of(hit1, hit2));
 
         // result should be reordered with hit2 first (mood overlap boost)

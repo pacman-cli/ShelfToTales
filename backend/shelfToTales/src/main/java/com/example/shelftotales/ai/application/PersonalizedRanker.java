@@ -56,11 +56,17 @@ public class PersonalizedRanker {
                 return new Ranked(hits, false);
             }
 
+            Map<Long, String> moodTagsByBookId = lookupMoodTagsBatch(hits);
+            if (moodTagsByBookId == null) {
+                // Batch load failed — return original order, not personalized.
+                return new Ranked(hits, false);
+            }
+
             final Set<String> moodsFinal = userMoods;
             List<RankedHit> ranked = new ArrayList<>();
             for (SearchHit h : hits) {
                 double boost = 1.0;
-                String tags = lookupMoodTags(h);
+                String tags = h.getBookId() == null ? null : moodTagsByBookId.get(h.getBookId());
                 if (tags != null && !tags.isBlank()) {
                     Set<String> hitMoods = Arrays.stream(tags.split(","))
                             .map(String::trim)
@@ -94,15 +100,29 @@ public class PersonalizedRanker {
         }
     }
 
-    private String lookupMoodTags(SearchHit h) {
-        if (h == null || h.getBookId() == null) {
-            return null;
+    /**
+     * Batch-load moodTags for all distinct bookIds in the hit list via a single
+     * bookRepository.findAllById() call. Returns null on batch-load failure so the
+     * caller can fall back to the original RRF order with personalized=false.
+     */
+    private Map<Long, String> lookupMoodTagsBatch(List<SearchHit> hits) {
+        Set<Long> ids = hits.stream()
+                .map(SearchHit::getBookId)
+                .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        if (ids.isEmpty()) {
+            return Map.of();
         }
         try {
-            Book book = bookRepository.findById(h.getBookId()).orElse(null);
-            return book == null ? null : book.getMoodTags();
+            List<Book> books = bookRepository.findAllById(ids);
+            return books.stream()
+                    .filter(b -> b.getId() != null)
+                    .collect(Collectors.toMap(
+                            Book::getId,
+                            b -> b.getMoodTags() == null ? "" : b.getMoodTags(),
+                            (a, b) -> a));
         } catch (RuntimeException e) {
-            log.warn("PersonalizedRanker: failed to look up moodTags for bookId={}: {}", h.getBookId(), e.getMessage());
+            log.warn("PersonalizedRanker: batch moodTags lookup failed, falling back to RRF order: {}", e.getMessage());
             return null;
         }
     }

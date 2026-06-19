@@ -34,7 +34,7 @@ export function useSearch({ debounceMs = 250 } = {}) {
       setLoading(true);
       setError(null);
       try {
-        const res = await searchService.unifiedSearch(trimmed, { source: opts.source, ...opts });
+        const res = await searchService.unifiedSearch(trimmed, opts);
         if (myId !== requestIdRef.current) return; // a newer request superseded us
         setData(res.data);
         setSignals(res.data?.signals || { text: 'ok', semantic: 'ok' });

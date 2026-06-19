@@ -4,13 +4,20 @@ import com.example.shelftotales.ai.application.SearchAnalyticsService;
 import com.example.shelftotales.auth.domain.User;
 import com.example.shelftotales.shared.dto.ErrorResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Anonymous clicks are intentionally NOT persisted: the search_clicks.user_id column
+ * is NOT NULL and we are not changing the schema. Anonymous click tracking is logged
+ * client-side (console) only. Authenticated clicks still go through SearchAnalyticsService.
+ */
 @RestController
 @RequestMapping("/api/search/events")
 @RequiredArgsConstructor
+@Slf4j
 public class SearchAnalyticsController {
 
     private final SearchAnalyticsService service;
@@ -32,7 +39,8 @@ public class SearchAnalyticsController {
                     event.position(), event.source());
             return ResponseEntity.noContent().build();
         }
-        return ResponseEntity.status(401).body(new ErrorResponse(
-                401, "Unauthorized", "Authentication required"));
+        // Anonymous: skip persist. Return 204 so the client does not surface an error;
+        // client-side analytics (console) still record the click.
+        return ResponseEntity.noContent().build();
     }
 }

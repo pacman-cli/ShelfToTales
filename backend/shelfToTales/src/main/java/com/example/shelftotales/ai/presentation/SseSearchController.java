@@ -74,10 +74,27 @@ public class SseSearchController {
             }
         });
 
-        // Semantic signal
-        CompletableFuture<List<Map.Entry<Book, Double>>> semFuture = CompletableFuture.supplyAsync(() -> {
+        // Semantic signal — emit as List<SearchHit> for shape parity with the text event.
+        CompletableFuture<List<SearchHit>> semFuture = CompletableFuture.supplyAsync(() -> {
             try {
-                return embeddingService.searchSimilar(trimmed, Math.max(size, 24), null);
+                List<Map.Entry<Book, Double>> raw = embeddingService.searchSimilar(trimmed, Math.max(size, 24), null);
+                return raw.stream()
+                        .map(e -> {
+                            Book b = e.getKey();
+                            if (b == null) return null;
+                            return SearchHit.builder()
+                                    .bookId(b.getId())
+                                    .title(b.getTitle())
+                                    .author(b.getAuthor())
+                                    .coverUrl(b.getCoverUrl())
+                                    .categoryName(b.getCategory() != null ? b.getCategory().getName() : null)
+                                    .price(b.getPrice())
+                                    .semanticScore(e.getValue())
+                                    .matchedSources(List.of("semantic"))
+                                    .build();
+                        })
+                        .filter(java.util.Objects::nonNull)
+                        .collect(Collectors.toList());
             } catch (RuntimeException e) {
                 log.warn("SSE: semantic signal failed: {}", e.getMessage());
                 return null;
@@ -106,7 +123,7 @@ public class SseSearchController {
         CompletableFuture.allOf(textFuture, semFuture).whenComplete((v, err) -> {
             try {
                 List<SearchHit> finalText = textFuture.join();
-                List<Map.Entry<Book, Double>> finalSem = semFuture.join();
+                List<SearchHit> finalSem = semFuture.join();
                 if (finalText == null && finalSem == null) {
                     sendEvent(emitter, "error", Map.of("message", "Search temporarily unavailable"));
                 } else {

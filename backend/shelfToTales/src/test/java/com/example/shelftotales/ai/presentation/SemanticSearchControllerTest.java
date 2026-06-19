@@ -1,6 +1,8 @@
 package com.example.shelftotales.ai.presentation;
 
 import com.example.shelftotales.ai.application.EmbeddingService;
+import com.example.shelftotales.ai.application.PersonalizedRanker;
+import com.example.shelftotales.ai.application.UnifiedSearchResponse;
 import com.example.shelftotales.ai.application.UnifiedSearchService;
 import com.example.shelftotales.ai.rag.EmbeddingIndexer;
 import com.example.shelftotales.catalog.application.BookService;
@@ -13,6 +15,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.web.servlet.MockMvc;
+
+import java.util.List;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyInt;
@@ -34,6 +38,7 @@ class SemanticSearchControllerTest {
     @MockBean private EmbeddingIndexer embeddingIndexer;
     @MockBean private BookService bookService;
     @MockBean private UnifiedSearchService unifiedSearchService;
+    @MockBean private PersonalizedRanker personalizedRanker;
     @MockBean private com.example.shelftotales.admin.application.SecurityMonitoringService securityMonitoringService;
 
     @Test
@@ -118,5 +123,33 @@ class SemanticSearchControllerTest {
     void unified_invalidSize_returns400() throws Exception {
         mvc.perform(get("/api/search").param("q", "x").param("size", "999"))
                 .andExpect(status().isBadRequest());
+    }
+
+    /**
+     * Personalized rerank path: anonymous principal → ranker is never called → personalized=false.
+     * Verifies the controller does NOT eagerly call personalizedRanker when no User principal is present.
+     */
+    @Test
+    void unified_anonymous_doesNotCallRanker() throws Exception {
+        when(bookService.getBooks(anyString(), any(), any(), any(), any(Boolean.class), any(), anyInt(), anyInt(), anyString(), anyString()))
+                .thenReturn(com.example.shelftotales.shared.dto.PagedResponse.<com.example.shelftotales.catalog.application.BookResponse>builder()
+                        .content(java.util.List.of())
+                        .build());
+        when(embeddingService.searchSimilar(anyString(), anyInt(), any()))
+                .thenReturn(java.util.List.of());
+        when(unifiedSearchService.merge(anyString(), any(), any(), anyInt(), anyInt(), any(), any(), any()))
+                .thenReturn(UnifiedSearchResponse.builder()
+                        .query("cosmos")
+                        .results(List.of())
+                        .signals(UnifiedSearchResponse.Signals.builder().text("ok").semantic("ok").build())
+                        .personalized(false)
+                        .build());
+
+        mvc.perform(get("/api/search").param("q", "cosmos"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.personalized").value(false));
+
+        org.mockito.Mockito.verify(personalizedRanker, org.mockito.Mockito.never())
+                .rank(org.mockito.ArgumentMatchers.any(), org.mockito.ArgumentMatchers.any());
     }
 }

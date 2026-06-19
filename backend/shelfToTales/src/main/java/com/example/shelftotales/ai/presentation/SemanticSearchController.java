@@ -1,10 +1,12 @@
 package com.example.shelftotales.ai.presentation;
 
 import com.example.shelftotales.ai.application.EmbeddingService;
+import com.example.shelftotales.ai.application.PersonalizedRanker;
 import com.example.shelftotales.ai.application.UnifiedSearchResponse;
 import com.example.shelftotales.ai.application.UnifiedSearchService;
 import com.example.shelftotales.ai.application.UnifiedSearchResponse.SearchHit;
 import com.example.shelftotales.ai.application.UnifiedSearchResponse.Signals;
+import com.example.shelftotales.auth.domain.User;
 import com.example.shelftotales.catalog.application.BookResponse;
 import com.example.shelftotales.catalog.application.BookService;
 import com.example.shelftotales.catalog.domain.Book;
@@ -17,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -44,6 +47,7 @@ public class SemanticSearchController {
     private final EmbeddingIndexer embeddingIndexer;
     private final BookService bookService;
     private final UnifiedSearchService unifiedSearchService;
+    private final PersonalizedRanker personalizedRanker;
 
     // -------- New unified search endpoint --------
 
@@ -56,7 +60,8 @@ public class SemanticSearchController {
             @RequestParam(defaultValue = "asc") String sortDir,
             @RequestParam(required = false) String source,
             @RequestParam(required = false) String cursor,
-            @RequestParam(required = false) String image) {
+            @RequestParam(required = false) String image,
+            @AuthenticationPrincipal(expression = "this") Object principal) {
 
         String trimmed = q == null ? "" : q.trim();
         if (trimmed.isEmpty()) {
@@ -114,10 +119,12 @@ public class SemanticSearchController {
 
         Long imageQueryHash = null;
         boolean imageMatched = false;
+        boolean imageFilterApplied = false;
         if (image != null && !image.isBlank()) {
             try {
                 imageQueryHash = imageHashService.computeDHashFromBase64(image);
                 imageMatched = true;
+                imageFilterApplied = true;
             } catch (RuntimeException e) {
                 log.warn("Unified search: image hash failed: {}", e.getMessage());
             }
@@ -125,6 +132,27 @@ public class SemanticSearchController {
         UnifiedSearchResponse resp = unifiedSearchService.merge(trimmed, textHits, semHits, page, size, source, cursor, imageQueryHash);
         resp.setImageMatched(imageMatched);
         resp.setSignals(Signals.builder().text(textStatus).semantic(semanticStatus).build());
+
+        // Image filter is currently broken: SearchHit does not carry coverHash, so the
+        // filter drops every hit. Surface this as a WARN so it's visible in logs.
+        if (imageFilterApplied && resp.getResults() != null && resp.getResults().isEmpty()
+                && (textHits.size() + semHits.size() > 0)) {
+            log.warn("Unified search: image filter dropped all hits (imageQueryHash={} textHits={} semHits={}) — coverHash is not carried on SearchHit; image filter is effectively a no-op until wired through",
+                    imageQueryHash, textHits.size(), semHits.size());
+        }
+
+        // Personalized rerank for authenticated users.
+        User user = principal instanceof User ? (User) principal : null;
+        if (user != null && resp.getResults() != null && !resp.getResults().isEmpty()) {
+            try {
+                PersonalizedRanker.Ranked ranked = personalizedRanker.rank(user, resp.getResults());
+                resp.setResults(ranked.results());
+                resp.setPersonalized(ranked.personalized());
+            } catch (RuntimeException e) {
+                log.warn("Unified search: personalized ranking failed, returning RRF order: {}", e.getMessage());
+            }
+        }
+
         return ResponseEntity.ok(resp);
     }
 

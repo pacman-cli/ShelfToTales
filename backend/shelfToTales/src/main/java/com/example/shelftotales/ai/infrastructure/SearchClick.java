@@ -2,14 +2,11 @@ package com.example.shelftotales.ai.infrastructure;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.springframework.data.annotation.CreatedDate;
-import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.Instant;
 
 @Entity
 @Table(name = "search_clicks")
-@EntityListeners(AuditingEntityListener.class)
 @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
 public class SearchClick {
 
@@ -32,7 +29,10 @@ public class SearchClick {
     @Column
     private String source;
 
-    @CreatedDate
-    @Column(name = "ts", nullable = false, updatable = false)
+    /**
+     * Populated by the database DEFAULT now(); JPA does not write this column on insert.
+     * The column is updatable=false so even an explicit re-save won't change it.
+     */
+    @Column(name = "ts", nullable = false, updatable = false, insertable = false)
     private Instant ts;
 }

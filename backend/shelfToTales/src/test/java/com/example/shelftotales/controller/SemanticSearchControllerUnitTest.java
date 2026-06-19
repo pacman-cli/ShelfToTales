@@ -1,9 +1,12 @@
 package com.example.shelftotales.controller;
 
 import com.example.shelftotales.ai.application.EmbeddingService;
+import com.example.shelftotales.ai.application.PersonalizedRanker;
 import com.example.shelftotales.ai.application.UnifiedSearchService;
 import com.example.shelftotales.ai.presentation.SemanticSearchController;
 import com.example.shelftotales.ai.rag.EmbeddingIndexer;
+import com.example.shelftotales.review.infrastructure.ReviewRepository;
+import com.example.shelftotales.catalog.infrastructure.BookRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.ResponseEntity;
 
@@ -15,6 +18,9 @@ class SemanticSearchControllerUnitTest {
 
     @Test
     void reindex_rebuildsBookEmbeddingsAndRagChunks() {
+        PersonalizedRanker ranker = new PersonalizedRanker(
+                org.mockito.Mockito.mock(ReviewRepository.class),
+                org.mockito.Mockito.mock(BookRepository.class));
         SemanticSearchController controller = new SemanticSearchController(
                 new FakeEmbeddingService(3),
                 null,
@@ -22,7 +28,8 @@ class SemanticSearchControllerUnitTest {
                 null,
                 new FakeEmbeddingIndexer(8),
                 null,
-                new UnifiedSearchService()
+                new UnifiedSearchService(),
+                ranker
         );
 
         ResponseEntity<Map<String, Object>> response = controller.reindex();

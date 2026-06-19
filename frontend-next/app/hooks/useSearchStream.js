@@ -7,7 +7,10 @@ import { useEffect, useState } from 'react';
  *
  * Returns { text, semantic, done, error, status }.
  *   - status: 'connecting' | 'partial' | 'done' | 'error'
- *   - text, semantic: arrays of SearchHit objects
+ *   - text, semantic: arrays of SearchHit objects (the same SearchHit shape the REST
+ *     /api/search endpoint returns: { bookId, title, author, coverUrl, categoryName,
+ *     price, score, matchedSources, semanticScore, textRank }).
+ *     The semantic event's matchedSources is always ['semantic'].
  *   - done: boolean
  *   - error: object | null
  */
