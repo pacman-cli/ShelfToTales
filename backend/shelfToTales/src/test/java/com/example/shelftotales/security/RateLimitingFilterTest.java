@@ -36,8 +36,10 @@ import com.example.shelftotales.auth.presentation.*;
 import com.example.shelftotales.shared.dto.*;
 
 import com.example.shelftotales.admin.application.SecurityMonitoringService;
+import com.example.shelftotales.shared.security.RouteCategory;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.datatype.jsr310.JavaTimeModule;
+import io.github.bucket4j.Bandwidth;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.BeforeEach;
@@ -46,6 +48,9 @@ import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
 
 import java.io.IOException;
+import java.time.Duration;
+import java.util.EnumMap;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
@@ -59,17 +64,25 @@ class RateLimitingFilterTest {
     @BeforeEach
     void setUp() {
         SecurityMonitoringService monitoringService = mock(SecurityMonitoringService.class);
-        filter = new RateLimitingFilter(new ObjectMapper().registerModule(new JavaTimeModule()), monitoringService);
+        Map<RouteCategory, Bandwidth> bandwidths = new EnumMap<>(RouteCategory.class);
+        Bandwidth limit = Bandwidth.builder()
+                .capacity(10)
+                .refillIntervally(10, Duration.ofMinutes(1))
+                .build();
+        for (RouteCategory c : RouteCategory.values()) {
+            bandwidths.put(c, limit);
+        }
+        filter = new RateLimitingFilter(bandwidths, new ObjectMapper().registerModule(new JavaTimeModule()), monitoringService);
         chain = mock(FilterChain.class);
     }
 
     @Test
-    void nonAuthEndpoint_passesThroughWithoutLimit() throws ServletException, IOException {
-        MockHttpServletRequest req = new MockHttpServletRequest("GET", "/api/books");
+    void nonApiEndpoint_passesThroughWithoutLimit() throws ServletException, IOException {
+        MockHttpServletRequest req = new MockHttpServletRequest("GET", "/health");
         req.setRemoteAddr("10.0.0.1");
         MockHttpServletResponse res = new MockHttpServletResponse();
 
-        // Loop way past the limit; non-auth endpoints must always pass through.
+        // Loop way past the limit; non-/api endpoints must always pass through (shouldNotFilter skips them).
         for (int i = 0; i < 50; i++) {
             filter.doFilter(req, res, chain);
         }
