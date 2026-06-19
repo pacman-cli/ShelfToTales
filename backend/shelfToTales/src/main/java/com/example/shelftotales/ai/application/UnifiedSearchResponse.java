@@ -11,6 +11,10 @@ public class UnifiedSearchResponse {
     private List<SearchHit> results;
     private int total;
     private Signals signals;
+    private Facets facets;
+    private boolean personalized;
+    private boolean imageMatched;
+    private String nextCursor;
 
     @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
     public static class SearchHit {
@@ -30,5 +34,18 @@ public class UnifiedSearchResponse {
     public static class Signals {
         private String text;
         private String semantic;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class Facets {
+        private List<FacetBucket> categories;
+        private List<FacetBucket> authors;
+        private List<FacetBucket> moods;
+    }
+
+    @Getter @Setter @NoArgsConstructor @AllArgsConstructor @Builder
+    public static class FacetBucket {
+        private String name;
+        private int count;
     }
 }
