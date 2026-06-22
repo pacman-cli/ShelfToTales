@@ -1,8 +1,5 @@
-package com.example.shelftotales.service;
+package com.example.shelftotales.ai.application;
 
-import com.example.shelftotales.ai.application.ChatResponse;
-import com.example.shelftotales.ai.application.ChatService;
-import com.example.shelftotales.ai.application.EmbeddingService;
 import com.example.shelftotales.ai.application.chat.OpenAIChatProvider;
 import com.example.shelftotales.ai.application.chat.RuleBasedChatProvider;
 import com.example.shelftotales.ai.domain.ChatMessage;
@@ -24,6 +21,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class ChatServiceTest {
 
@@ -56,7 +54,7 @@ class ChatServiceTest {
         assertEquals(0, userRepository.findByEmailCalls);
         assertEquals(0, orderRepository.findOrdersCalls);
         assertEquals(0, shelfBookRepository.findStatusCalls);
-        assertEquals(true, ruleBased.lastPrompt.contains("Guest")); // exact phrasing now lives in ChatService.GUEST_USER constant
+        assertTrue(ruleBased.lastPrompt.contains("Guest")); // exact phrasing now lives in ChatService.GUEST_USER constant
     }
 
     @Test
@@ -91,8 +89,8 @@ class ChatServiceTest {
         assertEquals("You completed 2 books.", response.getReply());
         assertEquals(1, userRepository.findByEmailCalls);
         assertEquals(2, shelfBookRepository.findStatusCalls);
-        assertEquals(true, ruleBased.lastPrompt.contains("Reader One"));
-        assertEquals(true, ruleBased.lastPrompt.contains("Books completed: 2"));
+        assertTrue(ruleBased.lastPrompt.contains("Reader One"));
+        assertTrue(ruleBased.lastPrompt.contains("Books completed: 2"));
     }
 
     private static class FakeOpenAIChatProvider extends OpenAIChatProvider {
