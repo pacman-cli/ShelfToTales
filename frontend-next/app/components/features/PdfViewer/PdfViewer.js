@@ -5,7 +5,12 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 
-pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.mjs`;
+const workerSrc = new URL(
+  'pdfjs-dist/build/pdf.worker.min.mjs',
+  import.meta.url
+).href;
+
+pdfjs.GlobalWorkerOptions.workerSrc = workerSrc;
 
 function PdfViewer({ url, title, initialPage = 1, onPageChange }) {
   const [numPages, setNumPages] = useState(null);
