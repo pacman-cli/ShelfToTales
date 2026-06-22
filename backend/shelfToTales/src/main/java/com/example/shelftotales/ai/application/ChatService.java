@@ -43,6 +43,9 @@ public class ChatService {
             - Never fabricate order information — only use what's provided in the context
             - Ask ONE clarifying question if the user's request is vague
             """;
+    private static final String GUEST_ORDERS = "\n## Order History\n(Sign in to view orders)\n";
+    private static final String GUEST_STATS  = "\n## Reading Stats\n(Sign in to view reading stats)\n";
+    private static final String GUEST_USER   = "\n## User\n- Name: Guest\n- Member since: guest session\n";
 
     private final OpenAIChatProvider openAIChatProvider;
     private final RuleBasedChatProvider ruleBasedChatProvider;
@@ -82,11 +85,11 @@ public class ChatService {
         // Build multi-domain context
         String catalogContext = buildCatalogContext(bookResults);
         String orderContext = maybeUser.map(user -> buildOrderContext(user.getId()))
-                .orElse("\n## Order History\n(Sign in to view orders)\n");
+                .orElse(GUEST_ORDERS);
         String statsContext = maybeUser.map(user -> buildReadingStats(user.getId()))
-                .orElse("\n## Reading Stats\n(Sign in to view reading stats)\n");
+                .orElse(GUEST_STATS);
         String userContext = maybeUser.map(this::buildUserContext)
-                .orElse("\n## User\n- Name: Guest\n- Member since: guest session\n");
+                .orElse(GUEST_USER);
 
         // Build conversation history context
         String historyContext = buildHistoryContext(history);
