@@ -37,8 +37,14 @@ export default function ReadingRoomDetail() {
 
   useEffect(() => {
     const u = localStorage.getItem('user');
-    const token = localStorage.getItem('token');
-    if (!u || !token) { router.push('/shop-login'); return; }
+    if (!u) { router.push('/shop-login'); return; }
+    // Inline read: token is consumed only by this one-shot mount effect
+    // (for the redirect check and the STOMP connect header). It is never
+    // surfaced as JSX/UI state, so useAuthToken would not dedupe anything.
+    // useAuthToken also runs on a separate effect tick, which can race the
+    // redirect logic below. Keep this read inline and SSR-safe.
+    const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+    if (!token) { router.push('/shop-login'); return; }
     const currentUser = JSON.parse(u);
     setUser(currentUser);
     if (!roomId) { router.push('/reading-room'); return; }
