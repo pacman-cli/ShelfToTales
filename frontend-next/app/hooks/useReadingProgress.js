@@ -32,6 +32,21 @@ export function useReadingProgress({ bookId, debounceMs = DEFAULT_DEBOUNCE_MS } 
   const timerRef = useRef(null);
   const inflightRef = useRef(null);
 
+  // Fire-and-forget flush of the most-recent pending page. Used by the
+  // debounce timer (via the setTimeout callback in savePage) and by the
+  // unmount cleanup in the load effect below — both want the same PATCH
+  // semantics, neither needs the response handling that the public flush()
+  // provides. Declared before the effect that depends on it so the
+  // dependency array captures a stable callback.
+  const flushPending = useCallback(() => {
+    const pendingPage = pendingRef.current;
+    if (pendingPage == null || bookId == null) return;
+    pendingRef.current = null;
+    api
+      .patch('/reading-progress', { currentPage: pendingPage }, { params: { bookId } })
+      .catch(() => {});
+  }, [bookId]);
+
   useEffect(() => {
     if (bookId == null) {
       setLoading(false);
@@ -59,10 +74,11 @@ export function useReadingProgress({ bookId, debounceMs = DEFAULT_DEBOUNCE_MS } 
       });
     return () => {
       cancelled = true;
+      flushPending();
       if (timerRef.current) clearTimeout(timerRef.current);
       if (inflightRef.current) inflightRef.current.abort?.();
     };
-  }, [bookId]);
+  }, [bookId, flushPending]);
 
   const flush = useCallback(() => {
     if (pendingRef.current == null) return Promise.resolve();
@@ -93,10 +109,10 @@ export function useReadingProgress({ bookId, debounceMs = DEFAULT_DEBOUNCE_MS } 
       if (timerRef.current) clearTimeout(timerRef.current);
       timerRef.current = setTimeout(() => {
         timerRef.current = null;
-        flush();
+        flushPending();
       }, debounceMs);
     },
-    [bookId, debounceMs, flush]
+    [bookId, debounceMs, flushPending]
   );
 
   return { currentPage, totalPages, lastReadAt, loading, error, savePage, flush };
