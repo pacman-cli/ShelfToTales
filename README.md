@@ -415,6 +415,51 @@ ShelfToTales/
 
 ---
 
+## Dependencies
+@emailjs/browser
+@stomp/stompjs
+@tiptap/extension-image
+@tiptap/extension-link
+@tiptap/extension-youtube
+@tiptap/pm
+@tiptap/react
+@tiptap/starter-kit
+axios
+bootstrap
+chart.js
+dompurify
+framer-motion
+next
+nouislider
+nouislider-react
+prop-types
+react
+react-bootstrap
+react-chartjs-2
+react-countup
+react-dom
+react-pdf
+react-scroll-to-top
+sockjs-client
+sweetalert2
+swiper
+web-vitals
+
+## Dev Dependencies
+
+@eslint/eslintrc
+@playwright/test
+@testing-library/dom
+@testing-library/jest-dom
+@testing-library/react
+@testing-library/user-event
+@vitejs/plugin-react
+eslint
+eslint-config-next
+jsdom
+typescript
+vitest
+
 ## 🚀 Getting Started
 
 ### Prerequisites
