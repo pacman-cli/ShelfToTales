@@ -594,7 +594,7 @@ npm test
 ---
 ---
 <a href="https://youtu.be/criHrG6Ry7o"><img src="https://img.shields.io/badge/%E2%96%B6%20Watch%20Demo-YouTube-red?style=for-the-badge&logo=youtube" /></a>
-
+[![Live Demo](https://img.shields.io/badge/🔗_LIVE_DEMO-VISIT_SITE-007ACC?style=for-the-badge&logo=githubpages&logoColor=white&labelColor=333333)](https://shelf-to-tales.vercel.app/)
 ---
 ## 📄 License
 
