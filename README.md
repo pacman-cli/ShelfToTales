@@ -415,6 +415,51 @@ ShelfToTales/
 
 ---
 
+## Dependencies
+@emailjs/browser
+@stomp/stompjs
+@tiptap/extension-image
+@tiptap/extension-link
+@tiptap/extension-youtube
+@tiptap/pm
+@tiptap/react
+@tiptap/starter-kit
+axios
+bootstrap
+chart.js
+dompurify
+framer-motion
+next
+nouislider
+nouislider-react
+prop-types
+react
+react-bootstrap
+react-chartjs-2
+react-countup
+react-dom
+react-pdf
+react-scroll-to-top
+sockjs-client
+sweetalert2
+swiper
+web-vitals
+
+## Dev Dependencies
+
+@eslint/eslintrc
+@playwright/test
+@testing-library/dom
+@testing-library/jest-dom
+@testing-library/react
+@testing-library/user-event
+@vitejs/plugin-react
+eslint
+eslint-config-next
+jsdom
+typescript
+vitest
+
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -542,14 +587,15 @@ npm test
 
 | Name | ID |
 |------|-----|
-| Rushdania Bushra | 0112230039 |
-| Habiba Khatun | 011221085 |
 | Fayjullah Haque | 011221072 |
 | Ashikur Rahman Puspo | 0112310304 |
-| Mst. Sumia Khatun | 011221563 |
+
 
 ---
-
+---
+<a href="https://youtu.be/criHrG6Ry7o"><img src="https://img.shields.io/badge/%E2%96%B6%20Watch%20Demo-YouTube-red?style=for-the-badge&logo=youtube" /></a>
+[![Live Demo](https://img.shields.io/badge/🔗_LIVE_DEMO-VISIT_SITE-007ACC?style=for-the-badge&logo=githubpages&logoColor=white&labelColor=333333)](https://shelf-to-tales.vercel.app/)
+---
 ## 📄 License
 
 This project is developed as part of an academic course (AOOP).
